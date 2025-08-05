@@ -1,89 +1,73 @@
 "use client"
 
+import { useAuth } from "../contexts/AuthContext"
+import { signOut } from "@/lib/auth-client"
+import { IconLogout, IconUser } from "@tabler/icons-react"
 import { useState } from "react"
 
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useAuth } from "../contexts/AuthContext"
+export function Header() {
+  const { user, isAuthenticated } = useAuth()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-export function Header({ pageTitle }: { pageTitle: string }) {
-  const { theme, setTheme } = useTheme()
-  const { logout } = useAuth()
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
+  const handleSignOut = async () => {
+    setIsLoggingOut(true)
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = "/login"
+          }
+        }
+      })
+    } catch (error) {
+      console.error("Sign out error:", error)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
-  const handleLogout = () => {
-    logout()
-    setUserMenuOpen(false)
-  }
-
-  const user = {
-    name: "Admin",
-    email: "admin@betterads.com",
-  }
+  if (!isAuthenticated) return null
 
   return (
-    <header className="h-16 bg-background border-b border-border flex items-center px-6 gap-4 shrink-0">
-      
-      <div className="flex-1">
-        <h1 className="text-xl font-semibold text-foreground">
-          {pageTitle}
-        </h1>
-      </div>
-      
-      <div className="flex items-center gap-4">
+    <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-semibold text-gray-900">Better Ads</h1>
+        </div>
         
-        {/* Toggle thème */}
-        <button
-          onClick={toggleTheme}
-          className="w-10 h-10 rounded-full border bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center justify-center transition-colors"
-        >
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </button>
+        <div className="flex items-center gap-4">
+          {/* User Info */}
+          <div className="flex items-center gap-3">
+            {user?.image ? (
+              <img 
+                src={user.image} 
+                alt={user.name || "User"} 
+                className="w-8 h-8 rounded-full"
+              />
+            ) : (
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                <IconUser className="w-4 h-4 text-gray-600" />
+              </div>
+            )}
+            <div className="hidden sm:block">
+              <p className="text-sm font-medium text-gray-900">
+                {user?.name || "Utilisateur"}
+              </p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
+            </div>
+          </div>
 
-        {/* Menu utilisateur */}
-        <div className="relative">
+          {/* Sign Out Button */}
           <button
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="w-10 h-10 rounded-full bg-muted hover:bg-accent transition-colors flex items-center justify-center"
+            onClick={handleSignOut}
+            disabled={isLoggingOut}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-foreground">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-            <span className="sr-only">Open user menu</span>
+            <IconLogout className="w-4 h-4" />
+            <span className="hidden sm:inline">
+              {isLoggingOut ? "Déconnexion..." : "Se déconnecter"}
+            </span>
           </button>
-
-          {/* Dropdown menu */}
-          {userMenuOpen && (
-            <div className="absolute right-0 top-12 w-56 bg-popover border border-border rounded-lg shadow-lg z-50">
-              
-              <div className="p-2 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-popover-foreground">{user.name}</span>
-                    <span className="text-xs text-muted-foreground">{user.email}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-1">
-                <button 
-                  onClick={handleLogout}
-                  className="block w-full text-left px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                >
-                  Se déconnecter
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </header>

@@ -1,55 +1,30 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, ReactNode } from 'react'
+import { useSession } from '@/lib/auth-client'
+import type { User, Session } from '@/lib/auth-client'
 
 interface AuthContextType {
+  user: User | null
+  session: Session | null
+  isLoading: boolean
   isAuthenticated: boolean
-  login: (password: string) => boolean
-  logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const CORRECT_PASSWORD = process.env.NEXT_PUBLIC_APP_PASSWORD || "betterads2024"
-const AUTH_KEY = "betterads_authenticated"
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté au chargement
-    const authStatus = localStorage.getItem(AUTH_KEY)
-    if (authStatus === "true") {
-      setIsAuthenticated(true)
-    }
-    setIsLoading(false)
-  }, [])
-
-  const login = (password: string): boolean => {
-    if (password === CORRECT_PASSWORD) {
-      setIsAuthenticated(true)
-      localStorage.setItem(AUTH_KEY, "true")
-      return true
-    }
-    return false
-  }
-
-  const logout = () => {
-    setIsAuthenticated(false)
-    localStorage.removeItem(AUTH_KEY)
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
+  const { data: session, isPending: isLoading } = useSession()
+  
+  const contextValue: AuthContextType = {
+    user: session?.user || null,
+    session: session || null,
+    isLoading,
+    isAuthenticated: !!session?.user
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )

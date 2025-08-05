@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: betterads_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: betterads_db
+      POSTGRES_USER: betterads_user
+      POSTGRES_PASSWORD: betterads_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - betterads_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: betterads_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@betterads.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - betterads_network
+
+volumes:
+  postgres_data:
+
+networks:
+  betterads_network:
+    driver: bridge

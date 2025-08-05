@@ -9,11 +9,14 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
+    // Attendre que le chargement soit terminé
+    if (isLoading) return
+
     // Si l'utilisateur n'est pas connecté et n'est pas sur la page de login
     if (!isAuthenticated && pathname !== "/login") {
       router.push("/login")
@@ -22,10 +25,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (isAuthenticated && pathname === "/login") {
       router.push("/dashboard")
     }
-  }, [isAuthenticated, pathname, router])
+  }, [isAuthenticated, isLoading, pathname, router])
 
-  // Si pas connecté et pas sur la page login, ne rien afficher
-  if (!isAuthenticated && pathname !== "/login") {
+  // Afficher un loader pendant le chargement ou si on redirige
+  if (isLoading || (!isAuthenticated && pathname !== "/login")) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
