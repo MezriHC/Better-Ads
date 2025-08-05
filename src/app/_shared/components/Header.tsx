@@ -20,7 +20,7 @@ export function Header() {
         }
       })
     } catch (error) {
-      console.error("Sign out error:", error)
+      
     } finally {
       setIsLoggingOut(false)
     }
