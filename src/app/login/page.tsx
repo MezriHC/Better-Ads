@@ -61,10 +61,10 @@ export default function LoginPage() {
             {/* Google Sign In avec redirection directe */}
             <button
               onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white dark:bg-gray-50 border border-border/50 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-100 hover:border-border hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group"
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-muted/50 border border-border/50 rounded-xl hover:bg-muted hover:border-border hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group"
             >
               <GoogleLogo className="w-5 h-5 transition-transform group-hover:scale-110" />
-              <span className="font-semibold text-gray-700 dark:text-gray-800 transition-colors">
+              <span className="font-semibold text-foreground transition-colors">
                 Continue with Google
               </span>
             </button>
