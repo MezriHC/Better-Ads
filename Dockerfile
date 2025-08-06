@@ -16,13 +16,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Clean any cached builds
-RUN rm -rf .next
+# Clean any cached builds and node_modules cache
+RUN rm -rf .next node_modules/.cache npm-cache
 
 # Generate Prisma client before building
 RUN npx prisma generate
 
-# Build the application with fresh cache
+# Build the application with fresh cache and explicit env
+ENV NEXT_PUBLIC_BETTER_AUTH_URL=https://trybetterads.com
+ENV BETTER_AUTH_URL=https://trybetterads.com
 RUN npm run build
 
 # Production image, copy all the files and run next
@@ -53,6 +55,10 @@ RUN chown nextjs:nodejs .next
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Set default auth URLs (will be overridden by Coolify env vars)
+ENV BETTER_AUTH_URL=https://trybetterads.com
+ENV NEXT_PUBLIC_BETTER_AUTH_URL=https://trybetterads.com
 
 USER nextjs
 
