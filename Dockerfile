@@ -16,10 +16,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Clean any cached builds
+RUN rm -rf .next
+
 # Generate Prisma client before building
 RUN npx prisma generate
 
-# Build the application
+# Build the application with fresh cache
 RUN npm run build
 
 # Production image, copy all the files and run next

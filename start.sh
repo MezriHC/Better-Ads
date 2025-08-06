@@ -3,6 +3,11 @@
 # Script de démarrage pour Coolify avec Prisma
 echo "🚀 Démarrage de Better Ads..."
 
+# Debug: Afficher les variables d'environnement Better Auth
+echo "🔍 Variables Better Auth:"
+echo "BETTER_AUTH_URL: $BETTER_AUTH_URL"
+echo "NEXT_PUBLIC_BETTER_AUTH_URL: $NEXT_PUBLIC_BETTER_AUTH_URL"
+
 # Attendre que la base de données soit prête
 echo "⏳ Attente de la base de données..."
 sleep 5
