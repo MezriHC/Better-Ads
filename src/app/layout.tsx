@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { AuthProvider } from "./_shared/contexts/AuthContext";
 import { AuthGuard } from "./_shared/components/AuthGuard";
 
 
@@ -28,11 +27,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-          <AuthProvider>
-            <AuthGuard>
-              {children}
-            </AuthGuard>
-          </AuthProvider>
+          <AuthGuard>
+            {children}
+          </AuthGuard>
         </ThemeProvider>
       </body>
     </html>

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { signIn } from "@/lib/auth-client"
-import { IconMail, IconLock, IconLoader2 } from "@tabler/icons-react"
+import { useState, useCallback } from "react"
+import { signIn } from "../_shared/lib/auth-client"
+import { IconMail, IconLock } from "@tabler/icons-react"
 
 // Official Google Logo Component
 function GoogleLogo({ className }: { className?: string }) {
@@ -17,21 +17,22 @@ function GoogleLogo({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleGoogleSignIn = async () => {
-    setIsGoogleLoading(true)
+  const handleGoogleSignIn = useCallback(async () => {
+    // Solution: useCallback pour éviter les re-renders + signIn.social natif
     try {
       await signIn.social({
         provider: "google",
-        callbackURL: "/dashboard"
+        callbackURL: "/dashboard",
       })
     } catch (error) {
-      setIsGoogleLoading(false)
+      // Gestion silencieuse des erreurs
+      console.error("Erreur de connexion Google:", error)
     }
-  }
+  }, [])
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,19 +58,14 @@ export default function LoginPage() {
         <div className="bg-card border border-border rounded-2xl p-6">
           <div className="flex flex-col gap-4">
             
-            {/* Google Sign In */}
+            {/* Google Sign In avec redirection directe */}
             <button
               onClick={handleGoogleSignIn}
-              disabled={isGoogleLoading}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border border-border rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white dark:bg-gray-50 border border-border/50 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-100 hover:border-border hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group"
             >
-              {isGoogleLoading ? (
-                <IconLoader2 className="w-5 h-5 animate-spin text-gray-600" />
-              ) : (
-                <GoogleLogo className="w-5 h-5" />
-              )}
-              <span className="font-medium text-gray-700">
-                {isGoogleLoading ? "Signing in..." : "Continue with Google"}
+              <GoogleLogo className="w-5 h-5 transition-transform group-hover:scale-110" />
+              <span className="font-semibold text-gray-700 dark:text-gray-800 transition-colors">
+                Continue with Google
               </span>
             </button>
 

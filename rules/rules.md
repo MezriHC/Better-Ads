@@ -144,24 +144,252 @@ user-management/
 
 ---
 
-## 3. Configuration Authentification (NextAuth + Google)
+## 3. Configuration Authentification (Better Auth + Providers OAuth)
 
-### **Variables d'environnement requises (.env) :**
-```
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
+### **🔥 Template Better Auth - Copy/Paste Ready**
+
+### **Variables d'environnement (.env) :**
+```env
+# Better Auth Configuration
+BETTER_AUTH_SECRET=your-64-char-secret-key
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+
+# OAuth Providers (optionnel - ajouter selon besoins)
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id  
+GITHUB_CLIENT_SECRET=your-github-client-secret
 ```
 
-### **Structure d'authentification implémentée :**
-- **Route API** : `/api/auth/[...nextauth]/route.ts` (OBLIGATOIRE pour NextAuth)
-- **Configuration** : `_shared/lib/auth.ts` (authOptions partagées)
-- **Types** : `_shared/types/auth.ts` (interfaces TypeScript)
-- **Hook client** : `_shared/hooks/useAuth.ts` (gestion état auth)
-- **Provider** : `_shared/components/SessionProvider.tsx` (wrapper client)
-- **Middleware** : `middleware.ts` (protection routes)
-- **Pages** : `/login` (connexion) et `/dashboard` (protégée)
+### **Architecture Better Auth - 4 fichiers essentiels :**
+1. **`_shared/lib/auth.ts`** → Configuration serveur Better Auth
+2. **`_shared/lib/auth-client.ts`** → Client Better Auth + hooks
+3. **`api/auth/[...all]/route.ts`** → Handler API Better Auth  
+4. **`middleware.ts`** → Protection routes côté serveur
+5. **`_shared/components/AuthGuard.tsx`** → Protection routes côté client (optionnel)
+
+### **Template Better Auth - Configuration complète :**
+
+#### **1. Configuration serveur (_shared/lib/auth.ts) :**
+```typescript
+import { betterAuth } from "better-auth"
+import { prismaAdapter } from "better-auth/adapters/prisma"
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient()
+
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, { provider: "postgresql" }),
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  secret: process.env.BETTER_AUTH_SECRET!,
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      scope: ["openid", "email", "profile"],
+      mapProfileToUser: (profile) => ({
+        id: profile.sub,
+        email: profile.email,
+        name: profile.name,
+        image: profile.picture,
+        emailVerified: profile.email_verified,
+      })
+    },
+  },
+  session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
+  advanced: { useSecureCookies: process.env.NODE_ENV === "production" },
+  rateLimit: {
+    window: 60, max: 100,
+    customRules: { "/sign-in/*": { window: 60, max: 5 } }
+  },
+})
+
+export type Session = typeof auth.$Infer.Session
+export type User = typeof auth.$Infer.Session.user
+```
+
+#### **2. Client Better Auth (_shared/lib/auth-client.ts) :**
+```typescript
+"use client"
+import { createAuthClient } from "better-auth/react"
+
+// Client Better Auth avec toutes les méthodes
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
+})
+
+// Export de toutes les méthodes Better Auth
+export const {
+  signIn, signOut, signUp, useSession, getSession,
+  updateUser, changePassword, forgetPassword, resetPassword,
+} = authClient
+
+// Types auto-inférés Better Auth
+export type Session = typeof authClient.$Infer.Session
+export type User = typeof authClient.$Infer.Session.user
+
+// Hook personnalisé simplifié (optionnel)
+export function useAuth() {
+  const { data: session, isPending: isLoading, error } = useSession()
+  return {
+    user: session?.user || null,
+    session: session || null,
+    isLoading,
+    isAuthenticated: !!session?.user,
+    error,
+  }
+}
+```
+
+#### **3. Route API (api/auth/[...all]/route.ts) :**
+```typescript
+import { auth } from "../../../_shared/lib/auth"
+import { toNextJsHandler } from "better-auth/next-js"
+
+const { GET, POST } = toNextJsHandler(auth)
+export { GET, POST }
+```
+
+#### **4. Middleware (middleware.ts) :**
+```typescript
+import { NextRequest, NextResponse } from "next/server"
+
+const PROTECTED_ROUTES = ["/dashboard"]
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
+
+  if (isProtectedRoute) {
+    try {
+      const sessionResponse = await fetch(
+        new URL("/api/auth/get-session", request.url),
+        { headers: { cookie: request.headers.get("cookie") || "" } }
+      )
+      
+      if (!sessionResponse.ok) {
+        return NextResponse.redirect(new URL("/login", request.url))
+      }
+      
+      const session = await sessionResponse.json()
+      if (!session?.user) {
+        return NextResponse.redirect(new URL("/login", request.url))
+      }
+    } catch (error) {
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
+  }
+  
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"]
+}
+```
+
+#### **5. AuthGuard Component (optionnel) :**
+```typescript
+"use client"
+import { useEffect } from "react"
+import { useRouter, usePathname } from "next/navigation"
+import { useAuth } from "../lib/auth-client"
+
+export function AuthGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (isLoading) return
+    if (!isAuthenticated && pathname !== "/login") {
+      router.push("/login")
+    }
+    if (isAuthenticated && pathname === "/login") {
+      router.push("/dashboard")
+    }
+  }, [isAuthenticated, isLoading, pathname, router])
+
+  if (isLoading || (!isAuthenticated && pathname !== "/login")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  return <>{children}</>
+}
+```
+
+---
+
+### **🚀 Configuration Avancée Better Auth**
+
+#### **Multi-Providers OAuth :**
+```typescript
+// Dans auth.ts - Support Google, GitHub, Discord
+socialProviders: {
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    scope: ["openid", "email", "profile"],
+    mapProfileToUser: (profile) => ({
+      id: profile.sub,
+      email: profile.email,
+      name: profile.name,
+      image: profile.picture,
+      emailVerified: profile.email_verified,
+    })
+  },
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID!,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+  },
+  discord: {
+    clientId: process.env.DISCORD_CLIENT_ID!,
+    clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+  },
+}
+```
+
+#### **Sécurité & Rate Limiting :**
+```typescript
+// Protection contre les attaques
+rateLimit: {
+  window: 60, // fenêtre de 60 secondes  
+  max: 100,   // max 100 requêtes par minute
+  customRules: {
+    "/sign-in/*": { window: 60, max: 5 },    // 5 tentatives login/min
+    "/sign-up/*": { window: 300, max: 3 },   // 3 inscriptions/5min
+    "/forgot-password/*": { window: 900, max: 2 }, // 2 reset/15min
+  },
+},
+advanced: {
+  useSecureCookies: process.env.NODE_ENV === "production",
+  sameSitePolicy: "lax", // ou "strict" pour plus de sécurité
+}
+```
+
+#### **Commandes essentielles :**
+```bash
+# Installation Better Auth
+npm install better-auth @auth/prisma-adapter
+
+# Générer secret 64 caractères
+npx @better-auth/cli secret
+
+# Setup Prisma pour Better Auth
+npx prisma generate
+npx prisma db push
+
+# Démarrage développement
+npm run dev
+
+# Test production build
+npm run build
+```
 
 ---
 
