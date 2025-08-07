@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import Image from "next/image"
 
 interface Avatar {
   id: string
@@ -9,7 +10,7 @@ interface Avatar {
   description: string
   tags: string[]
   imageUrl: string
-  type: "video" | "product"
+  type: "image"
   gender?: "male" | "female"
 }
 
@@ -20,7 +21,7 @@ const sampleTags = ["Professional", "Creative", "Business", "Modern", "Friendly"
 const sampleCategories = ["Business", "Tech", "Creative", "Healthcare", "Education", "Social", "Marketing", "Finance"];
 
 export function AvatarSlider() {
-  // Générer un échantillon d'avatars pour l'affichage
+  // Générer un échantillon d'avatars pour l'affichage avec des images libres de droit
   const displayedAvatars: Avatar[] = [
     // 10 avatars masculins
     ...sampleMaleNames.map((name, index) => ({
@@ -32,8 +33,8 @@ export function AvatarSlider() {
         sampleTags[index % sampleTags.length],
         sampleTags[(index + 1) % sampleTags.length]
       ],
-      imageUrl: `/ai-avatars/males/${name}.mp4`,
-      type: "video" as const,
+      imageUrl: `https://picsum.photos/400/600?random=${400 + index}`,
+      type: "image" as const,
       gender: "male" as const
     })),
     // 10 avatars féminins
@@ -46,8 +47,8 @@ export function AvatarSlider() {
         sampleTags[index % sampleTags.length],
         sampleTags[(index + 1) % sampleTags.length]
       ],
-      imageUrl: `/ai-avatars/females/${name}.mp4`,
-      type: "video" as const,
+      imageUrl: `https://picsum.photos/400/600?random=${500 + index}`,
+      type: "image" as const,
       gender: "female" as const
     }))
   ]
@@ -64,35 +65,12 @@ export function AvatarSlider() {
               flexShrink: 0
             }}
           >
-            <div 
-              className="relative h-72 overflow-hidden"
-              onMouseEnter={(e) => {
-                const video = e.currentTarget.querySelector('video');
-                if (video) {
-                  video.play().catch(() => {
-                    // Ignore play errors (autoplay policy)
-                  });
-                }
-              }}
-              onMouseLeave={(e) => {
-                const video = e.currentTarget.querySelector('video');
-                if (video) {
-                  video.pause();
-                  video.currentTime = 0;
-                }
-              }}
-            >
-              <video 
+            <div className="relative h-72 overflow-hidden">
+              <Image 
                 src={avatar.imageUrl}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                onLoadedData={(e) => {
-                  // Aller à la 2ème frame pour éviter les frames noires
-                  e.currentTarget.currentTime = 0.2;
-                }}
+                alt={avatar.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
               

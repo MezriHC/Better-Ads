@@ -11,7 +11,7 @@ interface Avatar {
   description: string
   tags: string[]
   imageUrl: string
-  type: "video" | "product"
+  type: "image"
   gender?: "male" | "female"
   age?: "young" | "adult"
   theme?: string
@@ -58,7 +58,7 @@ const allTags = ["Professional", "Creative", "Business", "Modern", "Friendly", "
 const allCategories = ["Business", "Tech", "Creative", "Healthcare", "Education", "Social", "Marketing", "Finance"];
 const allThemes = ["business", "tech", "creative", "healthcare", "education", "social", "marketing", "finance"];
 
-// Générer les avatars dynamiquement à partir des vraies vidéos
+// Générer les avatars dynamiquement avec des images libres de droit
 const enrichedAvatars: Avatar[] = [
   // Avatars masculins
   ...maleNames.map((name, index) => ({
@@ -70,8 +70,8 @@ const enrichedAvatars: Avatar[] = [
       allTags[index % allTags.length],
       allTags[(index + 1) % allTags.length]
     ],
-    imageUrl: `/ai-avatars/males/${name}.mp4`,
-    type: "video" as const,
+    imageUrl: `https://picsum.photos/400/600?random=${200 + index}`,
+    type: "image" as const,
     gender: "male" as const,
     age: index % 3 === 0 ? "young" as const : "adult" as const,
     theme: allThemes[index % allThemes.length]
@@ -86,8 +86,8 @@ const enrichedAvatars: Avatar[] = [
       allTags[index % allTags.length],
       allTags[(index + 1) % allTags.length]
     ],
-    imageUrl: `/ai-avatars/females/${name}.mp4`,
-    type: "video" as const,
+    imageUrl: `https://picsum.photos/400/600?random=${300 + index}`,
+    type: "image" as const,
     gender: "female" as const,
     age: index % 3 === 0 ? "young" as const : "adult" as const,
     theme: allThemes[index % allThemes.length]
@@ -297,25 +297,6 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
             <div
               key={avatar.id}
               onClick={() => onSelectAvatar(avatar)}
-              onMouseEnter={(e) => {
-                if (avatar.type === "video") {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    video.play().catch(() => {
-                      // Ignore play errors (autoplay policy)
-                    });
-                  }
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (avatar.type === "video") {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }
-              }}
               className={`
                 bg-card rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300
                 ${isSelected 
@@ -325,27 +306,12 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
               `}
             >
               <div className="relative h-72 overflow-hidden">
-                {avatar.type === "video" ? (
-                  <video 
-                    src={avatar.imageUrl}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    onLoadedData={(e) => {
-                      // Aller à la 2ème frame pour éviter les frames noires
-                      e.currentTarget.currentTime = 0.2;
-                    }}
-                  />
-                ) : (
-                  <Image 
-                    src={avatar.imageUrl}
-                    alt={avatar.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                )}
+                <Image 
+                  src={avatar.imageUrl}
+                  alt={avatar.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 
 

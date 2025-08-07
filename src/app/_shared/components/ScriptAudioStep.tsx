@@ -11,7 +11,7 @@ interface Avatar {
   description: string
   tags: string[]
   imageUrl: string
-  type: "video" | "product"
+  type: "image"
   gender?: "male" | "female"
   age?: "young" | "adult"
   theme?: string
