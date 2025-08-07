@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Better Auth Schema - Compatible avec Better Auth
 model user {
   id            String    @id @default(cuid())
   name          String?

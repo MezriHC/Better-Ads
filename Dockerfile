@@ -42,9 +42,7 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Copy startup script
-COPY --from=builder /app/start.sh ./start.sh
-RUN chmod +x ./start.sh
+# No startup script needed
 
 COPY --from=builder /app/public ./public
 
@@ -67,4 +65,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["./start.sh"]
+CMD ["node", "server.js"]
