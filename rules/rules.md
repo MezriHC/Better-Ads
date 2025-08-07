@@ -435,6 +435,12 @@ npm run db:studio         # Interface graphique Prisma Studio
 - **Exception** : Lancer `npm run dev` UNIQUEMENT si c'est explicitement nécessaire pour tester une fonctionnalité critique
 - **Bonne pratique** : Indiquer simplement que les modifications ont été apportées et sont prêtes à être testées
 
+### **Éviter npm run build automatique :**
+- **RÈGLE IMPÉRATIVE** : Ne PAS exécuter `npm run build` automatiquement après chaque modification
+- **Contexte** : Les builds sont coûteux en temps et l'utilisateur préfère les contrôler manuellement
+- **Exception** : Exécuter `npm run build` UNIQUEMENT si explicitement demandé par l'utilisateur ou si critique pour valider des changements majeurs
+- **Bonne pratique** : Faire confiance aux linters et à TypeScript pour détecter les erreurs sans build complet
+
 ### **Éviter la création de documentation automatique :**
 - **RÈGLE IMPÉRATIVE** : Ne JAMAIS créer de fichiers de documentation (.md, README, etc.) à moins que l'utilisateur le demande explicitement
 - **Contexte** : L'utilisateur gère sa propre documentation et n'a pas besoin de fichiers supplémentaires non sollicités

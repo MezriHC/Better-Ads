@@ -9,7 +9,7 @@ import {
   IconBox,
   IconArchive,
   IconCirclePlusFilled,
-  IconInnerShadowTop,
+  IconBolt,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand
 } from "@tabler/icons-react"
@@ -31,19 +31,29 @@ export function Sidebar() {
       {/* Header */}
       <div className="h-16 border-b border-sidebar-border flex items-center px-4 shrink-0">
         <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : ''}`}>
-          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
-            <IconInnerShadowTop className="w-4 h-4 text-sidebar-primary-foreground" />
+          <div className="relative w-8 h-8 shrink-0 group cursor-pointer">
+            <div className="w-full h-full rounded-lg bg-sidebar-primary border border-sidebar-border shadow-sm group-hover:shadow-md transition-all duration-200 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/5 rounded-lg"></div>
+              <div className="relative w-full h-full flex items-center justify-center">
+                <IconBolt className="w-4 h-4 text-sidebar-primary-foreground group-hover:scale-105 transition-transform duration-200" />
+              </div>
+            </div>
           </div>
           {!isCollapsed && (
-            <span className="text-lg font-semibold text-sidebar-foreground truncate">
-              Better Ads
-            </span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-sidebar-foreground tracking-tight">
+                Better Ads
+              </span>
+              <span className="text-xs text-muted-foreground font-medium">
+                AI Video Creation
+              </span>
+            </div>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <div className="flex-grow p-4 space-y-4">
+      <div className="flex-grow p-4 flex flex-col gap-4">
         
         {/* Bouton Create Video */}
         <div className="w-full cursor-pointer">
@@ -62,7 +72,7 @@ export function Sidebar() {
         </div>
 
         {/* Menu Items */}
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           {menuItems.map((item) => {
             const isActive = pathname === item.href
             return (
