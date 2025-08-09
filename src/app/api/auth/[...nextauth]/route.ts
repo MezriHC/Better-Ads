@@ -2,13 +2,14 @@ import NextAuth from "next-auth/next"
 import GoogleProvider from "next-auth/providers/google"
 import type { JWT } from "next-auth/jwt"
 import type { User } from "next-auth"
-import { supabaseAdmin } from "@/lib/supabase"
+import { getSupabaseAdmin } from "@/lib/supabase"
 
 async function ensureUserInSupabase(params: { email?: string | null; name?: string | null; image?: string | null }) {
   const email = params.email?.toLowerCase() || null
   if (!email) return null
 
-  const { data, error } = await supabaseAdmin
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase
     .from('users')
     .upsert(
       { email, name: params.name || null, image: params.image || null },
