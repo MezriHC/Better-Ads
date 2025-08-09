@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { AuthGuard } from "./_shared/components/AuthGuard";
+import { SessionProvider } from "./_shared/components/SessionProvider";
 
 
 
@@ -21,16 +22,18 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-          <AuthGuard>
-            {children}
-          </AuthGuard>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem={false}
+              disableTransitionOnChange
+            >
+            <AuthGuard>
+              {children}
+            </AuthGuard>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

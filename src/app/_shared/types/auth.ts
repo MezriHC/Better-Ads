@@ -1,7 +1,4 @@
-// Types Supabase Auth - Template réutilisable pour projets
-
-// Re-export des types Supabase Auth
-export type { Session, User } from "../lib/auth"
+// Types NextAuth.js - Template réutilisable pour projets
 
 // Types pour les providers OAuth supportés
 export type OAuthProvider = "google" | "github" | "discord" | "facebook" | "twitter"
