@@ -17,14 +17,14 @@ function GoogleLogo({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
-  const { signInWithGoogle, error } = useAuth()
+  const { signInWithGoogle } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const handleGoogleSignIn = useCallback(async () => {
     try {
       await signInWithGoogle()
-    } catch (error) {
+    } catch {
       // Gestion silencieuse des erreurs
     }
   }, [signInWithGoogle])

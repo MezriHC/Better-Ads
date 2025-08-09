@@ -39,8 +39,6 @@ export function Header({ pageTitle }: { pageTitle: string }) {
     try {
       await signOut()
       window.location.href = "/login"
-    } catch (error) {
-      
     } finally {
       setIsLoggingOut(false)
     }
