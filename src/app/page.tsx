@@ -20,8 +20,8 @@ export default function Home() {
   // Affichage pendant le chargement
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+      <div className="text-center flex flex-col gap-4 items-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p className="text-muted-foreground">Chargement...</p>
       </div>
     </div>

@@ -140,7 +140,7 @@ function VoiceSelectionModal({
       <div className="bg-card rounded-2xl border border-border w-full max-w-4xl max-h-[80vh] overflow-hidden">
         
         {/* Header */}
-        <div className="p-6 border-b border-border flex flex-col gap-4">
+        <div className="p-6 border-b border-border">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground">Choose an AI Voice</h2>
             <button 
@@ -183,7 +183,7 @@ function VoiceSelectionModal({
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-1">
+                  <div>
                     <h3 className="font-semibold text-foreground">{voice.name}</h3>
                     <p className="text-sm text-muted-foreground">
                       {voice.gender === "female" ? "Female" : "Male"} • {voice.age === "young" ? "Young" : "Adult"}
@@ -435,16 +435,14 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
                     className="sr-only"
                   />
                   <div className="w-full p-4 border-2 border-dashed border-border rounded-lg hover:border-primary/50 hover:bg-accent/50 transition-all cursor-pointer text-center group">
-                    <div className="flex flex-col gap-2 items-center">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 flex items-center justify-center transition-all">
-                        <IconFileMusic className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="text-center flex flex-col gap-1">
-                        <p className="font-medium text-foreground">Upload audio file</p>
-                        <p className="text-sm text-muted-foreground">
-                          MP3, WAV, M4A • Max 10MB
-                        </p>
-                      </div>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 flex items-center justify-center mx-auto transition-all">
+                      <IconFileMusic className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <p className="font-medium text-foreground">Upload audio file</p>
+                      <p className="text-sm text-muted-foreground">
+                        MP3, WAV, M4A • Max 10MB
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -452,39 +450,35 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
             </div>
           )}
 
+          {/* Custom Motion Section (Optional) */}
+          <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-foreground">Custom Motion</h3>
+              <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">Optional</span>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Describe specific gestures and facial expressions for your avatar
+            </p>
             
-            {/* Custom Motion Section (Optional) */}
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-foreground">Custom Motion</h3>
-                <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">Optional</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Describe specific gestures and facial expressions for your avatar
-              </p>
-              
-              <div className="flex flex-col gap-2">
-                <textarea
-                  value={customMotion}
-                  onChange={(e) => setCustomMotion(e.target.value)}
-                  placeholder="e.g., 'Avatar speaks with hands up in the air, smiling, pointing to the product...'"
-                  className="w-full h-20 p-3 bg-muted border border-border rounded-lg text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                />
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    {customMotion.length}/500 characters
-                  </p>
-                  {customMotion.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm text-accent-foreground">
-                      <div className="w-2 h-2 rounded-full bg-accent-foreground"></div>
-                      Motion added
-                    </div>
-                  )}
-                </div>
+            <div>
+              <textarea
+                value={customMotion}
+                onChange={(e) => setCustomMotion(e.target.value)}
+                placeholder="e.g., 'Avatar speaks with hands up in the air, smiling, pointing to the product...'"
+                className="w-full h-20 p-3 bg-muted border border-border rounded-lg text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {customMotion.length}/500 characters
+                </p>
+                {customMotion.length > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-accent-foreground">
+                    <div className="w-2 h-2 rounded-full bg-accent-foreground"></div>
+                    Motion added
+                  </div>
+                )}
               </div>
             </div>
-            
           </div>
           
           {/* Right Column - Avatar Preview (1/4 width on large screens) */}
@@ -517,6 +511,7 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
             )}
           </div>
           
+        </div>
         </div>
       </div>
 

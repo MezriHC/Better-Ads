@@ -11,10 +11,10 @@ interface FeatureCardProps {
 export function FeatureCard({ title, description, href, imageUrl }: FeatureCardProps) {
   return (
     <div className="bg-card border border-border rounded-2xl flex flex-col md:flex-row overflow-hidden relative">
-      <div className="p-8 flex flex-col justify-between flex-1 z-10">
-        <div>
-          <h3 className="text-2xl font-bold text-card-foreground mb-2">{title}</h3>
-          <p className="text-muted-foreground mb-6">{description}</p>
+      <div className="p-8 flex flex-col flex-1 z-10 gap-6">
+        <div className="flex flex-col gap-2">
+          <h3 className="text-2xl font-bold text-card-foreground">{title}</h3>
+          <p className="text-muted-foreground">{description}</p>
         </div>
         <Link href={href} className="self-start cursor-pointer">
           <div

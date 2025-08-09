@@ -40,18 +40,22 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md flex flex-col gap-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-sidebar-primary rounded-xl flex items-center justify-center mx-auto mb-4">
-            <IconLock className="w-6 h-6 text-sidebar-primary-foreground" />
+        <div className="text-center flex flex-col gap-8">
+          <div className="flex flex-col gap-4 items-center">
+            <div className="w-12 h-12 bg-sidebar-primary rounded-xl flex items-center justify-center">
+              <IconLock className="w-6 h-6 text-sidebar-primary-foreground" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl font-bold text-foreground">
+                Welcome to Better Ads
+              </h1>
+              <p className="text-muted-foreground">
+                Sign in to create your AI-powered advertisements
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Welcome to Better Ads
-          </h1>
-          <p className="text-muted-foreground">
-            Sign in to create your AI-powered advertisements
-          </p>
         </div>
 
         {/* Login Card */}
@@ -116,7 +120,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6 text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground">
           <p>
             By signing in, you agree to our{" "}
             <a href="#" className="text-foreground hover:underline">

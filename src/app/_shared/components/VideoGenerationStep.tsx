@@ -81,10 +81,10 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
 
       {/* Generation Status */}
       {status === "generating" && (
-        <div className="bg-card border border-border rounded-2xl p-6">
+        <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-6">
           
           {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
             </div>
@@ -99,8 +99,8 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
           </div>
 
           {/* Progress Section - Main Focus */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-foreground">Progress</span>
               <span className="text-sm font-bold text-primary">{Math.round(progress)}%</span>
             </div>
@@ -110,11 +110,11 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Usually takes 2-3 minutes</p>
+            <p className="text-xs text-muted-foreground">Usually takes 2-3 minutes</p>
           </div>
 
           {/* Simple Info */}
-          <div className="bg-accent/20 rounded-lg p-3 mb-4">
+          <div className="bg-accent/20 rounded-lg p-3">
             <p className="text-sm text-foreground">
               {type === "video" 
                 ? "Your video is being generated. You can wait here or browse your library."
@@ -138,10 +138,10 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
 
       {/* Completed Status */}
       {status === "completed" && (
-        <div className="bg-card border border-border rounded-2xl p-6">
+        <div className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-6">
           
           {/* Simple Success Message */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center">
               <IconCheck className="w-5 h-5 text-background" />
             </div>
@@ -177,10 +177,12 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
               
               {/* Video Info */}
               <div className="bg-muted rounded-lg p-4">
-                <h4 className="font-semibold text-foreground mb-2">
-                  {type === "video" ? "Video Ready" : "Product Ad Ready"}
-                </h4>
-                <div className="text-sm text-muted-foreground space-y-1">
+                <div className="flex flex-col gap-2">
+                  <h4 className="font-semibold text-foreground">
+                    {type === "video" ? "Video Ready" : "Product Ad Ready"}
+                  </h4>
+                </div>
+                <div className="text-sm text-muted-foreground flex flex-col gap-1">
                   <p>• Duration: ~30 seconds</p>
                   <p>• Format: Vertical (9:16)</p>
                   <p>• Quality: HD 1080p</p>
@@ -207,9 +209,9 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
               </div>
 
               {/* Additional Info */}
-              <div className="bg-accent/20 rounded-lg p-3">
-                <p className="text-sm text-foreground font-medium mb-1">What&apos;s next?</p>
-                <p className="text-xs text-muted-foreground mb-3">
+              <div className="bg-accent/20 rounded-lg p-3 flex flex-col gap-1">
+                <p className="text-sm text-foreground font-medium">What&apos;s next?</p>
+                <p className="text-xs text-muted-foreground">
                   Your video has been automatically saved to your library. Share it on social media or create more videos with different avatars.
                 </p>
                 <div className="flex gap-2">
@@ -236,15 +238,17 @@ export function GenerationStep({ onBack, type }: GenerationStepProps) {
 
       {/* Error Status */}
       {status === "error" && (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
+        <div className="bg-card border border-border rounded-2xl p-8 text-center flex flex-col gap-4">
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
             <IconClock className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
           
-          <h3 className="text-xl font-semibold text-foreground mb-2">Generation Failed</h3>
-          <p className="text-muted-foreground mb-6">
-            Something went wrong while generating your video. Please try again.
-          </p>
+          <div className="flex flex-col gap-2">
+            <h3 className="text-xl font-semibold text-foreground">Generation Failed</h3>
+            <p className="text-muted-foreground">
+              Something went wrong while generating your video. Please try again.
+            </p>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button

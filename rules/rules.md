@@ -427,7 +427,58 @@ npm run db:studio         # Interface graphique Prisma Studio
 
 ---
 
-## 5. Règles de Développement
+## 5. Troubleshooting Base de Données
+
+### **🚨 PROBLÈME COURANT - Conflit Port PostgreSQL :**
+
+**SYMPTÔME :** Erreur Prisma `P1010: User was denied access on the database (not available)` alors que Docker PostgreSQL semble démarrer correctement.
+
+**CAUSE :** Conflit de port entre PostgreSQL local (Homebrew) et Docker PostgreSQL - les deux tentent d'utiliser le port 5432.
+
+**DIAGNOSTIC :**
+```bash
+# Vérifier si PostgreSQL local tourne
+brew services list | grep postgres
+
+# Vérifier qui utilise le port 5432
+lsof -i :5432
+```
+
+**SOLUTION :**
+```bash
+# Arrêter PostgreSQL local
+brew services stop postgresql@15
+
+# Nettoyer et redémarrer Docker
+npm run db:clean
+npm run db:start
+
+# Tester Prisma
+npx prisma db push
+```
+
+**PREVENTION :** Toujours arrêter PostgreSQL local avant de développer avec Docker.
+
+### **🚫 INTERDICTION ABSOLUE - SQLite :**
+
+**RÈGLE IMPÉRATIVE :** Ne JAMAIS suggérer ou utiliser SQLite comme solution de contournement.
+
+**CONTEXTE :** Quand l'IA galère avec PostgreSQL, elle propose souvent SQLite comme "solution rapide".
+
+**POURQUOI C'EST INTERDIT :**
+- Le projet est conçu pour PostgreSQL en production
+- Better Auth nécessite PostgreSQL pour certaines fonctionnalités
+- SQLite cache les vrais problèmes de configuration
+- Migration SQLite → PostgreSQL = galère assurée
+
+**EN CAS DE PROBLÈME DB :** 
+1. Diagnostiquer le problème réel (conflit port, Docker, etc.)
+2. Résoudre la cause racine
+3. JAMAIS de solution SQLite temporaire
+
+---
+
+## 6. Règles de Développement
 
 ### **Éviter npm run dev automatique :**
 - **RÈGLE IMPÉRATIVE** : Ne PAS exécuter `npm run dev` après chaque modification

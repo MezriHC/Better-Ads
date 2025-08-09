@@ -194,16 +194,18 @@ export default function LibraryPage() {
 
       {/* Videos Grid */}
       {filteredVideos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+        <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
             <IconPlayerPlay className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No videos found</h3>
-          <p className="text-muted-foreground max-w-md">
-            {searchQuery || typeFilter !== "all" || dateFilter !== "all" || statusFilter !== "all"
-              ? "Try adjusting your filters or search query."
-              : "Start creating your first video with Video Avatar or Product Avatar."}
-          </p>
+          <div className="flex flex-col gap-2">
+            <h3 className="text-lg font-semibold text-foreground">No videos found</h3>
+            <p className="text-muted-foreground max-w-md">
+              {searchQuery || typeFilter !== "all" || dateFilter !== "all" || statusFilter !== "all"
+                ? "Try adjusting your filters or search query."
+                : "Start creating your first video with Video Avatar or Product Avatar."}
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, calc((100% - 4rem) / 5)), 1fr))' }}>
@@ -228,8 +230,8 @@ export default function LibraryPage() {
                 {/* Status overlay */}
                 {video.status === "processing" && (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                    <div className="text-center text-white flex flex-col gap-2 items-center">
+                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <p className="text-xs font-medium">Processing...</p>
                     </div>
                   </div>

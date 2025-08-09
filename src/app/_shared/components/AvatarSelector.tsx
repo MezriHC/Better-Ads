@@ -121,7 +121,7 @@ function FilterSelect({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-20 overflow-hidden max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 w-full bg-card border border-border rounded-lg shadow-lg z-20 overflow-hidden max-h-60 overflow-y-auto" style={{marginTop: '4px'}}>
             {options.map((option) => (
               <button
                 key={option.value}
@@ -268,14 +268,16 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
           <div
             className="bg-card rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 border border-dashed border-border hover:border-primary/50 hover:bg-accent/20"
           >
-            <div className="relative h-72 flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+            <div className="relative h-72 flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 gap-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <IconPlus className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="font-bold text-foreground text-lg mb-2">Create Avatar</h3>
-              <p className="text-sm text-muted-foreground text-center px-4">
-                Upload your photo to create a personalized AI avatar
-              </p>
+              <div className="flex flex-col gap-2 items-center">
+                <h3 className="font-bold text-foreground text-lg">Create Avatar</h3>
+                <p className="text-sm text-muted-foreground text-center px-4">
+                  Upload your photo to create a personalized AI avatar
+                </p>
+              </div>
             </div>
             
             {/* Tags en bas */}

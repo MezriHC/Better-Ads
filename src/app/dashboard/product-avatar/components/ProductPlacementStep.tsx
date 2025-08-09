@@ -164,13 +164,13 @@ export function ProductPlacementStep({ selectedAvatar, onBack, onNext }: Product
       <div className="grid grid-cols-2 gap-6">
         
         {/* Left Column - Your Product */}
-        <div className="bg-card border border-border rounded-xl p-4 flex flex-col">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-foreground mb-1">Your Product</h3>
+        <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-lg font-semibold text-foreground">Your Product</h3>
             <p className="text-sm text-muted-foreground">Upload a photo of your product to start AI generation</p>
           </div>
           
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {/* Product Image Area */}
             <div className="relative w-full h-64 rounded-lg overflow-hidden bg-muted">
               {!productImageUrl ? (
@@ -202,8 +202,8 @@ export function ProductPlacementStep({ selectedAvatar, onBack, onNext }: Product
                         isDragOver ? 'text-primary' : 'text-primary'
                       }`} />
                     </div>
-                    <div className="text-center">
-                      <p className={`font-medium mb-1 transition-colors ${
+                    <div className="text-center flex flex-col gap-1">
+                      <p className={`font-medium transition-colors ${
                         isDragOver ? 'text-primary' : 'text-foreground'
                       }`}>
                         {isDragOver ? 'Drop your product photo here' : 'Upload your product photo'}
@@ -211,7 +211,7 @@ export function ProductPlacementStep({ selectedAvatar, onBack, onNext }: Product
                       <p className="text-sm text-muted-foreground">
                         {isDragOver ? 'Release to upload' : 'Drag & drop photo here or click to browse'}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground">
                         Supports JPG, PNG, WEBP formats
                       </p>
                     </div>
@@ -236,7 +236,7 @@ export function ProductPlacementStep({ selectedAvatar, onBack, onNext }: Product
             </div>
             
             {/* Product Status */}
-            <div className="bg-accent/20 rounded-lg p-3 space-y-2">
+            <div className="bg-accent/20 rounded-lg p-3 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${productImageUrl ? 'bg-green-500' : 'bg-muted-foreground'}`}></div>
                 <p className="text-sm font-medium text-foreground">
@@ -308,9 +308,9 @@ export function ProductPlacementStep({ selectedAvatar, onBack, onNext }: Product
         </div>
 
         {/* Right Column - AI Generated Previews */}
-        <div className="bg-card border border-border rounded-xl p-4">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-foreground mb-1">AI Generated Photos</h3>
+        <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-lg font-semibold text-foreground">AI Generated Photos</h3>
             <p className="text-sm text-muted-foreground">Here&apos;s where the 4 photos of your product generated with the avatar will appear</p>
           </div>
 
@@ -318,12 +318,12 @@ export function ProductPlacementStep({ selectedAvatar, onBack, onNext }: Product
             <div className="grid grid-cols-4 gap-2">
               {[...Array(4)].map((_, index) => (
                 <div key={index} className="relative aspect-[9/16] rounded-lg overflow-hidden border-2 border-dashed border-border bg-muted">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-2 gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                       <IconSparkles className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs font-medium text-foreground mb-1">Photo {index + 1}</p>
+                    <div className="text-center flex flex-col gap-1">
+                      <p className="text-xs font-medium text-foreground">Photo {index + 1}</p>
                       <p className="text-xs text-muted-foreground">Coming soon</p>
                     </div>
                   </div>
