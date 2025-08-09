@@ -11,8 +11,8 @@ export function useAuth() {
     signIn("google", { callbackUrl: "/dashboard" })
   }
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/login" })
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/login" })
   }
 
   return {
