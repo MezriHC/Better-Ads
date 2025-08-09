@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useAuth } from "../_shared/lib/auth-client"
+import { useAuth } from "../_shared/hooks/useAuth"
 import { IconMail, IconLock } from "@tabler/icons-react"
 
 // Official Google Logo Component

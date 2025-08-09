@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useAuth } from "../lib/auth-client"
+import { useAuth } from "../hooks/useAuth"
 
 export function Header({ pageTitle }: { pageTitle: string }) {
   const { theme, setTheme } = useTheme()
@@ -72,15 +72,15 @@ export function Header({ pageTitle }: { pageTitle: string }) {
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className="w-10 h-10 rounded-full bg-muted/50 hover:bg-accent hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out cursor-pointer flex items-center justify-center shadow-sm hover:shadow-md ring-2 ring-transparent hover:ring-accent/20"
           >
-            {user?.image ? (
+            {user?.user_metadata?.avatar_url ? (
               <img 
-                src={user.image} 
-                alt={user.name || "User"} 
+                src={user.user_metadata.avatar_url} 
+                alt={user.user_metadata?.full_name || "User"} 
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-background transition-all duration-200"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold text-foreground transition-all duration-200">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : "U"}
               </div>
             )}
             <span className="sr-only">Open user menu</span>
@@ -92,20 +92,20 @@ export function Header({ pageTitle }: { pageTitle: string }) {
               
               <div className="p-3 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  {user?.image ? (
+                  {user?.user_metadata?.avatar_url ? (
                     <img 
-                      src={user.image} 
-                      alt={user.name || "User"} 
+                      src={user.user_metadata.avatar_url} 
+                      alt={user.user_metadata?.full_name || "User"} 
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-background/50"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                      {user?.user_metadata?.full_name ? user.user_metadata.full_name.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-popover-foreground">
-                      {user?.name || "Utilisateur"}
+                      {user?.user_metadata?.full_name || "Utilisateur"}
                     </span>
                     <span className="text-xs text-muted-foreground truncate max-w-[140px]">
                       {user?.email}
