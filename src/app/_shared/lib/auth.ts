@@ -1,14 +1,9 @@
 import { betterAuth } from "better-auth"
-import { prismaAdapter } from "better-auth/adapters/prisma"
-import { PrismaClient } from "@prisma/client"
-
-// Create Prisma client instance
-const prisma = new PrismaClient()
+import { supabaseAdapter } from "better-auth/adapters/supabase"
+import { supabaseAdmin } from "./supabase"
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: "postgresql",
-  }),
+  database: supabaseAdapter(supabaseAdmin),
   
   // Base URL configuration
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
