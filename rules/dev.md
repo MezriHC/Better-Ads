@@ -13,32 +13,29 @@
 
 ## 2. Gestion des environnements
 - **Environnement de développement (Coolify)**  
-  - Base de données **Supabase - dev** (PostgreSQL + stockage S3).
-  - Frontend déployé automatiquement depuis la branche `dev`.
-  - Test de toutes les migrations et features.
+  - Frontend Next.js déployé automatiquement depuis la branche `dev`.
+  - Test de toutes les features et authentification.
   
 - **Environnement de production (Coolify)**  
-  - Base de données **Supabase - prod** totalement séparée.
-  - Frontend déployé automatiquement depuis la branche `main`.
-  - Accès restreint à la base prod (limité aux leads/ops).
+  - Frontend Next.js déployé automatiquement depuis la branche `main`.
+  - Configuration production optimisée.
 
 ---
 
-## 3. Gestion de la base de données avec Prisma
-- Les changements de schéma se font via **Prisma Migrate**.
-- **Processus strict :**
-  1. Écrire la migration (`prisma migrate dev`).
-  2. Tester sur la base **dev**.
-  3. Valider via code review.
-  4. Appliquer en production lors du merge dans `main` (`prisma migrate deploy`).
+## 3. Gestion des données
+- Configuration future à définir selon besoins.
+- **Processus à établir :**
+  1. Choisir solution de stockage.
+  2. Configurer environnements dev/prod.
+  3. Mettre en place workflow de déploiement.
 
 ---
 
 ## 4. Bonnes pratiques & sécurité
-- Variables d’environnement (`.env`) distinctes pour `dev` et `prod`.
-- Jamais d’accès direct à la base de prod hors process validé.
+- Variables d'environnement (`.env`) distinctes pour `dev` et `prod`.
+- Authentification Google OAuth sécurisée.
 - Documentation claire du workflow pour éviter les erreurs.
-- Sauvegardes régulières de la base prod.
+- Configuration production optimisée.
 
 ---
 
@@ -46,4 +43,4 @@
 - Cohérence entre environnements.
 - Processus clair pour limiter les erreurs en prod.
 - Déploiement automatisé et contrôlé.
-- Historique et traçabilité des changements de BDD.
+- Frontend performant et sécurisé.

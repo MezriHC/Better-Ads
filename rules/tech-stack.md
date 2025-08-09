@@ -24,27 +24,16 @@ Stack technique utilisée dans ce projet.
 
 ## 🗄️ **Base de Données**
 
-### **Prisma 6.9.0**
-- ORM TypeScript moderne
-- Client type-safe
-- Migrations automatiques
-
-### **PostgreSQL**
-- Base de données relationnelle
-- Conteneurisée avec Docker
-- Interface pgAdmin
-
-### **Docker**
-- Conteneurisation PostgreSQL
-- Configuration docker-compose
-- Environnement isolé
+### **À définir**
+- Solution de stockage à choisir
+- Configuration future selon besoins
+- Intégration à planifier
 
 ## 🔐 **Authentification**
 
-### **NextAuth.js v5 (auth.js)**
+### **NextAuth.js v4**
 - Authentification Google OAuth 2.0
-- Sessions en base de données (stratégie "database")
-- Adapter Prisma intégré
+- Sessions JWT (stratégie "jwt")
 - Middleware pour la protection des routes
 - Pages de connexion personnalisées
 
@@ -73,8 +62,5 @@ Stack technique utilisée dans ce projet.
 ### **Scripts NPM**
 - `npm run dev` - Serveur de développement
 - `npm run build` - Build de production
-- `npm run db:start` - Démarre PostgreSQL (Docker)
-- `npm run db:stop` - Arrête PostgreSQL
-- `npm run db:studio` - Interface Prisma Studio
-- `npm run db:push` - Synchronise schéma DB
-- `npm run db:generate` - Génère client Prisma
+- `npm run start` - Serveur de production
+- `npm run lint` - Vérification ESLint
