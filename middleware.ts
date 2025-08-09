@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server"
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-// Routes protégées par Better Auth
+// Routes protégées par Supabase Auth
 const PROTECTED_ROUTES = ["/dashboard"]
 
 // Routes publiques
@@ -8,67 +9,64 @@ const PUBLIC_ROUTES = ["/", "/login"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
-  // Vérifier si la route est protégée
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
   const isProtectedRoute = PROTECTED_ROUTES.some(route => 
     pathname.startsWith(route)
   )
 
-  // Si c'est une route protégée, vérifier la session Better Auth
-  if (isProtectedRoute) {
-    try {
-      // Utiliser l'endpoint Better Auth pour vérifier la session
-      const sessionResponse = await fetch(
-        new URL("/api/auth/get-session", request.url),
-        {
-          headers: {
-            cookie: request.headers.get("cookie") || "",
+  const createSupabaseMiddlewareClient = () => {
+    return createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
           },
-        }
-      )
-
-      if (!sessionResponse.ok) {
-        return NextResponse.redirect(new URL("/login", request.url))
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+            supabaseResponse = NextResponse.next({
+              request,
+            })
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            )
+          },
+        },
       }
+    )
+  }
 
-      const session = await sessionResponse.json()
-      
-      if (!session?.user) {
-        return NextResponse.redirect(new URL("/login", request.url))
-      }
+  if (isProtectedRoute) {
+    const supabase = createSupabaseMiddlewareClient()
 
-      // Session valide, continuer
-      return NextResponse.next()
-    } catch (error) {
-      // En cas d'erreur, rediriger par sécurité
+    // Vérifier l'authentification Supabase
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (!session) {
       return NextResponse.redirect(new URL("/login", request.url))
     }
   }
 
   // Redirection automatique pour utilisateurs connectés sur /login
   if (pathname === "/login") {
-    try {
-      const sessionResponse = await fetch(
-        new URL("/api/auth/get-session", request.url),
-        {
-          headers: {
-            cookie: request.headers.get("cookie") || "",
-          },
-        }
-      )
+    const supabase = createSupabaseMiddlewareClient()
 
-      if (sessionResponse.ok) {
-        const session = await sessionResponse.json()
-        if (session?.user) {
-          return NextResponse.redirect(new URL("/dashboard", request.url))
-        }
-      }
-    } catch (error) {
-      // Erreur silencieuse, permettre l'accès à /login
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    if (session) {
+      return NextResponse.redirect(new URL("/dashboard", request.url))
     }
   }
 
-  return NextResponse.next()
+  return supabaseResponse
 }
 
 export const config = {

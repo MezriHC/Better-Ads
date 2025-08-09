@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { signIn } from "../_shared/lib/auth-client"
+import { useAuth } from "../_shared/lib/auth-client"
 import { IconMail, IconLock } from "@tabler/icons-react"
 
 // Official Google Logo Component
@@ -17,22 +17,17 @@ function GoogleLogo({ className }: { className?: string }) {
 }
 
 export default function LoginPage() {
-
+  const { signInWithGoogle, error } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const handleGoogleSignIn = useCallback(async () => {
-    // Solution: useCallback pour éviter les re-renders + signIn.social natif
     try {
-      await signIn.social({
-        provider: "google",
-        callbackURL: "/dashboard",
-      })
+      await signInWithGoogle()
     } catch (error) {
       // Gestion silencieuse des erreurs
-      console.error("Erreur de connexion Google:", error)
     }
-  }, [])
+  }, [signInWithGoogle])
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault()

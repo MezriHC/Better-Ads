@@ -1,8 +1,7 @@
-// Types Better Auth - Template réutilisable pour projets
+// Types Supabase Auth - Template réutilisable pour projets
 
-// Re-export des types Better Auth natifs 
+// Re-export des types Supabase Auth
 export type { Session, User } from "../lib/auth"
-export type { Session as ClientSession, User as ClientUser } from "../lib/auth-client"
 
 // Types pour les providers OAuth supportés
 export type OAuthProvider = "google" | "github" | "discord" | "facebook" | "twitter"

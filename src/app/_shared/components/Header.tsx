@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useAuth, signOut } from "../lib/auth-client"
+import { useAuth } from "../lib/auth-client"
 
 export function Header({ pageTitle }: { pageTitle: string }) {
   const { theme, setTheme } = useTheme()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, signOut } = useAuth()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -37,13 +37,8 @@ export function Header({ pageTitle }: { pageTitle: string }) {
     setIsLoggingOut(true)
     setUserMenuOpen(false)
     try {
-      await signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            window.location.href = "/login"
-          }
-        }
-      })
+      await signOut()
+      window.location.href = "/login"
     } catch (error) {
       
     } finally {
