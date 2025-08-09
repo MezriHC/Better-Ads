@@ -1,9 +1,10 @@
 import { betterAuth } from "better-auth"
-import { supabaseAdapter } from "better-auth/adapters/supabase"
-import { supabaseAdmin } from "./supabase"
 
 export const auth = betterAuth({
-  database: supabaseAdapter(supabaseAdmin),
+  database: {
+    provider: "postgres",
+    url: process.env.DATABASE_URL || ""
+  },
   
   // Base URL configuration
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
