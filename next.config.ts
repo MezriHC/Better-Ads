@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Configuration pour éviter le prerendering des pages protégées
+  trailingSlash: false,
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;

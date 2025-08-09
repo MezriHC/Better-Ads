@@ -3,11 +3,11 @@
 import React, { useState, useMemo, useRef, useEffect } from "react"
 import Image from "next/image"
 import { IconPlayerPlay, IconDownload, IconSearch } from "@tabler/icons-react"
+import { FilterSelect } from "./components/FilterSelect"
+import videosData from "./data/videos.json"
 
 // Désactiver le prerendering pour cette page
 export const dynamic = 'force-dynamic'
-import { FilterSelect } from "./components/FilterSelect"
-import videosData from "./data/videos.json"
 
 interface LibraryVideo {
   id: string

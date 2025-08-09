@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { AvatarSelector } from "../../_shared/components/AvatarSelector"
-
-// Désactiver le prerendering pour cette page
-export const dynamic = 'force-dynamic'
 import { ProductPlacementStep } from "./components/ProductPlacementStep"
 import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
 import { ProductGenerationStep } from "../../_shared/components/VideoGenerationStepWrapper"
 import { SectionHeader } from "../components/SectionHeader"
+
+// Désactiver le prerendering pour cette page
+export const dynamic = 'force-dynamic'
 
 interface Avatar {
   id: string

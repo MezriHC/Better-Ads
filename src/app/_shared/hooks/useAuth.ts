@@ -6,9 +6,11 @@ import type { User } from '@supabase/supabase-js'
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
 
   useEffect(() => {
+    // Initialisation lazy du client Supabase (seulement côté client)
+    const supabase = createClient()
+    
     // Récupérer la session initiale
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -27,9 +29,10 @@ export function useAuth() {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [])
 
   const signInWithGoogle = async () => {
+    const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -40,6 +43,7 @@ export function useAuth() {
   }
 
   const signOut = async () => {
+    const supabase = createClient()
     const { error } = await supabase.auth.signOut()
     if (error) console.error('Error:', error)
   }

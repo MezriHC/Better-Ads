@@ -1,27 +1,11 @@
 "use client"
 
-import { useAuth } from "./_shared/hooks/useAuth"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import dynamic from "next/dynamic"
 
-// Désactiver le prerendering pour cette page
-export const dynamic = 'force-dynamic'
-
-export default function Home() {
-  const { isAuthenticated } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    // Redirection automatique
-    if (isAuthenticated) {
-      router.push("/dashboard")
-    } else {
-      router.push("/login")
-    }
-  }, [isAuthenticated, router])
-
-  // Affichage pendant le chargement
-  return (
+// Charger le hook auth seulement côté client
+const AuthRedirect = dynamic(() => import('./_shared/components/AuthRedirect'), {
+  ssr: false,
+  loading: () => (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center flex flex-col gap-4 items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -29,4 +13,8 @@ export default function Home() {
       </div>
     </div>
   )
+})
+
+export default function Home() {
+  return <AuthRedirect />
 }
