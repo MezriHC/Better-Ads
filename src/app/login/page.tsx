@@ -4,6 +4,9 @@ import { useState, useCallback } from "react"
 import { useAuth } from "../_shared/hooks/useAuth"
 import { IconMail, IconLock } from "@tabler/icons-react"
 
+// Désactiver le prerendering pour cette page
+export const dynamic = 'force-dynamic'
+
 // Official Google Logo Component
 function GoogleLogo({ className }: { className?: string }) {
   return (

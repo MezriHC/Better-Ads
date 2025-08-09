@@ -2,6 +2,9 @@
 
 import { useState } from "react"
 import { AvatarSelector } from "../../_shared/components/AvatarSelector"
+
+// Désactiver le prerendering pour cette page
+export const dynamic = 'force-dynamic'
 import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
 import { VideoGenerationStep } from "../../_shared/components/VideoGenerationStepWrapper"
 import { SectionHeader } from "../components/SectionHeader"

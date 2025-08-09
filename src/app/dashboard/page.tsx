@@ -3,6 +3,9 @@ import { AvatarSlider } from "./components/AvatarSlider";
 import { UGCShowcase } from "./components/UGCShowcase";
 import { SectionHeader } from "./components/SectionHeader";
 
+// Désactiver le prerendering pour cette page
+export const dynamic = 'force-dynamic'
+
 export default function Page() {
   return (
     <div className="flex flex-col gap-8">

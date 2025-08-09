@@ -4,6 +4,9 @@ import { useAuth } from "./_shared/hooks/useAuth"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
+// Désactiver le prerendering pour cette page
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   const { isAuthenticated } = useAuth()
   const router = useRouter()
