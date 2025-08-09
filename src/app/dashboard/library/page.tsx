@@ -6,9 +6,6 @@ import { IconPlayerPlay, IconDownload, IconSearch } from "@tabler/icons-react"
 import { FilterSelect } from "./components/FilterSelect"
 import videosData from "./data/videos.json"
 
-// Désactiver le prerendering pour cette page
-export const dynamic = 'force-dynamic'
-
 interface LibraryVideo {
   id: string
   title: string

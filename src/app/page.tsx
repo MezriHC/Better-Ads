@@ -1,11 +1,25 @@
 "use client"
 
-import dynamic from "next/dynamic"
+import { useAuth } from "./_shared/hooks/useAuth"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
-// Charger le hook auth seulement côté client
-const AuthRedirect = dynamic(() => import('./_shared/components/AuthRedirect'), {
-  ssr: false,
-  loading: () => (
+export default function Home() {
+  const { isAuthenticated, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.push("/dashboard")
+      } else {
+        router.push("/login")
+      }
+    }
+  }, [isAuthenticated, isLoading, router])
+
+  // Affichage pendant le chargement
+  return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center flex flex-col gap-4 items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -13,8 +27,4 @@ const AuthRedirect = dynamic(() => import('./_shared/components/AuthRedirect'), 
       </div>
     </div>
   )
-})
-
-export default function Home() {
-  return <AuthRedirect />
 }

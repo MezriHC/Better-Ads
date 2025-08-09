@@ -6,9 +6,6 @@ import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
 import { VideoGenerationStep } from "../../_shared/components/VideoGenerationStepWrapper"
 import { SectionHeader } from "../components/SectionHeader"
 
-// Désactiver le prerendering pour cette page
-export const dynamic = 'force-dynamic'
-
 interface Avatar {
   id: string
   name: string
