@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { IconUpload, IconPlayerPlay, IconX, IconChevronDown, IconFileText, IconMicrophone, IconFileMusic, IconSquare, IconPlayerPause } from "@tabler/icons-react"
+import { IconPlayerPlay, IconX, IconChevronDown, IconFileText, IconMicrophone, IconFileMusic, IconSquare, IconPlayerPause, IconSettings, IconInfoCircle } from "@tabler/icons-react"
 
 interface Avatar {
   id: string
@@ -224,6 +224,156 @@ function AudioRecordingModal({ isOpen, onClose, onSave }: {
   )
 }
 
+// Audio Settings Panel Component
+function AudioSettingsPanel({ isOpen, onClose, settings, onSettingsChange }: {
+  isOpen: boolean
+  onClose: () => void
+  settings: {
+    speed: number
+    stability: number
+    similarity: number
+    styleExaggeration: number
+  }
+  onSettingsChange: (settings: {
+    speed: number
+    stability: number
+    similarity: number
+    styleExaggeration: number
+  }) => void
+}) {
+  if (!isOpen) return null
+
+  const handleSliderChange = (key: string, value: number) => {
+    onSettingsChange({
+      ...settings,
+      [key]: value
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-background border border-border rounded-2xl p-6 w-full max-w-md mx-4">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-foreground">Audio Settings</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <IconX size={20} />
+          </button>
+        </div>
+
+        <div className="space-y-6">
+          {/* Speed */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-foreground">Speed</label>
+              <span className="text-sm text-muted-foreground">{settings.speed.toFixed(2)}X</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="0.25"
+                max="4.00"
+                step="0.05"
+                value={settings.speed}
+                onChange={(e) => handleSliderChange('speed', parseFloat(e.target.value))}
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+              />
+            </div>
+          </div>
+
+          {/* Stability */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-foreground">Stability</label>
+                <IconInfoCircle size={14} className="text-muted-foreground" />
+              </div>
+              <span className="text-sm text-muted-foreground">{settings.stability.toFixed(2)}X</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="0.00"
+                max="1.00"
+                step="0.05"
+                value={settings.stability}
+                onChange={(e) => handleSliderChange('stability', parseFloat(e.target.value))}
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+              />
+            </div>
+          </div>
+
+          {/* Similarity */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-foreground">Similarity</label>
+                <IconInfoCircle size={14} className="text-muted-foreground" />
+              </div>
+              <span className="text-sm text-muted-foreground">{settings.similarity.toFixed(2)}X</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="0.00"
+                max="1.00"
+                step="0.05"
+                value={settings.similarity}
+                onChange={(e) => handleSliderChange('similarity', parseFloat(e.target.value))}
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+              />
+            </div>
+          </div>
+
+          {/* Style Exaggeration */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-foreground">Style exaggeration</label>
+                <IconInfoCircle size={14} className="text-muted-foreground" />
+              </div>
+              <span className="text-sm text-muted-foreground">{settings.styleExaggeration.toFixed(2)}X</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="0.00"
+                max="2.00"
+                step="0.05"
+                value={settings.styleExaggeration}
+                onChange={(e) => handleSliderChange('styleExaggeration', parseFloat(e.target.value))}
+                className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={() => {
+                onSettingsChange({
+                  speed: 1.00,
+                  stability: 0.50,
+                  similarity: 0.75,
+                  styleExaggeration: 0.00
+                })
+              }}
+              className="flex-1 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent transition-colors"
+            >
+              Reset
+            </button>
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Sample voices data
 const voices: Voice[] = [
   { id: "1", name: "Carson", gender: "male", age: "young", language: "English", accent: "American", previewUrl: "#" },
@@ -409,8 +559,17 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null)
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
-  const [contentMethod, setContentMethod] = useState<"script" | "audio">("script") // Choose between script or audio
+  const [speechMode, setSpeechMode] = useState<"text-to-speech" | "speech-to-speech">("text-to-speech")
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false)
+  
+  // Audio settings
+  const [audioSettings, setAudioSettings] = useState({
+    speed: 1.10,
+    stability: 0.50,
+    similarity: 0.75,
+    styleExaggeration: 0.00
+  })
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -439,7 +598,12 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
     setScript("") // Clear script when using recorded audio
   }
 
-  const canContinue = Boolean(selectedVoice && (script.trim() || audioFile))
+  const canContinue = Boolean(
+    selectedVoice && (
+      (speechMode === "text-to-speech" && script.trim()) ||
+      (speechMode === "speech-to-speech" && audioFile)
+    )
+  )
 
   // Notify parent about validation state changes
   useEffect(() => {
@@ -502,43 +666,75 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
           </div>
         </div>
 
+        {/* Speech Mode Selector */}
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Mode Selection</h3>
+            <button
+              onClick={() => setIsAudioSettingsOpen(true)}
+              className="p-2 bg-muted hover:bg-accent rounded-lg transition-colors"
+              title="Audio Settings"
+            >
+              <IconSettings size={16} />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => setSpeechMode("text-to-speech")}
+              className={`p-4 rounded-xl border-2 transition-all text-left ${
+                speechMode === "text-to-speech"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <IconFileText size={20} className={speechMode === "text-to-speech" ? "text-primary" : "text-muted-foreground"} />
+                <span className="font-medium">Text to Speech</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Écrivez votre script et l&apos;IA va le lire avec la voix sélectionnée
+              </p>
+            </button>
+            
+            <button
+              onClick={() => setSpeechMode("speech-to-speech")}
+              className={`p-4 rounded-xl border-2 transition-all text-left ${
+                speechMode === "speech-to-speech"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <IconMicrophone size={20} className={speechMode === "speech-to-speech" ? "text-primary" : "text-muted-foreground"} />
+                <span className="font-medium">Speech to Speech</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Enregistrez votre voix et l&apos;IA va la cloner avec la voix sélectionnée
+              </p>
+            </button>
+          </div>
+        </div>
+
         {/* 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:items-start">
           
           {/* Left Column - Forms (3/4 width on large screens) */}
           <div className="lg:col-span-3 flex flex-col gap-4">
             
-            {/* Combined Script & Audio Section */}
+            {/* Content Section */}
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-4">
-              
-              {/* Tabs */}
-              <div className="flex gap-1 p-1 bg-muted rounded-lg">
-                <button
-                  onClick={() => setContentMethod("script")}
-                  className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                    contentMethod === "script"
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <IconFileText className="w-4 h-4" />
-                  {type === "video" ? "Script" : "Description"}
-                </button>
-                <button
-                  onClick={() => setContentMethod("audio")}
-                  className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                    contentMethod === "audio"
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <IconUpload className="w-4 h-4" />
-                  Audio
-                </button>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-foreground">
+                  {speechMode === "text-to-speech" ? "Script Content" : "Audio Recording"}
+                </h3>
+                <span className="text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground">
+                  {speechMode === "text-to-speech" ? "Text to Speech" : "Speech to Speech"}
+                </span>
               </div>
 
-          {/* Content based on selected tab */}
-          {contentMethod === "script" && (
+          {/* Content based on speech mode */}
+          {speechMode === "text-to-speech" && (
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3">
                 <label className="block text-sm font-medium text-foreground">
@@ -600,7 +796,7 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
             </div>
           )}
 
-          {contentMethod === "audio" && (
+          {speechMode === "speech-to-speech" && (
             <div>
               {audioFile ? (
                 <div className="p-4 bg-muted rounded-lg flex items-center justify-between">
@@ -722,6 +918,14 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
         isOpen={isRecordingModalOpen}
         onClose={() => setIsRecordingModalOpen(false)}
         onSave={handleRecordedAudio}
+      />
+
+      {/* Audio Settings Modal */}
+      <AudioSettingsPanel
+        isOpen={isAudioSettingsOpen}
+        onClose={() => setIsAudioSettingsOpen(false)}
+        settings={audioSettings}
+        onSettingsChange={setAudioSettings}
       />
     </>
   )
