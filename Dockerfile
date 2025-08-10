@@ -25,5 +25,5 @@ EXPOSE 3000
 # Variables d'environnement
 ENV NODE_ENV=production
 
-# Script de démarrage avec migration automatique
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Script de démarrage avec génération des tables (production)
+CMD ["sh", "-c", "npx prisma db push && npm start"]
