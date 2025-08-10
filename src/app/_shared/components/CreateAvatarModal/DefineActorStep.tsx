@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles, IconArrowDown } from "@tabler/icons-react"
 
 type CreateMethod = "generate" | "upload"
@@ -46,6 +46,7 @@ export function DefineActorStep({
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
   const [conversation, setConversation] = useState<ConversationMessage[]>([])
   const [currentPrompt, setCurrentPrompt] = useState("")
+  const conversationEndRef = useRef<HTMLDivElement>(null)
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -107,6 +108,16 @@ export function DefineActorStep({
     }
   }, [generatedActors])
 
+  // Auto scroll to bottom when conversation changes
+  useEffect(() => {
+    if (conversationEndRef.current) {
+      conversationEndRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end'
+      })
+    }
+  }, [conversation, isGenerating])
+
   const canSubmit = method === "upload" ? uploadedImage : currentPrompt.trim().length > 0
 
   return (
@@ -114,39 +125,56 @@ export function DefineActorStep({
       {method === "generate" ? (
         <>
           {/* Conversation Area - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="space-y-6">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="space-y-4">
               {/* Conversation Messages */}
-              {conversation.map((message) => (
-                <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {conversation.map((message, index) => (
+                <div 
+                  key={message.id} 
+                  className={`animate-in slide-in-from-bottom-2 duration-300 ${
+                    message.type === 'user' ? 'flex justify-end' : 'flex justify-start'
+                  }`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   {message.type === 'user' ? (
-                    // User Message
-                    <div className="max-w-[80%]">
+                    // User Message - Style comme capture d'écran
+                    <div className="max-w-[75%]">
                       {message.basedOnImageId && (
-                        <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                          <IconArrowDown className="w-3 h-3" />
-                          <span>Based on selected image</span>
+                        <div className="flex items-center justify-end gap-2 mb-2 mr-2">
+                          <span className="text-xs text-muted-foreground">Based on selected image</span>
+                          <IconArrowDown className="w-3 h-3 text-muted-foreground" />
                         </div>
                       )}
-                      <div className="bg-primary text-primary-foreground rounded-lg px-4 py-3">
-                        <p className="text-sm">{message.content}</p>
+                      <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-sm">
+                        <p className="text-sm leading-relaxed">{message.content}</p>
                       </div>
                     </div>
                   ) : (
-                    // Assistant Message with Images
-                    <div className="max-w-[90%]">
-                      <div className="bg-muted rounded-lg p-4">
-                        <div className="grid grid-cols-3 gap-3">
+                    // Assistant Message - Style exact capture d'écran
+                    <div className="max-w-[85%] w-full">
+                      <div className="bg-background border border-border rounded-2xl rounded-bl-md p-6 shadow-sm">
+                        {/* Header avec prompt */}
+                        <div className="text-center mb-4">
+                          <h4 className="text-sm font-medium text-foreground mb-1">
+                            {conversation[index - 1]?.content || "Generated actors"}
+                          </h4>
+                          <p className="text-xs text-muted-foreground">
+                            Choose your actor
+                          </p>
+                        </div>
+                        
+                        {/* Grid avec marges comme capture */}
+                        <div className="grid grid-cols-3 gap-4">
                           {message.images?.map((actor) => (
                             <button
                               key={actor.id}
                               onClick={() => setSelectedActorId(actor.id)}
-                              className="group cursor-pointer"
+                              className="group cursor-pointer relative"
                             >
-                              <div className={`aspect-[4/5] bg-background rounded-lg border-2 transition-all overflow-hidden ${
+                              <div className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
                                 selectedActorId === actor.id 
-                                  ? 'border-primary ring-2 ring-primary/20' 
-                                  : 'border-border group-hover:border-primary/50'
+                                  ? 'border-primary ring-2 ring-primary/20 shadow-lg scale-105' 
+                                  : 'border-border group-hover:border-primary/50 shadow-sm'
                               }`}>
                                 <img
                                   src={actor.imageUrl}
@@ -154,6 +182,14 @@ export function DefineActorStep({
                                   className="w-full h-full object-cover"
                                 />
                               </div>
+                              {/* Sélection indicator */}
+                              {selectedActorId === actor.id && (
+                                <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-in zoom-in-50 duration-200">
+                                  <svg className="w-3 h-3 text-primary-foreground" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                              )}
                             </button>
                           ))}
                         </div>
@@ -163,17 +199,20 @@ export function DefineActorStep({
                 </div>
               ))}
 
-              {/* Loading State */}
+              {/* Loading State - Style amélioré */}
               {isGenerating && (
-                <div className="flex justify-start">
-                  <div className="bg-muted rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="bg-background border border-border rounded-2xl rounded-bl-md p-4 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                       <span className="text-sm text-muted-foreground">Generating images...</span>
                     </div>
                   </div>
                 </div>
               )}
+              
+              {/* Scroll anchor */}
+              <div ref={conversationEndRef} />
             </div>
           </div>
 
@@ -191,12 +230,18 @@ export function DefineActorStep({
             )}
 
             {/* Text Input with integrated controls */}
-            <div className="relative">
+            <div className="relative group">
               <textarea
                 value={currentPrompt}
                 onChange={(e) => setCurrentPrompt(e.target.value)}
-                placeholder={conversation.length > 0 ? "Describe changes or new style..." : "Young adult, fitness coach, wrist band watch"}
-                className="w-full h-32 p-4 pb-16 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                placeholder={conversation.length > 0 ? "Continue to iterate..." : "Young adult, fitness coach, wrist band watch"}
+                className="w-full h-32 p-4 pb-16 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 shadow-sm focus:shadow-lg"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && canSubmit && !isGenerating) {
+                    e.preventDefault()
+                    handleSubmit()
+                  }
+                }}
               />
               
               {/* Controls inside textarea */}
@@ -238,10 +283,19 @@ export function DefineActorStep({
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isGenerating}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer"
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                 >
-                  <IconSparkles className="w-4 h-4" />
-                  {isGenerating ? "Generating..." : "Generate"}
+                  {isGenerating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconSparkles className="w-4 h-4" />
+                      <span>Generate</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
