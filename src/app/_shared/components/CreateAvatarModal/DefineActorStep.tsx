@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
-import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles, IconArrowDown } from "@tabler/icons-react"
+import { useState } from "react"
+import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles } from "@tabler/icons-react"
 
 type CreateMethod = "generate" | "upload"
 
@@ -11,14 +11,7 @@ interface GeneratedActor {
   description: string
 }
 
-interface ConversationMessage {
-  id: string
-  type: 'user' | 'assistant'
-  content: string
-  images?: GeneratedActor[]
-  timestamp: Date
-  basedOnImageId?: string // For iterations based on selected image
-}
+
 
 interface DefineActorStepProps {
   method: CreateMethod
@@ -44,9 +37,6 @@ export function DefineActorStep({
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [aspectRatio, setAspectRatio] = useState("9:16")
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
-  const [conversation, setConversation] = useState<ConversationMessage[]>([])
-  const [currentPrompt, setCurrentPrompt] = useState("")
-  const conversationEndRef = useRef<HTMLDivElement>(null)
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -68,158 +58,88 @@ export function DefineActorStep({
   const handleSubmit = () => {
     if (method === "upload" && uploadedImage) {
       onDefineActor(prompt, uploadedImage)
-    } else if (method === "generate" && currentPrompt.trim()) {
-      // Add user message to conversation
-      const userMessage: ConversationMessage = {
-        id: Date.now().toString(),
-        type: 'user',
-        content: currentPrompt,
-        timestamp: new Date(),
-        basedOnImageId: selectedActorId || undefined // If iterating on selected image
-      }
-      
-      setConversation(prev => [...prev, userMessage])
+    } else if (method === "generate" && prompt.trim()) {
       setSelectedActorId(null) // Reset selection when generating
-      setCurrentPrompt("") // Clear input
-      onDefineActor(currentPrompt, uploadedImage || undefined)
+      onDefineActor(prompt, uploadedImage || undefined)
     }
   }
 
   const handleRegenerate = () => {
-    if (currentPrompt.trim()) {
-      handleSubmit()
-    }
+    setSelectedActorId(null) // Reset selection when regenerating
+    onRegenerateActors?.()
   }
 
-  // Add assistant response when generatedActors change
-  useEffect(() => {
-    if (generatedActors.length > 0 && conversation.length > 0) {
-      const lastMessage = conversation[conversation.length - 1]
-      if (lastMessage.type === 'user') {
-        const assistantMessage: ConversationMessage = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: 'Generated images',
-          images: generatedActors,
-          timestamp: new Date()
-        }
-        setConversation(prev => [...prev, assistantMessage])
-      }
-    }
-  }, [generatedActors])
-
-  // Auto scroll to bottom when conversation changes
-  useEffect(() => {
-    if (conversationEndRef.current) {
-      conversationEndRef.current.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'end'
-      })
-    }
-  }, [conversation, isGenerating])
-
-  const canSubmit = method === "upload" ? uploadedImage : currentPrompt.trim().length > 0
+  const canSubmit = method === "upload" ? uploadedImage : prompt.trim().length > 0
 
   return (
     <div className="flex flex-col h-full">
       {method === "generate" ? (
         <>
-          {/* Conversation Area - Scrollable */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="space-y-4">
-              {/* Conversation Messages */}
-              {conversation.map((message, index) => (
-                <div 
-                  key={message.id} 
-                  className={`animate-in slide-in-from-bottom-2 duration-300 ${
-                    message.type === 'user' ? 'flex justify-end' : 'flex justify-start'
-                  }`}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  {message.type === 'user' ? (
-                    // User Message - Style comme capture d'écran
-                    <div className="max-w-[75%]">
-                      {message.basedOnImageId && (
-                        <div className="flex items-center justify-end gap-2 mb-2 mr-2">
-                          <span className="text-xs text-muted-foreground">Based on selected image</span>
-                          <IconArrowDown className="w-3 h-3 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 shadow-sm">
-                        <p className="text-sm leading-relaxed">{message.content}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    // Assistant Message - Style exact capture d'écran
-                    <div className="max-w-[85%] w-full">
-                      <div className="bg-background border border-border rounded-2xl rounded-bl-md p-6 shadow-sm">
-                        {/* Header avec prompt */}
-                        <div className="text-center mb-4">
-                          <h4 className="text-sm font-medium text-foreground mb-1">
-                            {conversation[index - 1]?.content || "Generated actors"}
-                          </h4>
-                          <p className="text-xs text-muted-foreground">
-                            Choose your actor
-                          </p>
-                        </div>
-                        
-                        {/* Grid avec marges comme capture */}
-                        <div className="grid grid-cols-3 gap-4">
-                          {message.images?.map((actor) => (
-                            <button
-                              key={actor.id}
-                              onClick={() => setSelectedActorId(actor.id)}
-                              className="group cursor-pointer relative"
-                            >
-                              <div className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
-                                selectedActorId === actor.id 
-                                  ? 'border-primary ring-2 ring-primary/20 shadow-lg scale-105' 
-                                  : 'border-border group-hover:border-primary/50 shadow-sm'
-                              }`}>
-                                <img
-                                  src={actor.imageUrl}
-                                  alt={actor.description}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              {/* Sélection indicator */}
-                              {selectedActorId === actor.id && (
-                                <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-in zoom-in-50 duration-200">
-                                  <svg className="w-3 h-3 text-primary-foreground" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                </div>
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+          {/* Scrollable Content Area - Photos générées AU-DESSUS */}
+          <div className="flex-1 overflow-y-auto p-8">
+            {isGenerating && (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-muted-foreground">Generating images...</span>
                 </div>
-              ))}
+              </div>
+            )}
 
-              {/* Loading State - Style amélioré */}
-              {isGenerating && (
-                <div className="flex justify-start animate-in slide-in-from-bottom-2 duration-300">
-                  <div className="bg-background border border-border rounded-2xl rounded-bl-md p-4 shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm text-muted-foreground">Generating images...</span>
-                    </div>
-                  </div>
+            {/* Generated Actors Display */}
+            {generatedActors.length > 0 && (
+              <div>
+                <div className="text-center mb-6">
+                  <p className="text-muted-foreground mb-2">
+                    45 years old female in the couch talking
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    she is in the street and she talks while walking, she wears different clothes
+                  </p>
                 </div>
-              )}
-              
-              {/* Scroll anchor */}
-              <div ref={conversationEndRef} />
-            </div>
+
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={isGenerating}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    <span>Continue to iterate</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6">
+                  {generatedActors.map((actor) => (
+                    <button
+                      key={actor.id}
+                      onClick={() => setSelectedActorId(actor.id)}
+                      className="group cursor-pointer"
+                    >
+                      <div className={`aspect-[9/16] bg-muted rounded-lg border-2 transition-all overflow-hidden ${
+                        selectedActorId === actor.id 
+                          ? 'border-primary ring-2 ring-primary/20' 
+                          : 'border-border group-hover:border-primary/50'
+                      }`}>
+                        <img
+                          src={actor.imageUrl}
+                          alt={actor.description}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Fixed Input Section - EN BAS, ne bouge jamais */}
           <div className="border-t border-border p-8">
-            {/* Masquer le texte explicatif quand conversation commencée */}
-            {conversation.length === 0 && (
+            {/* Masquer le texte explicatif quand des photos sont générées */}
+            {generatedActors.length === 0 && (
               <div className="text-center mb-6">
                 <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
                 <p className="text-muted-foreground">
@@ -230,18 +150,12 @@ export function DefineActorStep({
             )}
 
             {/* Text Input with integrated controls */}
-            <div className="relative group">
+            <div className="relative">
               <textarea
-                value={currentPrompt}
-                onChange={(e) => setCurrentPrompt(e.target.value)}
-                placeholder={conversation.length > 0 ? "Continue to iterate..." : "Young adult, fitness coach, wrist band watch"}
-                className="w-full h-32 p-4 pb-16 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 shadow-sm focus:shadow-lg"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && canSubmit && !isGenerating) {
-                    e.preventDefault()
-                    handleSubmit()
-                  }
-                }}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Young adult, fitness coach, wrist band watch"
+                className="w-full h-32 p-4 pb-16 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
               />
               
               {/* Controls inside textarea */}
@@ -283,19 +197,10 @@ export function DefineActorStep({
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isGenerating}
-                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer"
                 >
-                  {isGenerating ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                      <span>Generating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <IconSparkles className="w-4 h-4" />
-                      <span>Generate</span>
-                    </>
-                  )}
+                  <IconSparkles className="w-4 h-4" />
+                  {isGenerating ? "Generating..." : "Generate"}
                 </button>
               </div>
             </div>
@@ -377,20 +282,19 @@ export function DefineActorStep({
       )}
 
       {/* Footer - Always at bottom */}
-      {conversation.length > 0 && selectedActorId ? (
-        // Footer when actor is selected in conversation
+      {generatedActors.length > 0 ? (
+        // Footer when actors are generated
         <div className="p-8 border-t border-border">
           <div className="text-center">
             <button
               onClick={() => {
-                const selectedActor = conversation
-                  .flatMap(msg => msg.images || [])
-                  .find(actor => actor.id === selectedActorId)
+                const selectedActor = generatedActors.find(actor => actor.id === selectedActorId)
                 if (selectedActor && onActorSelect) {
                   onActorSelect(selectedActor)
                 }
               }}
-              className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent transition-all cursor-pointer"
+              disabled={!selectedActorId}
+              className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
               Select your Actor
             </button>
