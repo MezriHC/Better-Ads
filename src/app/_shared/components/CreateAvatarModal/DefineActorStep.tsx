@@ -57,8 +57,14 @@ export function DefineActorStep({
     if (method === "upload" && uploadedImage) {
       onDefineActor(prompt, uploadedImage)
     } else if (method === "generate" && prompt.trim()) {
+      setSelectedActorId(null) // Reset selection when generating
       onDefineActor(prompt, uploadedImage || undefined)
     }
+  }
+
+  const handleRegenerate = () => {
+    setSelectedActorId(null) // Reset selection when regenerating
+    onRegenerateActors?.()
   }
 
   const canSubmit = method === "upload" ? uploadedImage : prompt.trim().length > 0
@@ -81,51 +87,35 @@ export function DefineActorStep({
             {/* Generated Actors Display */}
             {generatedActors.length > 0 && (
               <div>
-                {/* Description en haut */}
-                <div className="text-center mb-6 bg-muted/30 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground font-medium mb-1">
+                <div className="text-center mb-6">
+                  <p className="text-muted-foreground mb-2">
                     45 years old female in the couch talking
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     she is in the street and she talks while walking, she wears different clothes
                   </p>
                 </div>
 
-                {/* Header avec titre et iterate */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
-                  
-                  {/* Bouton iterate + icône download style concurrent */}
-                  <div className="flex items-center gap-3">
-                    <button className="w-10 h-10 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors cursor-pointer">
-                      <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setSelectedActorId(null)
-                        onRegenerateActors?.()
-                      }}
-                      disabled={isGenerating}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer text-sm"
-                    >
-                      <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                      <span>Continue to iterate</span>
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={isGenerating}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    <span>Continue to iterate</span>
+                  </button>
                 </div>
 
-                {/* Grid avatars - plus compact */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-6">
                   {generatedActors.map((actor) => (
                     <button
                       key={actor.id}
                       onClick={() => setSelectedActorId(actor.id)}
-                      className="group cursor-pointer relative"
+                      className="group cursor-pointer"
                     >
-                      <div className={`aspect-[9/16] bg-muted rounded-xl border-2 transition-all overflow-hidden ${
+                      <div className={`aspect-[9/16] bg-muted rounded-lg border-2 transition-all overflow-hidden ${
                         selectedActorId === actor.id 
                           ? 'border-primary ring-2 ring-primary/20' 
                           : 'border-border group-hover:border-primary/50'
@@ -135,26 +125,10 @@ export function DefineActorStep({
                           alt={actor.description}
                           className="w-full h-full object-cover"
                         />
-                        
-                        {/* Overlay de sélection */}
-                        {selectedActorId === actor.id && (
-                          <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                            <svg className="w-4 h-4 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
                       </div>
+                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
                     </button>
                   ))}
-                </div>
-
-                {/* Reference badge */}
-                <div className="flex justify-end mb-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg text-xs text-muted-foreground">
-                    <div className="w-4 h-4 bg-accent rounded-sm"></div>
-                    <span>Reference</span>
-                  </div>
                 </div>
               </div>
             )}
@@ -162,7 +136,7 @@ export function DefineActorStep({
 
           {/* Fixed Input Section - EN BAS, ne bouge jamais */}
           <div className="border-t border-border p-8">
-            {/* Header text - only show when no actors generated */}
+            {/* Masquer le texte explicatif quand des photos sont générées */}
             {generatedActors.length === 0 && (
               <div className="text-center mb-6">
                 <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
@@ -311,13 +285,13 @@ export function DefineActorStep({
         <div className="p-8 border-t border-border">
           <div className="text-center">
             <button
-              disabled={!selectedActorId}
               onClick={() => {
                 const selectedActor = generatedActors.find(actor => actor.id === selectedActorId)
-                if (selectedActor) {
-                  onActorSelect?.(selectedActor)
+                if (selectedActor && onActorSelect) {
+                  onActorSelect(selectedActor)
                 }
               }}
+              disabled={!selectedActorId}
               className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
               Select your Actor

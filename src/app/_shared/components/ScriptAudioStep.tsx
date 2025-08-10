@@ -128,30 +128,30 @@ export function ScriptAudioStep({ selectedAvatar: initialAvatar, onBack, onNext,
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground">
-          {type === "video" ? "Script & Audio" : "Product Description & Audio"}
-        </h2>
-        <div className="flex gap-3">
+              {type === "video" ? "Script & Audio" : "Product Description & Audio"}
+            </h2>
+          <div className="flex gap-3">
+            <button
+              onClick={onBack}
+              className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent transition-colors"
+            >
+              Back
+            </button>
           <button
-            onClick={onBack}
-            className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent transition-colors"
-          >
-            Back
-          </button>
-          <button
-            onClick={canContinue ? onNext : undefined}
+              onClick={canContinue ? onNext : undefined}
             disabled={!canContinue}
             className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-              canContinue
+                  canContinue 
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-muted text-muted-foreground cursor-not-allowed'
             }`}
           >
-            {type === "video" ? "Generate Video" : "Generate Ad"}
+                      {type === "video" ? "Generate Video" : "Generate Ad"}
           </button>
         </div>
-      </div>
+              </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COMPONENT - Main Content */}
@@ -175,11 +175,11 @@ export function ScriptAudioStep({ selectedAvatar: initialAvatar, onBack, onNext,
             onPlayVoice={playGeneratedVoice}
             onPauseVoice={pauseGeneratedVoice}
             onRegenerateVoice={regenerateVoice}
-          />
-        </div>
-
+                  />
+                </div>
+                
         {/* RIGHT COMPONENT - Audio Settings */}
-        <div className="lg:col-span-1">
+          <div className="lg:col-span-1">
           <AudioSettings
             audioSettings={audioSettings}
             onAudioSettingsChange={setAudioSettings}
