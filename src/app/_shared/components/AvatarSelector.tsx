@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react"
 import Image from "next/image"
 import { IconSearch, IconChevronDown, IconPlus, IconCamera } from "@tabler/icons-react"
+import { CreateAvatarModal } from "./CreateAvatarModal"
 
 interface Avatar {
   id: string
@@ -146,9 +147,11 @@ function FilterSelect({
 export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGender, setSelectedGender] = useState<"all" | "male" | "female">("all")
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedAge, setSelectedAge] = useState<"all" | "young" | "adult">("all")
   const [selectedTheme, setSelectedTheme] = useState<"all" | string>("all")
   const [avatarType, setAvatarType] = useState<"all" | "public" | "my">("all")
+  const [customAvatars, setCustomAvatars] = useState<Avatar[]>([])
 
   // Récupérer les thèmes uniques et limiter à 10
   const uniqueThemes = Array.from(new Set(enrichedAvatars.map(avatar => avatar.theme).filter((theme): theme is string => Boolean(theme))))
@@ -181,11 +184,34 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
     { value: "my", label: "My avatars" }
   ]
 
+  // Handler pour la création d'avatar
+  const handleAvatarCreated = (newAvatar: any) => {
+    const avatar: Avatar = {
+      id: newAvatar.id,
+      name: newAvatar.name,
+      category: "Custom",
+      description: `Custom avatar created via ${newAvatar.method}`,
+      tags: ["Custom", newAvatar.method === "upload" ? "Uploaded" : "Generated"],
+      imageUrl: newAvatar.imageUrl,
+      type: "image",
+      gender: undefined,
+      age: undefined,
+      theme: "Custom"
+    }
+    
+    setCustomAvatars(prev => [...prev, avatar])
+    setIsCreateModalOpen(false)
+    onSelectAvatar(avatar)
+  }
+
   // Filtrer les avatars
   const filteredAvatars = useMemo(() => {
-    // Si "My avatars" est sélectionné, retourner une liste vide (l'utilisateur n'a pas encore créé d'avatars)
+    // Si "My avatars" est sélectionné, retourner les avatars custom
     if (avatarType === "my") {
-      return []
+      return customAvatars.filter(avatar => {
+        const matchesSearch = avatar.name.toLowerCase().includes(searchQuery.toLowerCase())
+        return matchesSearch
+      })
     }
     
     // Pour "all" et "public", afficher tous les avatars publics
@@ -266,6 +292,7 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
         {/* Carte "Create avatar" - Première carte pour "All" et "My avatars" */}
         {(avatarType === "all" || avatarType === "my") && (
           <div
+            onClick={() => setIsCreateModalOpen(true)}
             className="bg-card rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 border border-dashed border-border hover:border-primary/50 hover:bg-accent/20"
           >
             <div className="relative h-72 flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 gap-4">
@@ -354,7 +381,21 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
           <p className="text-muted-foreground">No avatars match your criteria.</p>
         </div>
       )}
-      
+
+      {/* Message pour "My avatars" vide */}
+      {filteredAvatars.length === 0 && avatarType === "my" && (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">You haven't created any custom avatars yet.</p>
+          <p className="text-sm text-muted-foreground mt-2">Click "Create Avatar" to get started!</p>
+        </div>
+      )}
+
+      {/* Create Avatar Modal */}
+      <CreateAvatarModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onAvatarCreated={handleAvatarCreated}
+      />
 
     </div>
   )
