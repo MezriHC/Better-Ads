@@ -80,7 +80,6 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
   // Modal states
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false)
-  const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false)
   
   // Audio settings
   const [audioSettings, setAudioSettings] = useState<AudioSettings>({
@@ -231,57 +230,69 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            {type === "video" ? "Script & Audio" : "Product Description & Audio"}
-          </h2>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent transition-colors"
-          >
-            Back
-          </button>
-          <div
-            onClick={canContinue ? onNext : undefined}
-            className={canContinue ? "cursor-pointer" : "cursor-not-allowed"}
-          >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              {type === "video" ? "Script & Audio" : "Product Description & Audio"}
+            </h2>
+          </div>
+        <div className="flex items-center gap-3">
+          {/* Speech Mode Dropdown */}
+          <div className="relative">
+            <select 
+              value={speechMode}
+              onChange={(e) => setSpeechMode(e.target.value as SpeechMode)}
+              className="px-4 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="text-to-speech">Text to Speech</option>
+              <option value="speech-to-speech">Speech to Speech</option>
+            </select>
+          </div>
+
+            <button
+              onClick={onBack}
+              className="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent transition-colors"
+            >
+              Back
+            </button>
             <div
-              className={`p-[2px] rounded-[16px] transition-all ${
-                canContinue 
-                  ? 'bg-gradient-to-b from-black/20 to-transparent dark:from-white/20' 
-                  : 'bg-gradient-to-b from-black/10 to-transparent dark:from-white/10'
-              }`}
+              onClick={canContinue ? onNext : undefined}
+              className={canContinue ? "cursor-pointer" : "cursor-not-allowed"}
             >
               <div
-                className={`group rounded-[14px] shadow-lg transition-all ${
-                  canContinue
-                    ? 'bg-foreground dark:bg-white hover:shadow-md active:shadow-sm active:scale-[0.98] cursor-pointer'
-                    : 'bg-muted cursor-not-allowed opacity-50'
+                className={`p-[2px] rounded-[16px] transition-all ${
+                  canContinue 
+                    ? 'bg-gradient-to-b from-black/20 to-transparent dark:from-white/20' 
+                    : 'bg-gradient-to-b from-black/10 to-transparent dark:from-white/10'
                 }`}
               >
                 <div
-                  className={`px-6 py-3 rounded-[12px] transition-all ${
+                  className={`group rounded-[14px] shadow-lg transition-all ${
                     canContinue
-                      ? 'bg-gradient-to-b from-transparent to-white/10 dark:to-black/10'
-                      : 'bg-gradient-to-b from-transparent to-black/5 dark:to-white/5'
+                      ? 'bg-foreground dark:bg-white hover:shadow-md active:shadow-sm active:scale-[0.98] cursor-pointer'
+                      : 'bg-muted cursor-not-allowed opacity-50'
                   }`}
                 >
-                  <span className={`font-semibold ${
-                    canContinue
-                      ? 'text-background dark:text-black'
-                      : 'text-muted-foreground'
-                  }`}>
-                    {type === "video" ? "Generate Video" : "Generate Ad"}
-                  </span>
+                  <div
+                    className={`px-6 py-3 rounded-[12px] transition-all ${
+                      canContinue
+                        ? 'bg-gradient-to-b from-transparent to-white/10 dark:to-black/10'
+                        : 'bg-gradient-to-b from-transparent to-black/5 dark:to-white/5'
+                    }`}
+                  >
+                    <span className={`font-semibold ${
+                      canContinue
+                        ? 'text-background dark:text-black'
+                        : 'text-muted-foreground'
+                    }`}>
+                      {type === "video" ? "Generate Video" : "Generate Ad"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Main Layout - 3 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -292,10 +303,10 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
             {/* Script/Content Area */}
             <div className="p-6">
               {speechMode === 'text-to-speech' ? (
-                <textarea
-                  value={script}
-                  onChange={(e) => handleScriptChange(e.target.value)}
-                  placeholder={type === "video" ? "Enter your script here..." : "Describe your product here..."}
+                  <textarea
+                    value={script}
+                    onChange={(e) => handleScriptChange(e.target.value)}
+                    placeholder={type === "video" ? "Enter your script here..." : "Describe your product here..."}
                   className="w-full h-40 p-4 bg-muted/50 border-0 rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-base leading-relaxed"
                 />
               ) : (
@@ -304,7 +315,7 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
                     <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <IconFileMusic className="w-6 h-6 text-primary" />
-                      </div>
+                </div>
                       <div className="flex-1">
                         <h4 className="font-medium text-foreground">{audioFile.name}</h4>
                         <p className="text-sm text-muted-foreground">
@@ -316,17 +327,17 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
                         className="p-2 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors"
                       >
                         <IconTrash size={18} />
-                      </button>
-                    </div>
-                  ) : (
+                  </button>
+                </div>
+              ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <label className="block">
-                        <input
-                          type="file"
-                          accept="audio/*"
-                          onChange={handleFileUpload}
-                          className="sr-only"
-                        />
+                <label className="block">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleFileUpload}
+                    className="sr-only"
+                  />
                         <div className="p-6 border-2 border-dashed border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer text-center group">
                           <div className="flex flex-col gap-3 items-center">
                             <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-all">
@@ -355,193 +366,184 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
                       </button>
                     </div>
                   )}
-                </div>
+                  </div>
               )}
             </div>
 
-            {/* Selected Voice Display */}
-            {selectedVoice && (
-              <div className="px-6 py-4 bg-muted/30 border-t border-border">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                    {selectedVoice.name.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">{selectedVoice.name}</h3>
-                      <span className="text-sm text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground">{selectedVoice.language}</span>
-                      <span className="text-sm text-muted-foreground">0:00</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedVoice.gender === "female" ? "Female" : "Male"} • {selectedVoice.age === "young" ? "Young" : "Adult"} • {selectedVoice.accent}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-                      <IconPlayerPlay className="w-5 h-5 text-muted-foreground" />
-                    </button>
-                    <button 
-                      onClick={() => setIsVoiceSettingsOpen(true)}
-                      className="p-2 rounded-lg hover:bg-accent transition-colors"
-                    >
-                      <IconSettings2 className="w-5 h-5 text-muted-foreground" />
-                    </button>
-                    <button 
-                      onClick={() => setSelectedVoice(null)}
-                      className="p-2 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors"
-                    >
-                      <IconTrash className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Controls */}
-            <div className="px-6 py-4 bg-muted/20 border-t border-border">
-              <div className="flex items-center gap-4">
-                {/* Speech Mode Selector */}
-                <div className="relative">
-                  <button 
-                    onClick={() => setSpeechMode(speechMode === "text-to-speech" ? "speech-to-speech" : "text-to-speech")}
-                    className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    {speechMode === "text-to-speech" ? (
-                      <IconFileText className="w-5 h-5 text-blue-500" />
-                    ) : (
-                      <IconMicrophone className="w-5 h-5 text-red-500" />
-                    )}
-                    <span className="font-medium">
-                      {speechMode === "text-to-speech" ? "Text to Speech" : "Speech to Speech"}
-                    </span>
-                    <IconChevronDown className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Avatar Selector */}
-                {selectedAvatar && (
-                  <button className="flex items-center gap-3 px-4 py-2 bg-background border border-border rounded-lg hover:bg-accent transition-colors">
-                    <Image 
-                      src={selectedAvatar.imageUrl} 
-                      alt={selectedAvatar.name} 
-                      width={32} 
-                      height={32} 
-                      className="rounded-lg object-cover" 
-                    />
-                    <span className="font-medium">1 Actor</span>
-                    <IconChevronDown className="w-4 h-4" />
-                  </button>
-                )}
-
-                {/* Voice Selector */}
-                <button 
-                  onClick={() => setIsVoiceModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg hover:bg-accent transition-colors ml-auto"
-                >
-                  <span className="font-medium">Choose Voice</span>
-                  <IconChevronDown className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            
           </div>
         </div>
 
         {/* Right Column - Audio Settings */}
         <div className="lg:col-span-1">
-          <div className="bg-card border border-border rounded-2xl p-6 sticky top-6">
-            <h3 className="text-lg font-semibold text-foreground mb-6">Audio Settings</h3>
+          <div className="bg-card border border-border rounded-2xl overflow-hidden sticky top-6">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">Audio Settings</h3>
+              <button className="text-muted-foreground hover:text-foreground">
+                <IconX size={20} />
+              </button>
+            </div>
+
+            {/* Selected Voice Display */}
+            {selectedVoice && (
+              <div className="p-6 border-b border-border">
+                <div className="flex items-center gap-4">
+                  {selectedAvatar ? (
+                    <Image 
+                      src={selectedAvatar.imageUrl} 
+                      alt={selectedAvatar.name} 
+                      width={48} 
+                      height={48} 
+                      className="rounded-xl object-cover" 
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+                      {selectedVoice.name.charAt(0)}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-foreground">{selectedVoice.name}</h4>
+                      <div className="flex-1 h-1 bg-muted rounded-full">
+                        <div className="w-1/3 h-full bg-primary rounded-full"></div>
+                      </div>
+                      <span className="text-sm text-muted-foreground">0:00</span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsVoiceModalOpen(true)}
+                    className="p-2 rounded-lg bg-background border border-border hover:bg-accent transition-colors"
+                  >
+                    <IconRotateClockwise size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Voice-over Selector */}
+            <div className="px-6 py-4 border-b border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">Voice-over</span>
+                <select 
+                  className="px-3 py-1 bg-background border border-border rounded text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  defaultValue="Matthew"
+                >
+                  <option value="Matthew">Matthew</option>
+                  <option value="Charles">Charles</option>
+                  <option value="Sarah">Sarah</option>
+                </select>
+              </div>
+            </div>
             
-            <div className="space-y-6">
+            {/* Audio Controls */}
+            <div className="p-6 space-y-6">
               {/* Speed */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-foreground">Speed</label>
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded text-muted-foreground">
+                  <label className="text-sm font-medium text-muted-foreground">Speed</label>
+                  <span className="text-sm font-semibold text-foreground">
                     {audioSettings.speed.toFixed(2)}X
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0.25"
-                  max="4.00"
-                  step="0.05"
-                  value={audioSettings.speed}
-                  onChange={(e) => handleSliderChange('speed', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0.25X</span>
-                  <span>4.00X</span>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.25"
+                    max="4.00"
+                    step="0.05"
+                    value={audioSettings.speed}
+                    onChange={(e) => handleSliderChange('speed', parseFloat(e.target.value))}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #000 0%, #000 ${((audioSettings.speed - 0.25) / (4.00 - 0.25)) * 100}%, #e5e7eb ${((audioSettings.speed - 0.25) / (4.00 - 0.25)) * 100}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-300 rounded-full shadow"></div>
                 </div>
               </div>
 
               {/* Stability */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-foreground">Stability</label>
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded text-muted-foreground">
-                    {audioSettings.stability.toFixed(2)}
+                  <div className="flex items-center gap-1">
+                    <label className="text-sm font-medium text-muted-foreground">Stability</label>
+                    <IconInfoCircle size={14} className="text-muted-foreground" />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">
+                    {audioSettings.stability.toFixed(2)}X
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0.00"
-                  max="1.00"
-                  step="0.05"
-                  value={audioSettings.stability}
-                  onChange={(e) => handleSliderChange('stability', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0.00</span>
-                  <span>1.00</span>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.00"
+                    max="1.00"
+                    step="0.05"
+                    value={audioSettings.stability}
+                    onChange={(e) => handleSliderChange('stability', parseFloat(e.target.value))}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #000 0%, #000 ${(audioSettings.stability / 1.00) * 100}%, #e5e7eb ${(audioSettings.stability / 1.00) * 100}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-300 rounded-full shadow"></div>
                 </div>
               </div>
 
               {/* Similarity */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-foreground">Similarity</label>
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded text-muted-foreground">
-                    {audioSettings.similarity.toFixed(2)}
+                  <div className="flex items-center gap-1">
+                    <label className="text-sm font-medium text-muted-foreground">Similarity</label>
+                    <IconInfoCircle size={14} className="text-muted-foreground" />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">
+                    {audioSettings.similarity.toFixed(2)}X
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0.00"
-                  max="1.00"
-                  step="0.05"
-                  value={audioSettings.similarity}
-                  onChange={(e) => handleSliderChange('similarity', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0.00</span>
-                  <span>1.00</span>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.00"
+                    max="1.00"
+                    step="0.05"
+                    value={audioSettings.similarity}
+                    onChange={(e) => handleSliderChange('similarity', parseFloat(e.target.value))}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #000 0%, #000 ${(audioSettings.similarity / 1.00) * 100}%, #e5e7eb ${(audioSettings.similarity / 1.00) * 100}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-300 rounded-full shadow"></div>
                 </div>
               </div>
 
               {/* Style Exaggeration */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-foreground">Style Exaggeration</label>
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded text-muted-foreground">
-                    {audioSettings.styleExaggeration.toFixed(2)}
+                  <div className="flex items-center gap-1">
+                    <label className="text-sm font-medium text-muted-foreground">Style exaggeration</label>
+                    <IconInfoCircle size={14} className="text-muted-foreground" />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground">
+                    {audioSettings.styleExaggeration.toFixed(2)}X
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0.00"
-                  max="2.00"
-                  step="0.05"
-                  value={audioSettings.styleExaggeration}
-                  onChange={(e) => handleSliderChange('styleExaggeration', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>0.00</span>
-                  <span>2.00</span>
+                <div className="relative">
+                  <input
+                    type="range"
+                    min="0.00"
+                    max="2.00"
+                    step="0.05"
+                    value={audioSettings.styleExaggeration}
+                    onChange={(e) => handleSliderChange('styleExaggeration', parseFloat(e.target.value))}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #000 0%, #000 ${(audioSettings.styleExaggeration / 2.00) * 100}%, #e5e7eb ${(audioSettings.styleExaggeration / 2.00) * 100}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-white border-2 border-gray-300 rounded-full shadow"></div>
                 </div>
               </div>
             </div>
@@ -610,7 +612,7 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
                         <p className="text-sm text-muted-foreground">
                           {voice.gender === "female" ? "Female" : "Male"} • {voice.age === "young" ? "Young" : "Adult"}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                           🇺🇸 {voice.language} • {voice.accent}
                         </p>
                       </div>
@@ -735,118 +737,7 @@ export function ScriptAudioStep({ selectedAvatar, onBack, onNext, type, onValida
         </div>
       )}
 
-      {/* Voice Settings Drawer */}
-      {isVoiceSettingsOpen && selectedVoice && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/20 z-40"
-            onClick={() => setIsVoiceSettingsOpen(false)}
-          />
-          <div className="fixed top-0 right-0 h-full w-80 bg-background border-l border-border shadow-xl z-50 transform transition-transform duration-300">
-            <div className="flex flex-col h-full">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-border">
-                <h3 className="text-lg font-semibold text-foreground">Voice Settings</h3>
-                <button
-                  onClick={() => setIsVoiceSettingsOpen(false)}
-                  className="p-2 rounded-lg hover:bg-accent transition-colors text-muted-foreground"
-                >
-                  <IconX size={18} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-                {/* Current Voice */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium text-foreground">Current Voice</h4>
-                  <div className="p-4 bg-muted/50 rounded-xl">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                        {selectedVoice.name.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h5 className="font-semibold text-foreground">{selectedVoice.name}</h5>
-                          <span className="text-sm text-muted-foreground">•</span>
-                          <span className="text-sm text-muted-foreground">{selectedVoice.language}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedVoice.gender === "female" ? "Female" : "Male"} • {selectedVoice.age === "young" ? "Young" : "Adult"} • {selectedVoice.accent}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2 mt-4">
-                      <button className="flex-1 px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
-                        <IconPlayerPlay size={16} />
-                        <span className="text-sm font-medium">Preview</span>
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setIsVoiceSettingsOpen(false)
-                          setIsVoiceModalOpen(true)
-                        }}
-                        className="flex-1 px-3 py-2 bg-background border border-border text-foreground rounded-lg hover:bg-accent transition-colors"
-                      >
-                        <span className="text-sm font-medium">Change</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Voice Configuration */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-medium text-foreground">Voice Configuration</h4>
-                  
-                  {/* Additional Voice Options */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-foreground">Voice Type</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium">
-                        Default
-                      </button>
-                      <button className="px-3 py-2 bg-background border border-border rounded-lg text-sm hover:bg-accent transition-colors">
-                        Custom
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Emphasis */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-foreground">Emphasis</label>
-                    <select className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm">
-                      <option>Normal</option>
-                      <option>Strong</option>
-                      <option>Moderate</option>
-                      <option>Reduced</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="p-6 border-t border-border">
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setIsVoiceSettingsOpen(false)}
-                    className="flex-1 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent transition-colors flex items-center justify-center gap-2"
-                  >
-                    <IconRotateClockwise size={16} />
-                    <span className="text-sm font-medium">Reset</span>
-                  </button>
-                  <button
-                    onClick={() => setIsVoiceSettingsOpen(false)}
-                    className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-                  >
-                    <span className="text-sm font-medium">Apply</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      
     </div>
   )
 }
