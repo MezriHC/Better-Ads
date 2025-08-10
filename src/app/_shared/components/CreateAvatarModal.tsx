@@ -70,7 +70,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
       // For upload method, go directly to voice selection
       setStep("select-voice")
     } else {
-      // For generate method, create mock generated actors
+      // For generate method, create mock generated actors but stay on same step
       setIsGenerating(true)
       
       // Simulate generation delay
@@ -95,7 +95,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
         
         setGeneratedActors(mockActors)
         setIsGenerating(false)
-        setStep("select-actor")
+        // Stay on define-actor step to show integrated interface
       }, 2000)
     }
   }
@@ -155,7 +155,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+        <div className={`${step === "define-actor" && method === "generate" ? "h-[calc(90vh-80px)] flex flex-col" : "overflow-y-auto max-h-[calc(90vh-80px)]"}`}>
           {step === "get-started" && (
             <GetStartedStep onMethodSelect={handleMethodSelect} />
           )}
@@ -166,6 +166,9 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               onDefineActor={handleDefineActor}
               onBack={() => setStep("get-started")}
               isGenerating={isGenerating}
+              generatedActors={generatedActors}
+              onActorSelect={handleActorSelect}
+              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage)}
             />
           )}
           

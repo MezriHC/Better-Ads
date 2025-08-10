@@ -5,14 +5,31 @@ import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles } 
 
 type CreateMethod = "generate" | "upload"
 
+interface GeneratedActor {
+  id: string
+  imageUrl: string
+  description: string
+}
+
 interface DefineActorStepProps {
   method: CreateMethod
   onDefineActor: (prompt: string, image?: File) => void
   onBack: () => void
   isGenerating: boolean
+  generatedActors?: GeneratedActor[]
+  onActorSelect?: (actor: GeneratedActor) => void
+  onRegenerateActors?: () => void
 }
 
-export function DefineActorStep({ method, onDefineActor, onBack, isGenerating }: DefineActorStepProps) {
+export function DefineActorStep({ 
+  method, 
+  onDefineActor, 
+  onBack, 
+  isGenerating, 
+  generatedActors = [], 
+  onActorSelect, 
+  onRegenerateActors 
+}: DefineActorStepProps) {
   const [prompt, setPrompt] = useState("")
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -46,84 +63,145 @@ export function DefineActorStep({ method, onDefineActor, onBack, isGenerating }:
   const canSubmit = method === "upload" ? uploadedImage : prompt.trim().length > 0
 
   return (
-    <div className="p-8">
+    <div className="flex flex-col h-full">
       {method === "generate" ? (
         <>
-          {/* Generate Method */}
-          <div className="text-center mb-8">
-            <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
-            <p className="text-muted-foreground">
-              To create your character, start by writing a text, optionally add<br />
-              a reference image, and choose a ration that suits you.
-            </p>
-          </div>
+          {/* Fixed Header with Text Input */}
+          <div className="p-8 border-b border-border">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
+              <p className="text-muted-foreground">
+                To create your character, start by writing a text, optionally add<br />
+                a reference image, and choose a ration that suits you.
+              </p>
+            </div>
 
-          {/* Text Input */}
-          <div className="mb-6">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Young adult, fitness coach, wrist band watch"
-              className="w-full h-32 p-4 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
-            />
-          </div>
+            {/* Text Input with integrated controls */}
+            <div className="relative">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Young adult, fitness coach, wrist band watch"
+                className="w-full h-32 p-4 pb-16 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+              />
+              
+              {/* Controls inside textarea */}
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Image Upload */}
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="sr-only"
+                    />
+                    <div className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors">
+                      <IconPhoto className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  </label>
 
-          {/* Controls */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              {/* Image Upload */}
-              <label className="cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="sr-only"
-                />
-                <div className="w-10 h-10 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors">
-                  <IconPhoto className="w-5 h-5 text-muted-foreground" />
+                  {/* Aspect Ratio - Fixed to 9:16 for stories */}
+                  <div className="flex items-center gap-1">
+                    <div className="w-4 h-6 bg-muted rounded-sm border border-muted-foreground/30 flex items-center justify-center">
+                      <div className="w-1.5 h-3.5 bg-foreground rounded-sm"></div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">9:16</span>
+                  </div>
+
+                  {/* Delete Image */}
+                  {imagePreview && (
+                    <button
+                      onClick={handleRemoveImage}
+                      className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+                    >
+                      <IconTrash className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  )}
                 </div>
-              </label>
 
-              {/* Aspect Ratio */}
-              <div className="flex items-center gap-2">
-                <IconAspectRatio className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm text-foreground">{aspectRatio}</span>
-              </div>
-
-              {/* Delete Image */}
-              {imagePreview && (
+                {/* Generate Button */}
                 <button
-                  onClick={handleRemoveImage}
-                  className="w-10 h-10 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+                  onClick={handleSubmit}
+                  disabled={!canSubmit || isGenerating}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm"
                 >
-                  <IconTrash className="w-5 h-5 text-muted-foreground" />
+                  <IconSparkles className="w-4 h-4" />
+                  {isGenerating ? "Generating..." : "Generate"}
                 </button>
-              )}
+              </div>
             </div>
 
-            {/* Generate Button */}
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit || isGenerating}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-            >
-              <IconSparkles className="w-4 h-4" />
-              {isGenerating ? "Generating..." : "Generate"}
-            </button>
+            {/* Reference Image Preview */}
+            {imagePreview && (
+              <div className="mt-4">
+                <div className="w-full max-w-xs mx-auto">
+                  <img
+                    src={imagePreview}
+                    alt="Reference"
+                    className="w-full h-auto rounded-xl border border-border"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Image Preview */}
-          {imagePreview && (
-            <div className="mb-6">
-              <div className="w-full max-w-xs mx-auto">
-                <img
-                  src={imagePreview}
-                  alt="Reference"
-                  className="w-full h-auto rounded-xl border border-border"
-                />
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto p-8">
+            {isGenerating && (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-muted-foreground">Generating images...</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Generated Actors Display */}
+            {generatedActors.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
+                  <button
+                    onClick={onRegenerateActors}
+                    disabled={isGenerating}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    <span>Continue to iterate</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6 mb-8">
+                  {generatedActors.map((actor) => (
+                    <button
+                      key={actor.id}
+                      onClick={() => onActorSelect?.(actor)}
+                      className="group cursor-pointer"
+                    >
+                      <div className="aspect-[9/16] bg-muted rounded-lg border-2 border-border group-hover:border-primary/50 transition-all overflow-hidden">
+                        <img
+                          src={actor.imageUrl}
+                          alt={actor.description}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-4">
+                    45 years old female in the couch talking
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    she is in the street and she talks while walking, she wears different clothes
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <>
@@ -186,21 +264,36 @@ export function DefineActorStep({ method, onDefineActor, onBack, isGenerating }:
       )}
 
       {/* Footer */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={onBack}
-          className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-        >
-          {method === "upload" ? "Back" : "Cancel"}
-        </button>
+      <div className="p-8 border-t border-border">
+        {generatedActors.length > 0 ? (
+          // Footer when actors are generated
+          <div className="text-center">
+            <button
+              disabled={!generatedActors.length}
+              className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            >
+              Select your Actor
+            </button>
+          </div>
+        ) : (
+          // Normal footer
+          <div className="flex justify-between items-center">
+            <button
+              onClick={onBack}
+              className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              {method === "upload" ? "Back" : "Cancel"}
+            </button>
 
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit || isGenerating}
-          className="px-6 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-        >
-          {isGenerating ? "Processing..." : "Turn into talking actor"}
-        </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit || isGenerating}
+              className="px-6 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {isGenerating ? "Processing..." : "Turn into talking actor"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
