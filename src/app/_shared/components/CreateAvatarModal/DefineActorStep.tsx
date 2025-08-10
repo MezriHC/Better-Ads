@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles } from "@tabler/icons-react"
+import React, { useState, useEffect } from "react"
+import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles, IconArrowDown } from "@tabler/icons-react"
 
 type CreateMethod = "generate" | "upload"
 
@@ -9,6 +9,15 @@ interface GeneratedActor {
   id: string
   imageUrl: string
   description: string
+}
+
+interface ConversationMessage {
+  id: string
+  type: 'user' | 'assistant'
+  content: string
+  images?: GeneratedActor[]
+  timestamp: Date
+  basedOnImageId?: string // For iterations based on selected image
 }
 
 interface DefineActorStepProps {
@@ -35,6 +44,8 @@ export function DefineActorStep({
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [aspectRatio, setAspectRatio] = useState("9:16")
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
+  const [conversation, setConversation] = useState<ConversationMessage[]>([])
+  const [currentPrompt, setCurrentPrompt] = useState("")
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -56,88 +67,120 @@ export function DefineActorStep({
   const handleSubmit = () => {
     if (method === "upload" && uploadedImage) {
       onDefineActor(prompt, uploadedImage)
-    } else if (method === "generate" && prompt.trim()) {
+    } else if (method === "generate" && currentPrompt.trim()) {
+      // Add user message to conversation
+      const userMessage: ConversationMessage = {
+        id: Date.now().toString(),
+        type: 'user',
+        content: currentPrompt,
+        timestamp: new Date(),
+        basedOnImageId: selectedActorId || undefined // If iterating on selected image
+      }
+      
+      setConversation(prev => [...prev, userMessage])
       setSelectedActorId(null) // Reset selection when generating
-      onDefineActor(prompt, uploadedImage || undefined)
+      setCurrentPrompt("") // Clear input
+      onDefineActor(currentPrompt, uploadedImage || undefined)
     }
   }
 
   const handleRegenerate = () => {
-    setSelectedActorId(null) // Reset selection when regenerating
-    onRegenerateActors?.()
+    if (currentPrompt.trim()) {
+      handleSubmit()
+    }
   }
 
-  const canSubmit = method === "upload" ? uploadedImage : prompt.trim().length > 0
+  // Add assistant response when generatedActors change
+  useEffect(() => {
+    if (generatedActors.length > 0 && conversation.length > 0) {
+      const lastMessage = conversation[conversation.length - 1]
+      if (lastMessage.type === 'user') {
+        const assistantMessage: ConversationMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: 'Generated images',
+          images: generatedActors,
+          timestamp: new Date()
+        }
+        setConversation(prev => [...prev, assistantMessage])
+      }
+    }
+  }, [generatedActors])
+
+  const canSubmit = method === "upload" ? uploadedImage : currentPrompt.trim().length > 0
 
   return (
     <div className="flex flex-col h-full">
       {method === "generate" ? (
         <>
-          {/* Scrollable Content Area - Photos générées AU-DESSUS */}
-          <div className="flex-1 overflow-y-auto p-8">
-            {isGenerating && (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm text-muted-foreground">Generating images...</span>
-                </div>
-              </div>
-            )}
-
-            {/* Generated Actors Display */}
-            {generatedActors.length > 0 && (
-              <div>
-                <div className="text-center mb-6">
-                  <p className="text-muted-foreground mb-2">
-                    45 years old female in the couch talking
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    she is in the street and she talks while walking, she wears different clothes
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
-                  <button
-                    onClick={handleRegenerate}
-                    disabled={isGenerating}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
-                  >
-                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                    <span>Continue to iterate</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-6">
-                  {generatedActors.map((actor) => (
-                    <button
-                      key={actor.id}
-                      onClick={() => setSelectedActorId(actor.id)}
-                      className="group cursor-pointer"
-                    >
-                      <div className={`aspect-[9/16] bg-muted rounded-lg border-2 transition-all overflow-hidden ${
-                        selectedActorId === actor.id 
-                          ? 'border-primary ring-2 ring-primary/20' 
-                          : 'border-border group-hover:border-primary/50'
-                      }`}>
-                        <img
-                          src={actor.imageUrl}
-                          alt={actor.description}
-                          className="w-full h-full object-cover"
-                        />
+          {/* Conversation Area - Scrollable */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="space-y-6">
+              {/* Conversation Messages */}
+              {conversation.map((message) => (
+                <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {message.type === 'user' ? (
+                    // User Message
+                    <div className="max-w-[80%]">
+                      {message.basedOnImageId && (
+                        <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                          <IconArrowDown className="w-3 h-3" />
+                          <span>Based on selected image</span>
+                        </div>
+                      )}
+                      <div className="bg-primary text-primary-foreground rounded-lg px-4 py-3">
+                        <p className="text-sm">{message.content}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
-                    </button>
-                  ))}
+                    </div>
+                  ) : (
+                    // Assistant Message with Images
+                    <div className="max-w-[90%]">
+                      <div className="bg-muted rounded-lg p-4">
+                        <div className="grid grid-cols-3 gap-3">
+                          {message.images?.map((actor) => (
+                            <button
+                              key={actor.id}
+                              onClick={() => setSelectedActorId(actor.id)}
+                              className="group cursor-pointer"
+                            >
+                              <div className={`aspect-[4/5] bg-background rounded-lg border-2 transition-all overflow-hidden ${
+                                selectedActorId === actor.id 
+                                  ? 'border-primary ring-2 ring-primary/20' 
+                                  : 'border-border group-hover:border-primary/50'
+                              }`}>
+                                <img
+                                  src={actor.imageUrl}
+                                  alt={actor.description}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              ))}
+
+              {/* Loading State */}
+              {isGenerating && (
+                <div className="flex justify-start">
+                  <div className="bg-muted rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm text-muted-foreground">Generating images...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Fixed Input Section - EN BAS, ne bouge jamais */}
           <div className="border-t border-border p-8">
-            {/* Masquer le texte explicatif quand des photos sont générées */}
-            {generatedActors.length === 0 && (
+            {/* Masquer le texte explicatif quand conversation commencée */}
+            {conversation.length === 0 && (
               <div className="text-center mb-6">
                 <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
                 <p className="text-muted-foreground">
@@ -150,9 +193,9 @@ export function DefineActorStep({
             {/* Text Input with integrated controls */}
             <div className="relative">
               <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Young adult, fitness coach, wrist band watch"
+                value={currentPrompt}
+                onChange={(e) => setCurrentPrompt(e.target.value)}
+                placeholder={conversation.length > 0 ? "Describe changes or new style..." : "Young adult, fitness coach, wrist band watch"}
                 className="w-full h-32 p-4 pb-16 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
               />
               
@@ -280,19 +323,20 @@ export function DefineActorStep({
       )}
 
       {/* Footer - Always at bottom */}
-      {generatedActors.length > 0 ? (
-        // Footer when actors are generated
+      {conversation.length > 0 && selectedActorId ? (
+        // Footer when actor is selected in conversation
         <div className="p-8 border-t border-border">
           <div className="text-center">
             <button
               onClick={() => {
-                const selectedActor = generatedActors.find(actor => actor.id === selectedActorId)
+                const selectedActor = conversation
+                  .flatMap(msg => msg.images || [])
+                  .find(actor => actor.id === selectedActorId)
                 if (selectedActor && onActorSelect) {
                   onActorSelect(selectedActor)
                 }
               }}
-              disabled={!selectedActorId}
-              className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent transition-all cursor-pointer"
             >
               Select your Actor
             </button>
