@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { AvatarSelector } from "../../_shared/components/AvatarSelector"
-import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
+import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep/index"
 import { VideoGenerationStep } from "../../_shared/components/VideoGenerationStepWrapper"
 import { SectionHeader } from "../components/SectionHeader"
 

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AvatarSelector } from "../../_shared/components/AvatarSelector"
 import { ProductPlacementStep } from "./components/ProductPlacementStep"
-import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
+import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep/index"
 import { ProductGenerationStep } from "../../_shared/components/VideoGenerationStepWrapper"
 import { SectionHeader } from "../components/SectionHeader"
 
