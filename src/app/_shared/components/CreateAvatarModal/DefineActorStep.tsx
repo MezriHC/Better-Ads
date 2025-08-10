@@ -34,6 +34,7 @@ export function DefineActorStep({
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [aspectRatio, setAspectRatio] = useState("9:16")
+  const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -92,7 +93,10 @@ export function DefineActorStep({
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
                   <button
-                    onClick={onRegenerateActors}
+                    onClick={() => {
+                      setSelectedActorId(null) // Reset selection when regenerating
+                      onRegenerateActors?.()
+                    }}
                     disabled={isGenerating}
                     className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
                   >
@@ -105,10 +109,14 @@ export function DefineActorStep({
                   {generatedActors.map((actor) => (
                     <button
                       key={actor.id}
-                      onClick={() => onActorSelect?.(actor)}
+                      onClick={() => setSelectedActorId(actor.id)}
                       className="group cursor-pointer"
                     >
-                      <div className="aspect-[9/16] bg-muted rounded-lg border-2 border-border group-hover:border-primary/50 transition-all overflow-hidden">
+                      <div className={`aspect-[9/16] bg-muted rounded-lg border-2 transition-all overflow-hidden ${
+                        selectedActorId === actor.id 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border group-hover:border-primary/50'
+                      }`}>
                         <img
                           src={actor.imageUrl}
                           alt={actor.description}
@@ -125,13 +133,16 @@ export function DefineActorStep({
 
           {/* Fixed Input Section - EN BAS, ne bouge jamais */}
           <div className="border-t border-border p-8">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
-              <p className="text-muted-foreground">
-                To create your character, start by writing a text, optionally add<br />
-                a reference image, and choose a ration that suits you.
-              </p>
-            </div>
+            {/* Header text - only show when no actors generated */}
+            {generatedActors.length === 0 && (
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
+                <p className="text-muted-foreground">
+                  To create your character, start by writing a text, optionally add<br />
+                  a reference image, and choose a ration that suits you.
+                </p>
+              </div>
+            )}
 
             {/* Text Input with integrated controls */}
             <div className="relative">
@@ -202,15 +213,7 @@ export function DefineActorStep({
               </div>
             )}
 
-            {/* Cancel button for Generate method */}
-            <div className="flex justify-start mt-4">
-              <button
-                onClick={onBack}
-                className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
+
           </div>
         </>
       ) : (
@@ -279,7 +282,13 @@ export function DefineActorStep({
         <div className="p-8 border-t border-border">
           <div className="text-center">
             <button
-              disabled={!generatedActors.length}
+              disabled={!selectedActorId}
+              onClick={() => {
+                const selectedActor = generatedActors.find(actor => actor.id === selectedActorId)
+                if (selectedActor) {
+                  onActorSelect?.(selectedActor)
+                }
+              }}
               className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
               Select your Actor
