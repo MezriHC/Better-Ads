@@ -25,12 +25,14 @@ L'architecture est modulaire. Elle est composée de **Fonctionnalités** autonom
 │  │  │     ├─ user.ts          # DATABASE - Requêtes CRUD pour les utilisateurs
 │  │  │     └─ [model].ts       # DATABASE - Exemple - Requêtes pour autres modèles
 │  │  ├─ hooks/                 # Hooks React globaux
-│  │  │  ├─ useAuth.ts          # AUTH - Hook principal d'authentification
+│  │  │  ├─ useAuth.ts          # AUTH - Hook principal d'authentification NextAuth
 │  │  │  ├─ useDatabase.ts      # DATABASE - Hook pour opérations base de données
+│  │  │  ├─ use-mobile.ts       # UI - Hook détection mobile (existant)
 │  │  │  ├─ ExempleHook1.ts     # EXEMPLE - Hook global 1
 │  │  │  └─ ExempleHook2.ts     # EXEMPLE - Hook global 2
 │  │  ├─ lib/                   # Fonctions utilitaires partagées
 │  │  │  ├─ auth.ts             # AUTH - Configuration NextAuth avec adapter Prisma
+│  │  │  ├─ auth-client.ts      # AUTH - Wrapper compatibilité (réexporte useAuth)
 │  │  │  ├─ utils.ts            # UI - Fonctions utilitaires (ex: cn pour classnames)
 │  │  │  ├─ ExempleLib1.ts      # EXEMPLE - Utilitaire partagé 1
 │  │  │  └─ ExempleLib2.ts      # EXEMPLE - Utilitaire partagé 2
@@ -44,7 +46,9 @@ L'architecture est modulaire. Elle est composée de **Fonctionnalités** autonom
 │  │  │  └─ [...nextauth]/      # AUTH - Route NextAuth dynamique
 │  │  │     └─ route.ts         # AUTH - Handler NextAuth avec Google Provider
 │  │  ├─ users/                 # DATABASE - APIs pour gestion utilisateurs
-│  │  │  └─ route.ts            # DATABASE - Endpoints CRUD utilisateurs avec auth
+│  │  │  ├─ route.ts            # DATABASE - Endpoints GET/POST utilisateurs avec auth
+│  │  │  └─ [id]/               # DATABASE - Routes par ID utilisateur
+│  │  │     └─ route.ts         # DATABASE - Endpoints GET/PATCH/DELETE par ID
 │  │  └─ dashboard/             # EXEMPLE - APIs pour la page principale
 │  │     ├─ route.ts            # EXEMPLE - Endpoints page principale
 │  │     ├─ services.ts         # EXEMPLE - Logique métier page principale
@@ -144,16 +148,15 @@ user-management/
 
 ---
 
-## 3. Configuration Authentification (Better Auth + Providers OAuth)
+## 3. Configuration Authentification (NextAuth.js + Providers OAuth)
 
-### **🔥 Template Better Auth - Copy/Paste Ready**
+### **🔥 Template NextAuth.js - Copy/Paste Ready**
 
 ### **Variables d'environnement (.env) :**
 ```env
-# Better Auth Configuration
-BETTER_AUTH_SECRET=your-64-char-secret-key
-BETTER_AUTH_URL=http://localhost:3000
-NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+# NextAuth.js Configuration
+NEXTAUTH_SECRET=your-64-char-secret-key
+NEXTAUTH_URL=http://localhost:3000
 
 # OAuth Providers (optionnel - ajouter selon besoins)
 GOOGLE_CLIENT_ID=your-google-client-id
@@ -162,225 +165,199 @@ GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
 ```
 
-### **Architecture Better Auth - 4 fichiers essentiels :**
-1. **`_shared/lib/auth.ts`** → Configuration serveur Better Auth
-2. **`_shared/lib/auth-client.ts`** → Client Better Auth + hooks
-3. **`api/auth/[...all]/route.ts`** → Handler API Better Auth  
+### **Architecture NextAuth.js - 5 fichiers essentiels :**
+1. **`_shared/lib/auth.ts`** → Configuration serveur NextAuth
+2. **`_shared/hooks/useAuth.ts`** → Hook client principal
+3. **`api/auth/[...nextauth]/route.ts`** → Handler API NextAuth  
 4. **`middleware.ts`** → Protection routes côté serveur
-5. **`_shared/components/AuthGuard.tsx`** → Protection routes côté client (optionnel)
+5. **`_shared/components/SessionProvider.tsx`** → Provider React
 
-### **Template Better Auth - Configuration complète :**
+### **Template NextAuth.js - Configuration complète :**
 
 #### **1. Configuration serveur (_shared/lib/auth.ts) :**
 ```typescript
-import { betterAuth } from "better-auth"
-import { prismaAdapter } from "better-auth/adapters/prisma"
-import { PrismaClient } from "@prisma/client"
+import { NextAuthOptions } from "next-auth"
+import GoogleProvider from "next-auth/providers/google"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { prisma } from "../database/client"
 
-const prisma = new PrismaClient()
-
-export const auth = betterAuth({
-  database: prismaAdapter(prisma, { provider: "postgresql" }),
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  secret: process.env.BETTER_AUTH_SECRET!,
-  socialProviders: {
-    google: {
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      scope: ["openid", "email", "profile"],
-      mapProfileToUser: (profile) => ({
-        id: profile.sub,
-        email: profile.email,
-        name: profile.name,
-        image: profile.picture,
-        emailVerified: profile.email_verified,
-      })
-    },
+    }),
+  ],
+  callbacks: {
+    session: ({ session, user }) => ({
+      ...session,
+      user: {
+        ...session.user,
+        id: user.id,
+      },
+    }),
   },
-  session: { expiresIn: 60 * 60 * 24 * 7, updateAge: 60 * 60 * 24 },
-  advanced: { useSecureCookies: process.env.NODE_ENV === "production" },
-  rateLimit: {
-    window: 60, max: 100,
-    customRules: { "/sign-in/*": { window: 60, max: 5 } }
+  pages: {
+    signIn: "/login",
   },
-})
-
-export type Session = typeof auth.$Infer.Session
-export type User = typeof auth.$Infer.Session.user
+}
 ```
 
-#### **2. Client Better Auth (_shared/lib/auth-client.ts) :**
+#### **2. Hook client principal (_shared/hooks/useAuth.ts) :**
 ```typescript
 "use client"
-import { createAuthClient } from "better-auth/react"
+import { useSession, signIn, signOut } from "next-auth/react"
 
-// Client Better Auth avec toutes les méthodes
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
-})
-
-// Export de toutes les méthodes Better Auth
-export const {
-  signIn, signOut, signUp, useSession, getSession,
-  updateUser, changePassword, forgetPassword, resetPassword,
-} = authClient
-
-// Types auto-inférés Better Auth
-export type Session = typeof authClient.$Infer.Session
-export type User = typeof authClient.$Infer.Session.user
-
-// Hook personnalisé simplifié (optionnel)
 export function useAuth() {
-  const { data: session, isPending: isLoading, error } = useSession()
+  const { data: session, status } = useSession()
+  
   return {
+    // État de la session
     user: session?.user || null,
     session: session || null,
-    isLoading,
+    isLoading: status === "loading",
     isAuthenticated: !!session?.user,
-    error,
+    
+    // Méthodes d'authentification
+    signIn: (provider?: string) => signIn(provider),
+    signOut: () => signOut({ callbackUrl: "/login" }),
+    
+    // Informations utilisateur
+    userId: session?.user?.id || null,
+    userEmail: session?.user?.email || null,
+    userName: session?.user?.name || null,
+    userImage: session?.user?.image || null,
   }
 }
 ```
 
-#### **3. Route API (api/auth/[...all]/route.ts) :**
+#### **3. Route API (api/auth/[...nextauth]/route.ts) :**
 ```typescript
-import { auth } from "../../../_shared/lib/auth"
-import { toNextJsHandler } from "better-auth/next-js"
+import NextAuth from "next-auth"
+import { authOptions } from "../../../_shared/lib/auth"
 
-const { GET, POST } = toNextJsHandler(auth)
-export { GET, POST }
+const handler = NextAuth(authOptions)
+
+export { handler as GET, handler as POST }
 ```
 
 #### **4. Middleware (middleware.ts) :**
 ```typescript
 import { NextRequest, NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 const PROTECTED_ROUTES = ["/dashboard"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
+  const isProtectedRoute = PROTECTED_ROUTES.some(route => 
+    pathname.startsWith(route)
+  )
 
   if (isProtectedRoute) {
     try {
-      const sessionResponse = await fetch(
-        new URL("/api/auth/get-session", request.url),
-        { headers: { cookie: request.headers.get("cookie") || "" } }
-      )
-      
-      if (!sessionResponse.ok) {
+      const token = await getToken({ 
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET 
+      })
+
+      if (!token) {
         return NextResponse.redirect(new URL("/login", request.url))
       }
-      
-      const session = await sessionResponse.json()
-      if (!session?.user) {
-        return NextResponse.redirect(new URL("/login", request.url))
-      }
-    } catch (error) {
+
+      return NextResponse.next()
+    } catch {
       return NextResponse.redirect(new URL("/login", request.url))
     }
   }
-  
+
+  if (pathname === "/login") {
+    try {
+      const token = await getToken({ 
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET 
+      })
+
+      if (token) {
+        return NextResponse.redirect(new URL("/dashboard", request.url))
+      }
+    } catch {
+      // Erreur silencieuse, permettre l'accès à /login
+    }
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"]
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 }
 ```
 
-#### **5. AuthGuard Component (optionnel) :**
+#### **5. SessionProvider (_shared/components/SessionProvider.tsx) :**
 ```typescript
 "use client"
-import { useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { useAuth } from "../lib/auth-client"
+import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth()
-  const router = useRouter()
-  const pathname = usePathname()
-
-  useEffect(() => {
-    if (isLoading) return
-    if (!isAuthenticated && pathname !== "/login") {
-      router.push("/login")
-    }
-    if (isAuthenticated && pathname === "/login") {
-      router.push("/dashboard")
-    }
-  }, [isAuthenticated, isLoading, pathname, router])
-
-  if (isLoading || (!isAuthenticated && pathname !== "/login")) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  return <>{children}</>
+export function SessionProvider({ children }: { children: React.ReactNode }) {
+  return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
 }
 ```
 
 ---
 
-### **🚀 Configuration Avancée Better Auth**
+### **🚀 Configuration Avancée NextAuth.js**
 
 #### **Multi-Providers OAuth :**
 ```typescript
-// Dans auth.ts - Support Google, GitHub, Discord
-socialProviders: {
-  google: {
+// Dans authOptions - Support Google, GitHub, Discord
+providers: [
+  GoogleProvider({
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    scope: ["openid", "email", "profile"],
-    mapProfileToUser: (profile) => ({
-      id: profile.sub,
-      email: profile.email,
-      name: profile.name,
-      image: profile.picture,
-      emailVerified: profile.email_verified,
-    })
-  },
-  github: {
+  }),
+  GitHubProvider({
     clientId: process.env.GITHUB_CLIENT_ID!,
     clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-  },
-  discord: {
+  }),
+  DiscordProvider({
     clientId: process.env.DISCORD_CLIENT_ID!,
     clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-  },
-}
+  }),
+]
 ```
 
-#### **Sécurité & Rate Limiting :**
+#### **Callbacks Avancés :**
 ```typescript
-// Protection contre les attaques
-rateLimit: {
-  window: 60, // fenêtre de 60 secondes  
-  max: 100,   // max 100 requêtes par minute
-  customRules: {
-    "/sign-in/*": { window: 60, max: 5 },    // 5 tentatives login/min
-    "/sign-up/*": { window: 300, max: 3 },   // 3 inscriptions/5min
-    "/forgot-password/*": { window: 900, max: 2 }, // 2 reset/15min
+callbacks: {
+  session: ({ session, user }) => ({
+    ...session,
+    user: {
+      ...session.user,
+      id: user.id,
+    },
+  }),
+  jwt: ({ token, user }) => {
+    if (user) {
+      token.id = user.id
+    }
+    return token
   },
-},
-advanced: {
-  useSecureCookies: process.env.NODE_ENV === "production",
-  sameSitePolicy: "lax", // ou "strict" pour plus de sécurité
 }
 ```
 
 #### **Commandes essentielles :**
 ```bash
-# Installation Better Auth
-npm install better-auth @auth/prisma-adapter
+# Installation NextAuth.js
+npm install next-auth @auth/prisma-adapter
 
 # Générer secret 64 caractères
-npx @better-auth/cli secret
+openssl rand -base64 32
 
-# Setup Prisma pour Better Auth
+# Setup Prisma pour NextAuth
 npx prisma generate
 npx prisma db push
 
@@ -401,13 +378,13 @@ DATABASE_URL="postgresql://repricer_user:repricer_password@localhost:5432/repric
 ```
 
 ### **Structure de base de données implémentée :**
-- **Schéma** : `prisma/schema.prisma` (modèles User, Account, Session, VerificationToken)
+- **Schéma** : `prisma/schema.prisma` (modèles User, Account, Session, VerificationToken pour NextAuth)
 - **Client** : `_shared/database/client.ts` (singleton Prisma avec configuration optimisée)
-- **Types** : `_shared/database/types.ts` (réexport des types Prisma + utilitaires)
-- **Requêtes** : `_shared/database/queries/[model].ts` (fonctions CRUD organisées par modèle)
+- **Types** : `_shared/database/types.ts` (réexport des types Prisma + utilitaires CRUD)
+- **Requêtes** : `_shared/database/queries/user.ts` (fonctions CRUD pour utilisateurs)
 - **Hook client** : `_shared/hooks/useDatabase.ts` (opérations côté client via API)
-- **API** : `/api/users` (endpoints REST pour gestion utilisateurs)
-- **Adapter** : NextAuth configuré avec PrismaAdapter pour session DB
+- **API Users** : `/api/users` (GET/POST) et `/api/users/[id]` (GET/PATCH/DELETE)
+- **Adapter** : NextAuth configuré avec PrismaAdapter pour sessions en base
 
 ### **Commandes essentielles :**
 ```bash

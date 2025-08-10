@@ -1,16 +1,45 @@
-// Types Better Auth - Template réutilisable pour projets
+// Types d'authentification NextAuth
+import type { Session, User } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 
-// Re-export des types Better Auth natifs 
-export type { Session, User } from "../lib/auth"
-export type { Session as ClientSession, User as ClientUser } from "../lib/auth-client"
+// Extension des types NextAuth
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }
+  }
 
-// Types pour les providers OAuth supportés
-export type OAuthProvider = "google" | "github" | "discord" | "facebook" | "twitter"
-
-// Types génériques pour les callbacks d'authentification
-export interface AuthCallbacks<T = unknown> {
-  onSuccess?: (data: T) => void
-  onError?: (error: string) => void
-  onRequest?: () => void
-  onResponse?: () => void
+  interface User {
+    id: string
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  }
 }
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string
+  }
+}
+
+// Types pour les callbacks NextAuth
+export type NextAuthSession = Session
+export type NextAuthUser = User
+export type NextAuthJWT = JWT
+
+// Types pour les providers
+export type AuthProvider = "google"
+
+// Types pour les erreurs d'authentification
+export type AuthError = {
+  message: string
+  code: string
+}
+
+// Types pour les événements d'authentification
+export type AuthEvent = "signIn" | "signOut" | "session"

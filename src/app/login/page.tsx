@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { signIn } from "../_shared/lib/auth-client"
+import { signIn } from "next-auth/react"
 import { IconMail, IconLock } from "@tabler/icons-react"
 
 // Official Google Logo Component
@@ -22,15 +22,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
 
   const handleGoogleSignIn = useCallback(async () => {
-    // Solution: useCallback pour éviter les re-renders + signIn.social natif
+    // NextAuth Google sign in
     try {
-      await signIn.social({
-        provider: "google",
-        callbackURL: "/dashboard",
+      await signIn("google", {
+        callbackUrl: "/dashboard",
       })
-    } catch (error) {
+    } catch {
       // Gestion silencieuse des erreurs
-      console.error("Erreur de connexion Google:", error)
     }
   }, [])
 

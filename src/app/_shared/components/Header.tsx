@@ -1,9 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import Image from "next/image"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { useAuth, signOut } from "../lib/auth-client"
+import { useAuth } from "../hooks/useAuth"
+import { signOut } from "next-auth/react"
 
 export function Header({ pageTitle }: { pageTitle: string }) {
   const { theme, setTheme } = useTheme()
@@ -38,13 +40,9 @@ export function Header({ pageTitle }: { pageTitle: string }) {
     setUserMenuOpen(false)
     try {
       await signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            window.location.href = "/login"
-          }
-        }
+        callbackUrl: "/login"
       })
-    } catch (error) {
+    } catch {
       
     } finally {
       setIsLoggingOut(false)
@@ -81,9 +79,11 @@ export function Header({ pageTitle }: { pageTitle: string }) {
             className="w-10 h-10 rounded-full bg-muted/50 hover:bg-accent hover:scale-105 active:scale-95 transition-all duration-200 ease-in-out cursor-pointer flex items-center justify-center shadow-sm hover:shadow-md ring-2 ring-transparent hover:ring-accent/20"
           >
             {user?.image ? (
-              <img 
+              <Image 
                 src={user.image} 
                 alt={user.name || "User"} 
+                width={32}
+                height={32}
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-background transition-all duration-200"
               />
             ) : (
@@ -101,9 +101,11 @@ export function Header({ pageTitle }: { pageTitle: string }) {
               <div className="p-3 border-b border-border/50">
                 <div className="flex items-center gap-3">
                   {user?.image ? (
-                    <img 
+                    <Image 
                       src={user.image} 
                       alt={user.name || "User"} 
+                      width={40}
+                      height={40}
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-background/50"
                     />
                   ) : (

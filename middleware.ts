@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getToken } from "next-auth/jwt"
 
-// Routes protégées par Better Auth
+// Routes protégées par NextAuth
 const PROTECTED_ROUTES = ["/dashboard"]
-
-// Routes publiques
-const PUBLIC_ROUTES = ["/", "/login"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -14,32 +12,21 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   )
 
-  // Si c'est une route protégée, vérifier la session Better Auth
+  // Si c'est une route protégée, vérifier la session NextAuth
   if (isProtectedRoute) {
     try {
-      // Utiliser l'endpoint Better Auth pour vérifier la session
-      const sessionResponse = await fetch(
-        new URL("/api/auth/get-session", request.url),
-        {
-          headers: {
-            cookie: request.headers.get("cookie") || "",
-          },
-        }
-      )
+      const token = await getToken({ 
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET 
+      })
 
-      if (!sessionResponse.ok) {
-        return NextResponse.redirect(new URL("/login", request.url))
-      }
-
-      const session = await sessionResponse.json()
-      
-      if (!session?.user) {
+      if (!token) {
         return NextResponse.redirect(new URL("/login", request.url))
       }
 
       // Session valide, continuer
       return NextResponse.next()
-    } catch (error) {
+    } catch {
       // En cas d'erreur, rediriger par sécurité
       return NextResponse.redirect(new URL("/login", request.url))
     }
@@ -48,22 +35,15 @@ export async function middleware(request: NextRequest) {
   // Redirection automatique pour utilisateurs connectés sur /login
   if (pathname === "/login") {
     try {
-      const sessionResponse = await fetch(
-        new URL("/api/auth/get-session", request.url),
-        {
-          headers: {
-            cookie: request.headers.get("cookie") || "",
-          },
-        }
-      )
+      const token = await getToken({ 
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET 
+      })
 
-      if (sessionResponse.ok) {
-        const session = await sessionResponse.json()
-        if (session?.user) {
-          return NextResponse.redirect(new URL("/dashboard", request.url))
-        }
+      if (token) {
+        return NextResponse.redirect(new URL("/dashboard", request.url))
       }
-    } catch (error) {
+    } catch {
       // Erreur silencieuse, permettre l'accès à /login
     }
   }
