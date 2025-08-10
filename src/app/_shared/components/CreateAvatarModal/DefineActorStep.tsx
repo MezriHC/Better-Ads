@@ -81,40 +81,53 @@ export function DefineActorStep({
             {/* Generated Actors Display */}
             {generatedActors.length > 0 && (
               <div>
-                <div className="text-center mb-6">
-                  <p className="text-muted-foreground mb-2">
+                {/* Description en haut */}
+                <div className="text-center mb-6 bg-muted/30 rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground font-medium mb-1">
                     45 years old female in the couch talking
                   </p>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-xs text-muted-foreground">
                     she is in the street and she talks while walking, she wears different clothes
                   </p>
                 </div>
 
+                {/* Header avec titre et iterate */}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
-                  <button
-                    onClick={() => {
-                      setSelectedActorId(null) // Reset selection when regenerating
-                      onRegenerateActors?.()
-                    }}
-                    disabled={isGenerating}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
-                  >
-                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                    <span>Continue to iterate</span>
-                  </button>
+                  
+                  {/* Bouton iterate + icône download style concurrent */}
+                  <div className="flex items-center gap-3">
+                    <button className="w-10 h-10 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors cursor-pointer">
+                      <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        setSelectedActorId(null)
+                        onRegenerateActors?.()
+                      }}
+                      disabled={isGenerating}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer text-sm"
+                    >
+                      <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                      <span>Continue to iterate</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                {/* Grid avatars - plus compact */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
                   {generatedActors.map((actor) => (
                     <button
                       key={actor.id}
                       onClick={() => setSelectedActorId(actor.id)}
-                      className="group cursor-pointer"
+                      className="group cursor-pointer relative"
                     >
-                      <div className={`aspect-[9/16] bg-muted rounded-lg border-2 transition-all overflow-hidden ${
+                      <div className={`aspect-[9/16] bg-muted rounded-xl border-2 transition-all overflow-hidden ${
                         selectedActorId === actor.id 
-                          ? 'border-primary bg-primary/5' 
+                          ? 'border-primary ring-2 ring-primary/20' 
                           : 'border-border group-hover:border-primary/50'
                       }`}>
                         <img
@@ -122,10 +135,26 @@ export function DefineActorStep({
                           alt={actor.description}
                           className="w-full h-full object-cover"
                         />
+                        
+                        {/* Overlay de sélection */}
+                        {selectedActorId === actor.id && (
+                          <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
                     </button>
                   ))}
+                </div>
+
+                {/* Reference badge */}
+                <div className="flex justify-end mb-4">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-lg text-xs text-muted-foreground">
+                    <div className="w-4 h-4 bg-accent rounded-sm"></div>
+                    <span>Reference</span>
+                  </div>
                 </div>
               </div>
             )}
