@@ -66,8 +66,65 @@ export function DefineActorStep({
     <div className="flex flex-col h-full">
       {method === "generate" ? (
         <>
-          {/* Fixed Header with Text Input */}
-          <div className="p-8 border-b border-border">
+          {/* Scrollable Content Area - Photos générées AU-DESSUS */}
+          <div className="flex-1 overflow-y-auto p-8">
+            {isGenerating && (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-muted-foreground">Generating images...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Generated Actors Display */}
+            {generatedActors.length > 0 && (
+              <div>
+                <div className="text-center mb-6">
+                  <p className="text-muted-foreground mb-2">
+                    45 years old female in the couch talking
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    she is in the street and she talks while walking, she wears different clothes
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
+                  <button
+                    onClick={onRegenerateActors}
+                    disabled={isGenerating}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
+                  >
+                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    <span>Continue to iterate</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6">
+                  {generatedActors.map((actor) => (
+                    <button
+                      key={actor.id}
+                      onClick={() => onActorSelect?.(actor)}
+                      className="group cursor-pointer"
+                    >
+                      <div className="aspect-[9/16] bg-muted rounded-lg border-2 border-border group-hover:border-primary/50 transition-all overflow-hidden">
+                        <img
+                          src={actor.imageUrl}
+                          alt={actor.description}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Fixed Input Section - EN BAS, ne bouge jamais */}
+          <div className="border-t border-border p-8">
             <div className="text-center mb-6">
               <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
               <p className="text-muted-foreground">
@@ -124,7 +181,7 @@ export function DefineActorStep({
                 <button
                   onClick={handleSubmit}
                   disabled={!canSubmit || isGenerating}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer"
                 >
                   <IconSparkles className="w-4 h-4" />
                   {isGenerating ? "Generating..." : "Generate"}
@@ -144,63 +201,16 @@ export function DefineActorStep({
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto p-8">
-            {isGenerating && (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm text-muted-foreground">Generating images...</span>
-                </div>
-              </div>
-            )}
-
-            {/* Generated Actors Display */}
-            {generatedActors.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-medium text-foreground">Choose your actor</h3>
-                  <button
-                    onClick={onRegenerateActors}
-                    disabled={isGenerating}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
-                  >
-                    <IconSparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                    <span>Continue to iterate</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-6 mb-8">
-                  {generatedActors.map((actor) => (
-                    <button
-                      key={actor.id}
-                      onClick={() => onActorSelect?.(actor)}
-                      className="group cursor-pointer"
-                    >
-                      <div className="aspect-[9/16] bg-muted rounded-lg border-2 border-border group-hover:border-primary/50 transition-all overflow-hidden">
-                        <img
-                          src={actor.imageUrl}
-                          alt={actor.description}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="text-center">
-                  <p className="text-muted-foreground mb-4">
-                    45 years old female in the couch talking
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    she is in the street and she talks while walking, she wears different clothes
-                  </p>
-                </div>
-              </div>
-            )}
+            {/* Cancel button for Generate method */}
+            <div className="flex justify-start mt-4">
+              <button
+                onClick={onBack}
+                className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </>
       ) : (
@@ -263,10 +273,10 @@ export function DefineActorStep({
         </>
       )}
 
-      {/* Footer */}
-      <div className="p-8 border-t border-border">
-        {generatedActors.length > 0 ? (
-          // Footer when actors are generated
+      {/* Footer - Always at bottom */}
+      {generatedActors.length > 0 ? (
+        // Footer when actors are generated
+        <div className="p-8 border-t border-border">
           <div className="text-center">
             <button
               disabled={!generatedActors.length}
@@ -275,26 +285,30 @@ export function DefineActorStep({
               Select your Actor
             </button>
           </div>
-        ) : (
-          // Normal footer
-          <div className="flex justify-between items-center">
-            <button
-              onClick={onBack}
-              className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              {method === "upload" ? "Back" : "Cancel"}
-            </button>
+        </div>
+      ) : (
+        // Normal footer for upload method
+        method === "upload" && (
+          <div className="p-8 border-t border-border">
+            <div className="flex justify-between items-center">
+              <button
+                onClick={onBack}
+                className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                Back
+              </button>
 
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit || isGenerating}
-              className="px-6 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {isGenerating ? "Processing..." : "Turn into talking actor"}
-            </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit || isGenerating}
+                className="px-6 py-2 bg-foreground text-background rounded-lg hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                {isGenerating ? "Processing..." : "Turn into talking actor"}
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        )
+      )}
     </div>
   )
 }
