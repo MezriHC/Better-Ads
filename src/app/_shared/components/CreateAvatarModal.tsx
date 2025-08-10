@@ -148,7 +148,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           </div>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted hover:bg-accent transition-colors cursor-pointer"
           >
             <IconX className="w-5 h-5 text-muted-foreground" />
           </button>

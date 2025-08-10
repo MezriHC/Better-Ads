@@ -137,7 +137,7 @@ export function LaunchTrainingStep({
         <div className="text-center">
           <button
             onClick={onLaunchTraining}
-            className="px-8 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-all font-medium"
+            className="px-8 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-all font-medium cursor-pointer"
           >
             Launch Training
           </button>

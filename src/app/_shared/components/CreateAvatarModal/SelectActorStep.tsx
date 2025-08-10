@@ -78,7 +78,7 @@ export function SelectActorStep({
           <button
             onClick={onRegenerateActors}
             disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
           >
             <IconRefresh className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
             <span>Continue to iterate</span>

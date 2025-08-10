@@ -126,7 +126,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
           <div className="relative">
             <button
               onClick={() => setIsGenderOpen(!isGenderOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors cursor-pointer"
             >
               <span>Gender</span>
               <IconChevronDown className="w-4 h-4" />
@@ -140,7 +140,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
                       setGenderFilter(option)
                       setIsGenderOpen(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg cursor-pointer"
                   >
                     {option === "all" ? "All" : option.charAt(0).toUpperCase() + option.slice(1)}
                   </button>
@@ -153,7 +153,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
           <div className="relative">
             <button
               onClick={() => setIsAgeOpen(!isAgeOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors cursor-pointer"
             >
               <span>Age</span>
               <IconChevronDown className="w-4 h-4" />
@@ -167,7 +167,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
                       setAgeFilter(option)
                       setIsAgeOpen(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg cursor-pointer"
                   >
                     {option === "all" ? "All" : option.charAt(0).toUpperCase() + option.slice(1)}
                   </button>
@@ -180,7 +180,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
           <div className="relative">
             <button
               onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors cursor-pointer"
             >
               <span>English</span>
               <IconChevronDown className="w-4 h-4" />
@@ -194,7 +194,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
                       setLanguageFilter(option)
                       setIsLanguageOpen(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg cursor-pointer"
                   >
                     {option === "all" ? "All languages" : option}
                   </button>
@@ -207,7 +207,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
           <div className="relative">
             <button
               onClick={() => setIsAccentOpen(!isAccentOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors cursor-pointer"
             >
               <span>Accent</span>
               <IconChevronDown className="w-4 h-4" />
@@ -221,7 +221,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
                       setAccentFilter(option)
                       setIsAccentOpen(false)
                     }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg cursor-pointer"
                   >
                     {option === "all" ? "All accents" : option.charAt(0).toUpperCase() + option.slice(1)}
                   </button>

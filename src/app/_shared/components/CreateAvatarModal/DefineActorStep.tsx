@@ -94,7 +94,7 @@ export function DefineActorStep({ method, onDefineActor, onBack, isGenerating }:
               {imagePreview && (
                 <button
                   onClick={handleRemoveImage}
-                  className="w-10 h-10 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors"
+                  className="w-10 h-10 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <IconTrash className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -189,7 +189,7 @@ export function DefineActorStep({ method, onDefineActor, onBack, isGenerating }:
       <div className="flex justify-between items-center">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         >
           {method === "upload" ? "Back" : "Cancel"}
         </button>
