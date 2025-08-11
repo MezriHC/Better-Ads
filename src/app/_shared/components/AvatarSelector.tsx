@@ -5,12 +5,15 @@ import Image from "next/image"
 import { IconSearch, IconChevronDown, IconPlus, IconCamera } from "@tabler/icons-react"
 import { CreateAvatarModal } from "./CreateAvatarModal"
 
-interface Voice {
+type CreateMethod = "generate" | "upload"
+
+
+
+interface SelectedVoice {
   id: string
   name: string
   accent: string
   gender: string
-  audioUrl?: string
 }
 
 interface Avatar {
@@ -193,7 +196,7 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
   ]
 
   // Handler pour la création d'avatar
-  const handleAvatarCreated = (newAvatar: { id: string; name: string; imageUrl: string; method: string | null; status: string; voice?: Voice }) => {
+  const handleAvatarCreated = (newAvatar: { id: string; name: string; imageUrl: string; method: CreateMethod | null; status: string; voice?: SelectedVoice | null }) => {
     const avatar: Avatar = {
       id: newAvatar.id,
       name: newAvatar.name,
