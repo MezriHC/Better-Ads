@@ -12,8 +12,12 @@ type CreateMethod = "generate" | "upload"
 interface SelectedVoice {
   id: string
   name: string
-  accent: string
   gender: string
+  age: string
+  language: string
+  accent: string
+  tags: string[]
+  audioUrl?: string
 }
 
 interface Avatar {
