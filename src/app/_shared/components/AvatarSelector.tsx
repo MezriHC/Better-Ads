@@ -5,6 +5,14 @@ import Image from "next/image"
 import { IconSearch, IconChevronDown, IconPlus, IconCamera } from "@tabler/icons-react"
 import { CreateAvatarModal } from "./CreateAvatarModal"
 
+interface Voice {
+  id: string
+  name: string
+  accent: string
+  gender: string
+  audioUrl?: string
+}
+
 interface Avatar {
   id: string
   name: string
@@ -238,7 +246,7 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
       
       return true
     })
-  }, [searchQuery, selectedGender, selectedAge, selectedTheme, avatarType, customAvatars, allAvatars])
+  }, [searchQuery, selectedGender, selectedAge, selectedTheme, avatarType, customAvatars])
 
   return (
     <div className="flex flex-col gap-8">
