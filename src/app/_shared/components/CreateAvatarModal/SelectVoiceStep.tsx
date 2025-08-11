@@ -74,6 +74,7 @@ const mockVoices: Voice[] = [
 
 export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepProps) {
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null)
   const [genderFilter, setGenderFilter] = useState("all")
 
   const [languageFilter, setLanguageFilter] = useState("English")

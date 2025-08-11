@@ -10,31 +10,32 @@ interface GetStartedStepProps {
 
 export function GetStartedStep({ onMethodSelect }: GetStartedStepProps) {
   return (
-    <div className="p-8">
-      {/* Method Selection - Optimized layout */}
-      <div className="grid grid-cols-2 gap-8">
-        {/* Generate Option */}
+    <div className="flex-1 p-12">
+      <div className="grid grid-cols-2 gap-8 h-full">
         <button
           onClick={() => onMethodSelect("generate")}
-          className="group p-8 text-center border-2 border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+          className="group border-2 border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-6 cursor-pointer"
         >
-          <div className="w-16 h-16 bg-primary/10 group-hover:bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-6 transition-all">
-            <IconSparkles className="w-8 h-8 text-primary" />
+          <div className="w-20 h-20 bg-primary/10 group-hover:bg-primary/20 rounded-lg flex items-center justify-center transition-colors">
+            <IconSparkles className="w-10 h-10 text-primary" />
           </div>
-          <h3 className="font-semibold text-foreground mb-3 text-lg">GENERATE</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">Generate from prompt</p>
+          <div className="text-center px-6 flex flex-col gap-2">
+            <h3 className="text-2xl font-semibold text-foreground">Generate</h3>
+            <p className="text-sm text-muted-foreground">Create unique AI actors from text descriptions</p>
+          </div>
         </button>
 
-        {/* Upload Option */}
         <button
           onClick={() => onMethodSelect("upload")}
-          className="group p-8 text-center border-2 border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer"
+          className="group border-2 border-border rounded-lg hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-6 cursor-pointer"
         >
-          <div className="w-16 h-16 bg-primary/10 group-hover:bg-primary/20 rounded-xl flex items-center justify-center mx-auto mb-6 transition-all">
-            <IconPhoto className="w-8 h-8 text-primary" />
+          <div className="w-20 h-20 bg-primary/10 group-hover:bg-primary/20 rounded-lg flex items-center justify-center transition-colors">
+            <IconPhoto className="w-10 h-10 text-primary" />
           </div>
-          <h3 className="font-semibold text-foreground mb-3 text-lg">UPLOAD</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">Transform a picture into a talking actor</p>
+          <div className="text-center px-6 flex flex-col gap-2">
+            <h3 className="text-2xl font-semibold text-foreground">Upload</h3>
+            <p className="text-sm text-muted-foreground">Transform your photos into talking AI actors</p>
+          </div>
         </button>
       </div>
     </div>

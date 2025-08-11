@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { IconX } from "@tabler/icons-react"
+import { IconX, IconArrowLeft } from "@tabler/icons-react"
 import { GetStartedStep } from "./CreateAvatarModal/GetStartedStep"
 import { DefineActorStep } from "./CreateAvatarModal/DefineActorStep"
 import { SelectActorStep } from "./CreateAvatarModal/SelectActorStep"
@@ -52,6 +52,23 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
   const [selectedActor, setSelectedActor] = useState<GeneratedActor | null>(null)
   const [selectedVoice, setSelectedVoice] = useState<SelectedVoice | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>()
+
+  // Hauteur adaptative selon l'étape
+  const getModalHeight = () => {
+    switch (step) {
+      case "get-started":
+        return "h-[500px]" // Plus petit pour la première étape
+      case "define-actor":
+        return "h-[800px]" // Grand pour le chat et les images
+      case "select-actor":
+        return "h-[650px]" // Plus d'espace pour éviter le débordement
+      case "select-voice":
+        return "h-[700px]" // Espace pour la liste des voix
+      default:
+        return "h-[700px]"
+    }
+  }
 
   const handleClose = () => {
     // Reset state
@@ -65,6 +82,27 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     setIsGenerating(false)
     onClose()
   }
+
+  const handleBack = () => {
+    switch (step) {
+      case "define-actor":
+        setStep("get-started")
+        break
+      case "select-actor":
+        setStep("define-actor")
+        break
+      case "select-voice":
+        setStep("select-actor")
+        break
+      case "launch-training":
+        setStep("select-voice")
+        break
+      default:
+        break
+    }
+  }
+
+  const canGoBack = step !== "get-started"
 
   const handleMethodSelect = (selectedMethod: CreateMethod) => {
     setMethod(selectedMethod)
@@ -141,30 +179,43 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-card rounded-2xl border border-border w-full max-w-4xl max-h-[90vh] overflow-hidden relative">
-        {/* Header */}
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6"
+      onClick={handleClose}
+    >
+      <div 
+        className={`bg-card rounded-lg border border-border w-full max-w-3xl ${getModalHeight()} relative shadow-xl flex flex-col`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header simplifié */}
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <div>
-            <p className="text-sm text-muted-foreground uppercase tracking-wide">CREATE ACTOR</p>
+          <div className="flex items-center gap-4">
+            {canGoBack && (
+              <button
+                onClick={handleBack}
+                className="w-8 h-8 rounded-lg bg-muted/50 hover:bg-accent flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <IconArrowLeft className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
             <h2 className="text-xl font-semibold text-foreground">
-              {step === "get-started" && "Get Started"}
-              {step === "define-actor" && "Create Custom Actor"}
-              {step === "select-actor" && "Define your Actor"}
-              {step === "select-voice" && "Select Actor Voice"}
+              {step === "get-started" && "Create Actor"}
+              {step === "define-actor" && "Define Actor"}
+              {step === "select-actor" && "Create Custom Actor"}
+              {step === "select-voice" && "Select Voice"}
               {step === "launch-training" && "Launch Training"}
             </h2>
           </div>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted hover:bg-accent transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
           >
             <IconX className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className={`${step === "define-actor" && method === "generate" ? "h-[calc(90vh-80px)] flex flex-col" : "overflow-y-auto max-h-[calc(90vh-80px)]"}`}>
+        {/* Content - sans scroll */}
+        <div className="flex-1 flex flex-col">
           {step === "get-started" && (
             <GetStartedStep onMethodSelect={handleMethodSelect} />
           )}
@@ -174,20 +225,18 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               method={method!}
               onDefineActor={handleDefineActor}
               onBack={() => setStep("get-started")}
+              onNext={(imageUrl?: string) => {
+                if (imageUrl) setSelectedImageUrl(imageUrl)
+                setStep("select-actor")
+              }}
               isGenerating={isGenerating}
-              generatedActors={generatedActors}
-              onActorSelect={handleActorSelect}
-              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage || undefined)}
             />
           )}
           
           {step === "select-actor" && (
             <SelectActorStep
-              actors={generatedActors}
-              prompt={actorPrompt}
-              onActorSelect={handleActorSelect}
-              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage || undefined)}
-              isGenerating={isGenerating}
+              onNext={() => setStep("select-voice")}
+              selectedImageUrl={selectedImageUrl}
             />
           )}
           

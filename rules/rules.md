@@ -515,3 +515,14 @@ npx prisma db push
   - Les positionnements absolus (`mb-2` pour décaler un élément spécifique)
   - Les cas où `gap` ne s'applique pas (éléments non dans un container flex/grid)
 - **Bonne pratique** : Utiliser `gap` dès qu'on a plusieurs éléments enfants à espacer dans un conteneur
+
+### **Curseurs interactifs :**
+- **RÈGLE IMPÉRATIVE** : TOUJOURS ajouter `cursor-pointer` sur les éléments cliquables
+- **Contexte** : L'UX doit être claire - l'utilisateur doit immédiatement comprendre qu'un élément est interactif
+- **Utilisation obligatoire sur** :
+  - Tous les boutons (`<button>`)
+  - Tous les liens (`<a>`)
+  - Tous les éléments avec `onClick`, `onSubmit`, etc.
+  - Tous les éléments interactifs (cartes cliquables, etc.)
+- **Exception** : Les éléments désactivés peuvent utiliser `cursor-not-allowed`
+- **Bonne pratique** : Toujours tester l'interaction en survolant les éléments pour vérifier la présence du curseur main

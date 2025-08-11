@@ -1,142 +1,71 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
-import { IconRefresh } from "@tabler/icons-react"
 
-interface GeneratedActor {
-  id: string
-  imageUrl: string
-  description: string
-}
 
 interface SelectActorStepProps {
-  actors: GeneratedActor[]
-  prompt: string
-  onActorSelect: (actor: GeneratedActor) => void
-  onRegenerateActors: () => void
-  isGenerating: boolean
+  onNext: () => void
+  selectedImageUrl?: string
 }
 
-export function SelectActorStep({ 
-  actors, 
-  onActorSelect, 
-  onRegenerateActors, 
-  isGenerating 
-}: SelectActorStepProps) {
-  return (
-    <div className="p-8">
-      {/* Reference Images Section */}
-      <div className="mb-8">
-        <div className="flex justify-end mb-4">
-          <div className="flex items-center gap-2 px-3 py-1 bg-muted rounded-lg">
-            <span className="text-xs text-muted-foreground">Reference</span>
-            <div className="w-6 h-6 bg-accent rounded">
-              {/* Placeholder for reference icon */}
-            </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="aspect-square bg-muted rounded-lg border border-border">
-              {/* Reference images would go here */}
-            </div>
-          ))}
-        </div>
+export function SelectActorStep({ onNext, selectedImageUrl }: SelectActorStepProps) {
+  const [prompt, setPrompt] = useState("")
 
-        <div className="text-center mb-8">
-          <p className="text-muted-foreground">
-            She is in the street and she talks while walking, she wears different clothes
-          </p>
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-8">
+      {/* Question */}
+      <div className="mb-8">
+        <h3 className="text-lg font-medium text-foreground mb-4">
+          What the actor should do?
+        </h3>
+        <div className="relative">
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder='Like "Make the actor talk with excitement while looking at the camera"'
+            className="w-full h-32 p-4 border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+          />
         </div>
       </div>
 
-      {/* Generated Actors Section */}
+      {/* Starting frame */}
       <div className="mb-8">
-        <h3 className="text-lg font-medium text-foreground mb-6">Choose your actor</h3>
-        
-        <div className="grid grid-cols-3 gap-6 mb-6">
-          {actors.map((actor) => (
-            <button
-              key={actor.id}
-              onClick={() => onActorSelect(actor)}
-              className="group cursor-pointer"
-            >
-              <div className="aspect-[3/4] bg-muted rounded-lg border-2 border-border group-hover:border-primary/50 transition-all overflow-hidden">
-                              <Image
-                src={actor.imageUrl}
-                alt={actor.description}
-                fill
-                className="object-cover"
-              />
+        <div className="border border-border rounded-xl bg-background p-6">
+          <h4 className="text-base font-medium text-foreground mb-6 text-center">Starting frame</h4>
+          <div className="flex justify-center">
+            <div className="relative inline-block">
+              <div className="w-32 h-48 bg-muted rounded-xl overflow-hidden border-2 border-border shadow-lg">
+                <Image
+                  src={selectedImageUrl || "https://picsum.photos/seed/reference-frame/270/480"}
+                  alt="Selected image"
+                  width={270}
+                  height={480}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Continue to Iterate */}
-        <div className="text-center mb-8">
-          <button
-            onClick={onRegenerateActors}
-            disabled={isGenerating}
-            className="inline-flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors cursor-pointer"
-          >
-            <IconRefresh className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span>Continue to iterate</span>
-          </button>
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            {/* Image icon */}
-            <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21,15 16,10 5,21"/>
-              </svg>
-            </div>
-
-            {/* Aspect ratio */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <path d="m9 9 5 12 1.774-5.226L21 14 9 9z"/>
+              {/* Check icon overlay */}
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-2 border-background shadow-lg">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <span className="text-sm text-foreground">9:16</span>
-            </div>
-
-            {/* Delete */}
-            <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polyline points="3,6 5,6 21,6"/>
-                <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"/>
-              </svg>
             </div>
           </div>
-
-          {/* Generate Button */}
-          <button
-            onClick={onRegenerateActors}
-            disabled={isGenerating}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            {isGenerating ? "Generating..." : "Generate"}
-          </button>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="text-center">
+      {/* Bottom button - à l'intérieur de la zone de contenu */}
+      <div className="flex justify-center mt-8">
         <button
-          disabled={actors.length === 0}
-          className="w-full py-3 bg-muted text-foreground rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          onClick={onNext}
+          className="px-8 py-3 bg-foreground text-background rounded-xl font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
         >
-          Select your Actor
+          Turn into talking actor
         </button>
+      </div>
+
       </div>
     </div>
   )
