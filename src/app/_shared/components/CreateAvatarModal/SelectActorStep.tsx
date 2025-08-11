@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { IconRefresh } from "@tabler/icons-react"
 
 interface GeneratedActor {
@@ -18,7 +19,6 @@ interface SelectActorStepProps {
 
 export function SelectActorStep({ 
   actors, 
-  prompt, 
   onActorSelect, 
   onRegenerateActors, 
   isGenerating 
@@ -63,11 +63,12 @@ export function SelectActorStep({
               className="group cursor-pointer"
             >
               <div className="aspect-[3/4] bg-muted rounded-lg border-2 border-border group-hover:border-primary/50 transition-all overflow-hidden">
-                <img
-                  src={actor.imageUrl}
-                  alt={actor.description}
-                  className="w-full h-full object-cover"
-                />
+                              <Image
+                src={actor.imageUrl}
+                alt={actor.description}
+                fill
+                className="object-cover"
+              />
               </div>
             </button>
           ))}

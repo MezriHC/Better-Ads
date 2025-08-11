@@ -52,7 +52,7 @@ export function ScriptAudioStep({ selectedAvatar: initialAvatar, onBack, onNext,
   const [contentMode, setContentMode] = useState<ContentMode>("text")
   const [script, setScript] = useState("")
   const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [selectedAvatar, setSelectedAvatar] = useState<Avatar | null>(
+  const [selectedAvatar] = useState<Avatar | null>(
     initialAvatar || { id: "2", name: "Young Man", imageUrl: "/ai-avatars/avatar-2.jpg" }
   )
   const [selectedVoice, setSelectedVoice] = useState<Voice>(voices[0])

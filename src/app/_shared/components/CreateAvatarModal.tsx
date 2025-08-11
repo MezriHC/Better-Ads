@@ -28,10 +28,19 @@ interface SelectedVoice {
   audioUrl?: string
 }
 
+interface CreatedAvatar {
+  id: string
+  name: string
+  imageUrl: string
+  voice?: SelectedVoice | null
+  method: CreateMethod | null
+  status: string
+}
+
 interface CreateAvatarModalProps {
   isOpen: boolean
   onClose: () => void
-  onAvatarCreated?: (avatar: any) => void
+  onAvatarCreated?: (avatar: CreatedAvatar) => void
 }
 
 export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAvatarModalProps) {
@@ -168,7 +177,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               isGenerating={isGenerating}
               generatedActors={generatedActors}
               onActorSelect={handleActorSelect}
-              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage)}
+              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage || undefined)}
             />
           )}
           
@@ -177,7 +186,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               actors={generatedActors}
               prompt={actorPrompt}
               onActorSelect={handleActorSelect}
-              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage)}
+              onRegenerateActors={() => handleDefineActor(actorPrompt, referenceImage || undefined)}
               isGenerating={isGenerating}
             />
           )}

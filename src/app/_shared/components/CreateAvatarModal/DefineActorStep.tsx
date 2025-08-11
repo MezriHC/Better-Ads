@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { IconCloudUpload, IconPhoto, IconTrash, IconAspectRatio, IconSparkles } from "@tabler/icons-react"
+import Image from "next/image"
+import { IconCloudUpload, IconPhoto, IconTrash, IconSparkles } from "@tabler/icons-react"
 
 type CreateMethod = "generate" | "upload"
 
@@ -35,7 +36,7 @@ export function DefineActorStep({
   const [prompt, setPrompt] = useState("")
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [aspectRatio, setAspectRatio] = useState("9:16")
+
   const [selectedActorId, setSelectedActorId] = useState<string | null>(null)
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,10 +123,11 @@ export function DefineActorStep({
                           ? 'border-primary ring-2 ring-primary/20' 
                           : 'border-border group-hover:border-primary/50'
                       }`}>
-                        <img
+                        <Image
                           src={actor.imageUrl}
                           alt={actor.description}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                       <p className="text-sm text-muted-foreground mt-2 text-center">{actor.description}</p>
@@ -141,10 +143,10 @@ export function DefineActorStep({
             {/* Masquer le texte explicatif quand des photos sont générées */}
             {generatedActors.length === 0 && (
               <div className="text-center mb-6">
-                <h3 className="text-lg font-medium text-foreground mb-2">Let's start</h3>
+                <h3 className="text-lg font-medium text-foreground mb-2">Let&apos;s start</h3>
                 <p className="text-muted-foreground">
                   To create your character, start by writing a text, optionally add<br />
-                  a reference image, and choose a ration that suits you.
+                  a reference image, and choose a ratio that suits you.
                 </p>
               </div>
             )}
@@ -208,11 +210,12 @@ export function DefineActorStep({
             {/* Reference Image Preview */}
             {imagePreview && (
               <div className="mt-4">
-                <div className="w-full max-w-xs mx-auto">
-                  <img
+                <div className="w-full max-w-xs mx-auto relative h-64">
+                  <Image
                     src={imagePreview}
                     alt="Reference"
-                    className="w-full h-auto rounded-xl border border-border"
+                    fill
+                    className="object-cover rounded-xl border border-border"
                   />
                 </div>
               </div>
@@ -260,11 +263,14 @@ export function DefineActorStep({
               </label>
             ) : (
               <div className="relative">
-                <img
-                  src={imagePreview}
-                  alt="Uploaded"
-                  className="w-full max-w-sm mx-auto rounded-xl border border-border"
-                />
+                <div className="w-full max-w-sm mx-auto relative h-64">
+                  <Image
+                    src={imagePreview}
+                    alt="Uploaded"
+                    fill
+                    className="object-cover rounded-xl border border-border"
+                  />
+                </div>
                 <div className="text-center mt-4">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
                     <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">

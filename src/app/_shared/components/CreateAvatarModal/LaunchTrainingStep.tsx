@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { IconMicrophone } from "@tabler/icons-react"
 
 interface GeneratedActor {
@@ -40,10 +41,11 @@ export function LaunchTrainingStep({
           {/* Video Container */}
           <div className="aspect-[9/16] bg-black rounded-2xl overflow-hidden relative">
             {actor ? (
-              <img
+              <Image
                 src={actor.imageUrl}
                 alt="Selected actor"
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -73,7 +75,7 @@ export function LaunchTrainingStep({
               {isGenerating ? (
                 <>
                   <p>Your video will be ready in a few minutes.</p>
-                  <p>You can leave this modal. You will be notified when it's ready.</p>
+                  <p>You can leave this modal. You will be notified when it&apos;s ready.</p>
                 </>
               ) : (
                 <>
@@ -93,11 +95,14 @@ export function LaunchTrainingStep({
           <div className="space-y-3">
             {actor && (
               <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                <img
-                  src={actor.imageUrl}
-                  alt="Selected actor"
-                  className="w-12 h-12 rounded-lg object-cover"
-                />
+                <div className="w-12 h-12 rounded-lg overflow-hidden relative">
+                  <Image
+                    src={actor.imageUrl}
+                    alt="Selected actor"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <div>
                   <p className="font-medium text-foreground">Selected Actor</p>
                   <p className="text-sm text-muted-foreground">{actor.description}</p>

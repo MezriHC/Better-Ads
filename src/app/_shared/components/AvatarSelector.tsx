@@ -185,12 +185,12 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
   ]
 
   // Handler pour la création d'avatar
-  const handleAvatarCreated = (newAvatar: any) => {
+  const handleAvatarCreated = (newAvatar: { id: string; name: string; imageUrl: string; method: string | null; status: string; voice?: Voice }) => {
     const avatar: Avatar = {
       id: newAvatar.id,
       name: newAvatar.name,
       category: "Custom",
-      description: `Custom avatar created via ${newAvatar.method}`,
+      description: `Custom avatar created via ${newAvatar.method || "unknown"}`,
       tags: ["Custom", newAvatar.method === "upload" ? "Uploaded" : "Generated"],
       imageUrl: newAvatar.imageUrl,
       type: "image",
@@ -238,7 +238,7 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
       
       return true
     })
-  }, [searchQuery, selectedGender, selectedAge, selectedTheme, avatarType])
+  }, [searchQuery, selectedGender, selectedAge, selectedTheme, avatarType, customAvatars, allAvatars])
 
   return (
     <div className="flex flex-col gap-8">
@@ -385,8 +385,8 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
       {/* Message pour "My avatars" vide */}
       {filteredAvatars.length === 0 && avatarType === "my" && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">You haven't created any custom avatars yet.</p>
-          <p className="text-sm text-muted-foreground mt-2">Click "Create Avatar" to get started!</p>
+          <p className="text-muted-foreground">You haven&apos;t created any custom avatars yet.</p>
+          <p className="text-sm text-muted-foreground mt-2">Click &quot;Create Avatar&quot; to get started!</p>
         </div>
       )}
 

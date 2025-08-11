@@ -13,8 +13,19 @@ interface Voice {
   audioUrl?: string
 }
 
+interface SelectedVoice {
+  id: string
+  name: string
+  gender: string
+  age: string
+  language: string
+  accent: string
+  tags: string[]
+  audioUrl?: string
+}
+
 interface SelectVoiceStepProps {
-  onVoiceSelect: (voice: any) => void
+  onVoiceSelect: (voice: SelectedVoice) => void
   isUploading?: boolean
 }
 
@@ -64,11 +75,11 @@ const mockVoices: Voice[] = [
 export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [genderFilter, setGenderFilter] = useState("all")
-  const [ageFilter, setAgeFilter] = useState("all")
+
   const [languageFilter, setLanguageFilter] = useState("English")
   const [accentFilter, setAccentFilter] = useState("all")
   const [isGenderOpen, setIsGenderOpen] = useState(false)
-  const [isAgeOpen, setIsAgeOpen] = useState(false)
+
   const [isLanguageOpen, setIsLanguageOpen] = useState(false)
   const [isAccentOpen, setIsAccentOpen] = useState(false)
   const [playingVoice, setPlayingVoice] = useState<string | null>(null)
@@ -149,32 +160,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
             )}
           </div>
 
-          {/* Age Filter */}
-          <div className="relative">
-            <button
-              onClick={() => setIsAgeOpen(!isAgeOpen)}
-              className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg text-foreground hover:bg-accent transition-colors cursor-pointer"
-            >
-              <span>Age</span>
-              <IconChevronDown className="w-4 h-4" />
-            </button>
-            {isAgeOpen && (
-              <div className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 min-w-32">
-                {["all", "young", "adult", "senior"].map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setAgeFilter(option)
-                      setIsAgeOpen(false)
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg cursor-pointer"
-                  >
-                    {option === "all" ? "All" : option.charAt(0).toUpperCase() + option.slice(1)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+
 
           {/* Language Filter */}
           <div className="relative">
