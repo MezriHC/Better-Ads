@@ -64,7 +64,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
       case "select-actor":
         return "h-[750px]" // Plus grand pour éviter le scroll interne
       case "select-voice":
-        return "h-[700px]" // Espace pour la liste des voix
+        return "h-[850px]" // Plus grand pour voir plus de voix sans coupure
       default:
         return "h-[700px]"
     }

@@ -69,6 +69,62 @@ const mockVoices: Voice[] = [
     language: "English",
     accent: "Standard",
     gender: "Female"
+  },
+  {
+    id: "alexander",
+    name: "Alexander",
+    tags: ["Professional"],
+    language: "English",
+    accent: "british",
+    gender: "Male"
+  },
+  {
+    id: "alice",
+    name: "Alice",
+    tags: ["Friendly"],
+    language: "English",
+    accent: "Standard",
+    gender: "Female"
+  },
+  {
+    id: "andrew",
+    name: "Andrew",
+    tags: ["Authoritative"],
+    language: "English",
+    accent: "Standard",
+    gender: "Male"
+  },
+  {
+    id: "anna",
+    name: "Anna",
+    tags: ["Warm"],
+    language: "English",
+    accent: "Standard",
+    gender: "Female"
+  },
+  {
+    id: "brian",
+    name: "Brian",
+    tags: ["Casual"],
+    language: "English",
+    accent: "Standard",
+    gender: "Male"
+  },
+  {
+    id: "charlotte",
+    name: "Charlotte",
+    tags: ["Elegant"],
+    language: "English",
+    accent: "british",
+    gender: "Female"
+  },
+  {
+    id: "daniel",
+    name: "Daniel",
+    tags: ["Confident"],
+    language: "English",
+    accent: "Standard",
+    gender: "Male"
   }
 ]
 
@@ -118,10 +174,10 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
   }
 
   return (
-    <div className="p-8">
-      {/* Search and Filters */}
-      <div className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
+    <div className="flex flex-col h-full">
+      {/* Search and Filters - Fixed at top */}
+      <div className="flex-shrink-0 p-8 pb-4 border-b border-border">
+        <div className="flex items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
             <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -219,12 +275,13 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
         </div>
       </div>
 
-      {/* Voice List */}
-      <div className="space-y-3 mb-8 max-h-96 overflow-y-auto">
+      {/* Voice List - Flexible height with precise scroll */}
+      <div className="flex-1 overflow-y-auto px-8 py-4">
+        <div className="space-y-2">
         {filteredVoices.map((voice) => (
           <div
             key={voice.id}
-            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
+            className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
             onClick={() => handleVoiceSelect(voice)}
           >
             <div className="flex items-center gap-4">
@@ -264,11 +321,12 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
             </button>
           </div>
         ))}
+        </div>
       </div>
 
-      {/* Status */}
+      {/* Status - Fixed at bottom */}
       {isUploading && (
-        <div className="text-center py-4">
+        <div className="flex-shrink-0 text-center py-4 border-t border-border">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             <span className="text-sm text-muted-foreground">Uploading image</span>
