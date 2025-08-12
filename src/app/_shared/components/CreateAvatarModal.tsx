@@ -243,6 +243,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           {step === "select-voice" && (
             <SelectVoiceStep
               onVoiceSelect={handleVoiceSelect}
+              onNext={() => setStep("launch-training")}
               isUploading={method === "upload"}
             />
           )}

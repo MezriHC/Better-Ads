@@ -26,6 +26,7 @@ interface SelectedVoice {
 
 interface SelectVoiceStepProps {
   onVoiceSelect: (voice: SelectedVoice) => void
+  onNext: () => void
   isUploading?: boolean
 }
 
@@ -128,7 +129,7 @@ const mockVoices: Voice[] = [
   }
 ]
 
-export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepProps) {
+export function SelectVoiceStep({ onVoiceSelect, onNext, isUploading }: SelectVoiceStepProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null)
   const [genderFilter, setGenderFilter] = useState("all")
@@ -161,6 +162,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
   }
 
   const handleVoiceSelect = (voice: Voice) => {
+    setSelectedVoice(voice)
     onVoiceSelect({
       id: voice.id,
       name: voice.name,
@@ -274,18 +276,28 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
       </div>
 
       {/* Voice List - Scrollable content */}
-      <div className="absolute inset-0 overflow-y-auto px-6" style={{ paddingTop: '120px', paddingBottom: '40px' }}>
+      <div className="absolute inset-0 overflow-y-auto px-6" style={{ paddingTop: '120px', paddingBottom: '120px' }}>
         <div className="space-y-2">
           {filteredVoices.map((voice) => (
             <div
               key={voice.id}
-              className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
+              className={`flex items-center justify-between p-3 border rounded-lg transition-colors cursor-pointer group ${
+                selectedVoice?.id === voice.id 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-border hover:bg-accent/50'
+              }`}
               onClick={() => handleVoiceSelect(voice)}
             >
               <div className="flex items-center gap-4">
                 {/* Radio Button */}
-                <div className="w-5 h-5 border-2 border-border rounded-full flex items-center justify-center group-hover:border-primary transition-colors">
-                  <div className="w-2 h-2 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className={`w-5 h-5 border-2 rounded-full flex items-center justify-center transition-colors ${
+                  selectedVoice?.id === voice.id 
+                    ? 'border-primary' 
+                    : 'border-border group-hover:border-primary'
+                }`}>
+                  <div className={`w-2 h-2 bg-primary rounded-full transition-opacity ${
+                    selectedVoice?.id === voice.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  }`} />
                 </div>
 
                 {/* Voice Info */}
@@ -334,6 +346,20 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
           <div className="h-4"></div>
         </div>
       </div>
+
+      {/* Button fixed at bottom */}
+      {selectedVoice && (
+        <div className="absolute bottom-0 left-0 right-0 bg-card z-10">
+          <div className="p-6">
+            <button
+              onClick={onNext}
+              className="w-full bg-foreground text-background py-3 rounded-xl font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
+            >
+              Train Avatar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
