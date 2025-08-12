@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AvatarSelector } from "../../_shared/components/AvatarSelector"
 import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
-import { VideoGenerationStep } from "../../_shared/components/VideoGenerationStepWrapper"
+// Note: VideoGenerationStep supprimé - utiliser CreateAvatarModal à la place
 import { SectionHeader } from "../components/SectionHeader"
 
 interface Avatar {
@@ -164,10 +164,20 @@ export default function VideoAvatarPage() {
       )}
 
       {currentStep === 3 && (
-        <VideoGenerationStep 
-          selectedAvatar={selectedAvatar}
-          onBack={() => setCurrentStep(2)}
-        />
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <h3 className="text-xl font-semibold text-foreground mb-4">
+            Génération Vidéo Temporairement Désactivée
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            Utilisez le bouton &quot;Create Avatar&quot; dans le header pour créer vos avatars vidéo personnalisés.
+          </p>
+          <button
+            onClick={() => setCurrentStep(2)}
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer"
+          >
+            Retour
+          </button>
+        </div>
       )}
       
     </div>

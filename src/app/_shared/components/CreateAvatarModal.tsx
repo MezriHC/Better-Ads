@@ -7,6 +7,7 @@ import { DefineActorStep } from "./CreateAvatarModal/DefineActorStep"
 import { SelectActorStep } from "./CreateAvatarModal/SelectActorStep"
 import { SelectVoiceStep } from "./CreateAvatarModal/SelectVoiceStep"
 import { LaunchTrainingStep } from "./CreateAvatarModal/LaunchTrainingStep"
+// Import supprimé - GeneratedVideoData non utilisé dans ce fichier
 
 type CreateMethod = "generate" | "upload"
 type AvatarStep = "get-started" | "define-actor" | "select-actor" | "select-voice" | "launch-training"
@@ -49,7 +50,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
   const [actorPrompt, setActorPrompt] = useState("")
   const [selectedActor, setSelectedActor] = useState<GeneratedActor | null>(null)
   const [selectedVoice, setSelectedVoice] = useState<SelectedVoice | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
+
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>()
 
   // Hauteur adaptative selon l'étape
@@ -63,6 +64,8 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
         return "h-[750px]" // Plus grand pour éviter le scroll interne
       case "select-voice":
         return "h-[850px]" // Plus grand pour voir plus de voix sans coupure
+      case "launch-training":
+        return "h-[700px]" // Adapté pour la vidéo + infos avec plus d'espace
       default:
         return "h-[700px]"
     }
@@ -75,7 +78,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     setActorPrompt("")
     setSelectedActor(null)
     setSelectedVoice(null)
-    setIsGenerating(false)
     onClose()
   }
 
@@ -112,22 +114,16 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     }
   }
 
-  const handleDefineActor = async (prompt: string, image?: File) => {
+  const handleDefineActor = async (prompt: string, imageUrl?: string) => {
     setActorPrompt(prompt)
     
-    if (method === "upload" && image) {
+    if (method === "upload" && imageUrl) {
       // For upload method, set selectedImageUrl and go to select-actor
-      setSelectedImageUrl(URL.createObjectURL(image))
+      setSelectedImageUrl(imageUrl)
       setStep("select-actor")
     } else {
-      // For generate method, create mock generated actors but stay on same step
-      setIsGenerating(true)
-      
-      // Simulate generation delay
-      setTimeout(() => {
-        setIsGenerating(false)
-        // Stay on define-actor step to show integrated interface
-      }, 2000)
+      // For generate method, stay on define-actor step to show integrated interface
+      // Generation will be handled directly in DefineActorStep
     }
   }
 
@@ -190,7 +186,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
                 if (imageUrl) setSelectedImageUrl(imageUrl)
                 setStep("select-actor")
               }}
-              isGenerating={isGenerating}
             />
           )}
           
@@ -200,6 +195,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               selectedImageUrl={selectedImageUrl}
               method={method || "generate"}
               onImageUpload={(imageUrl) => setSelectedImageUrl(imageUrl)}
+              onPromptChange={(prompt) => setActorPrompt(prompt)}
             />
           )}
           
@@ -208,8 +204,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               onVoiceSelect={handleVoiceSelect}
               onStartTraining={() => {
                 setStep("launch-training")
-                // Simulate training launch
-                setIsGenerating(true)
                 
                 // Create avatar immediately but don't close modal
                 const newAvatar = {
@@ -231,8 +225,8 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           {step === "launch-training" && (
             <LaunchTrainingStep
               actor={selectedActor}
-              isGenerating={isGenerating}
               selectedImageUrl={selectedImageUrl}
+              prompt={actorPrompt}
             />
           )}
         </div>

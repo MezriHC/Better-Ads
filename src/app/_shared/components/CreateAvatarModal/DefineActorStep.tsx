@@ -3,21 +3,19 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload } from "@tabler/icons-react"
+import { useImageGeneration } from "../../hooks/useImageGeneration"
+import { useImageUpload } from "../../hooks/useImageUpload"
+import { GeneratedImageData } from "../../types/fal"
 
 
 
 interface DefineActorStepProps {
-  onDefineActor: (prompt: string, image?: File) => void
+  onDefineActor: (prompt: string, imageUrl?: string) => void
   onNext: (imageUrl?: string) => void
-  isGenerating: boolean
 }
 
-interface GeneratedImage {
-  id: string
-  url: string
-  selected: boolean
-  loading?: boolean
-}
+// Utiliser le type depuis fal.ts
+type GeneratedImage = GeneratedImageData
 
 interface ChatMessage {
   text: string
@@ -30,43 +28,73 @@ interface ChatMessage {
 
 export function DefineActorStep({ 
   onDefineActor, 
-  onNext,
-  isGenerating
+  onNext
 }: DefineActorStepProps) {
   const [prompt, setPrompt] = useState("")
-  const [uploadedImages, setUploadedImages] = useState<File[]>([])
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  
+  // Hooks pour la génération et l'upload d'images
+  const { generateImages, isGenerating: isGeneratingImages, error: generationError } = useImageGeneration()
+  const { uploadImage, isUploading: isUploadingReference, error: uploadError } = useImageUpload()
+  
+  // État pour stocker l'URL de l'image uploadée
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
+  
+  // État pour gérer le téléchargement avec feedback
+  const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null)
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
     if (files.length > 0) {
-      setUploadedImages(prev => [...prev, ...files])
+      const file = files[0] // Prendre seulement la première image
+      
+      // Remplacer l'image existante
+      setUploadedImage(file)
+      setUploadedImageUrl(null) // Reset l'URL pendant l'upload
+      
+      // Uploader vers fal.ai en arrière-plan
+      try {
+        const uploadedUrl = await uploadImage(file)
+        setUploadedImageUrl(uploadedUrl)
+      } catch (error) {
+        console.error('Erreur lors de l\'upload de l\'image:', error)
+        // On garde l'image localement même si l'upload échoue
+      }
     }
   }
 
 
 
-  const handleRemoveImage = (index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index))
+  const handleRemoveImage = () => {
+    setUploadedImage(null)
+    setUploadedImageUrl(null)
   }
 
   const createImageUrl = (file: File) => {
     return URL.createObjectURL(file)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (prompt.trim()) {
-      // Trouver l'image sélectionnée dans le dernier message
-      const lastMessage = chatMessages[chatMessages.length - 1]
-      const selectedImage = lastMessage?.generatedImages?.find(img => img.selected)?.url
+      // Trouver l'image sélectionnée dans TOUS les messages (pas seulement le dernier)
+      const selectedImage = chatMessages
+        .flatMap(msg => msg.generatedImages || [])
+        .find(img => img.selected)?.url
+      
+      // Déterminer le mode : édition si une image est sélectionnée, génération sinon
+      const isEditMode = !!selectedImage
+      
+      // Sauvegarder le prompt avant de le vider
+      const currentPrompt = prompt
       
       // Ajouter le nouveau message avec état de génération
       const newMessage: ChatMessage = {
-        text: prompt,
-        images: [...uploadedImages],
+        text: currentPrompt,
+        images: uploadedImage ? [uploadedImage] : [],
         timestamp: Date.now(),
         selectedImage,
         isGenerating: true
@@ -84,48 +112,38 @@ export function DefineActorStep({
         }
       }, 50)
       
-      // Simuler la génération après 2 secondes
-      setTimeout(() => {
-        // D'abord créer les placeholders avec loading
-        const loadingImages: GeneratedImage[] = [
-          { id: `${Date.now()}-1`, url: '', selected: false, loading: true },
-          { id: `${Date.now()}-2`, url: '', selected: false, loading: true },
-          { id: `${Date.now()}-3`, url: '', selected: false, loading: true },
-          { id: `${Date.now()}-4`, url: '', selected: false, loading: true }
-        ]
+      // Vider les champs immédiatement
+      setPrompt("")
+      setUploadedImage(null)
+      setUploadedImageUrl(null)
+      
+      try {
+        // Logique de sélection du modèle :
+        // 1. Si image sélectionnée -> Mode édition (FLUX Kontext Editing Max)
+        // 2. Si image uploadée -> Mode édition avec image uploadée comme référence
+        // 3. Sinon -> Mode génération pure (FLUX Kontext Max)
         
-        // Mettre à jour avec les loaders
+        let generatedImages: GeneratedImageData[] = []
+        
+        if (isEditMode && selectedImage) {
+          // Mode édition : image sélectionnée depuis les générations précédentes
+          generatedImages = await generateImages(currentPrompt, selectedImage)
+        } else if (uploadedImageUrl) {
+          // Mode édition : utiliser l'image uploadée comme référence
+          generatedImages = await generateImages(currentPrompt, uploadedImageUrl)
+        } else {
+          // Mode génération pure : aucune image de référence
+          generatedImages = await generateImages(currentPrompt)
+        }
+        
+        // Mettre à jour le message avec les images générées
         setChatMessages(prev => 
           prev.map((msg, index) => 
             index === prev.length - 1 
-              ? { ...msg, generatedImages: loadingImages, isGenerating: false }
+              ? { ...msg, generatedImages, isGenerating: false }
               : msg
           )
         )
-        
-        // Charger les images une par une avec délai
-        loadingImages.forEach((_, imageIndex) => {
-          setTimeout(() => {
-            setChatMessages(prev => 
-              prev.map((msg, msgIndex) => 
-                msgIndex === prev.length - 1 && msg.generatedImages
-                  ? {
-                      ...msg,
-                      generatedImages: msg.generatedImages.map((img, imgIndex) =>
-                        imgIndex === imageIndex
-                          ? {
-                              ...img,
-                              url: `https://picsum.photos/seed/gen-${Date.now()}-${imageIndex + 1}/270/480`,
-                              loading: false
-                            }
-                          : img
-                      )
-                    }
-                  : msg
-              )
-            )
-          }, (imageIndex + 1) * 500) // Charger chaque image avec 500ms de délai
-        })
         
         // Auto-scroll quand les images sont générées
         setTimeout(() => {
@@ -136,26 +154,38 @@ export function DefineActorStep({
             })
           }
         }, 100)
-      }, 2000)
+        
+      } catch (error) {
+        // En cas d'erreur, mettre à jour le message
+        setChatMessages(prev => 
+          prev.map((msg, index) => 
+            index === prev.length - 1 
+              ? { ...msg, isGenerating: false }
+              : msg
+          )
+        )
+        
+        console.error('Erreur lors de la génération:', error)
+        // Optionnel: Afficher une notification d'erreur à l'utilisateur
+      }
       
-      // Vider les champs
-      setPrompt("")
-      setUploadedImages([])
-      
-      // Appeler l'API
-      onDefineActor(prompt, uploadedImages[0] || undefined)
+      // Appeler l'API pour notifier le parent avec l'image sélectionnée ou uploadée
+      const finalImageUrl = selectedImage || uploadedImageUrl
+      onDefineActor(currentPrompt, finalImageUrl || undefined)
     }
   }
 
   const handleImageSelect = (messageIndex: number, imageId: string) => {
     setChatMessages(prev => 
       prev.map((msg, index) => 
-        index === messageIndex && msg.generatedImages
+        msg.generatedImages
           ? {
               ...msg,
               generatedImages: msg.generatedImages.map(img => ({
                 ...img,
-                selected: img.id === imageId ? !img.selected : false // Toggle si même image, sinon désélectionner
+                selected: index === messageIndex && img.id === imageId 
+                  ? !img.selected // Toggle seulement pour l'image cliquée
+                  : false // Désélectionner toutes les autres images dans tous les messages
               }))
             }
           : msg
@@ -170,11 +200,14 @@ export function DefineActorStep({
     }
   }
 
-  const canSubmit = prompt.trim().length > 0
+  const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference && 
+    // Si une image est uploadée, s'assurer qu'elle a été uploadée vers fal.ai
+    (uploadedImage ? !!uploadedImageUrl : true)
   
-  // Vérifier s'il y a une image sélectionnée dans le dernier message
-  const hasSelectedImage = chatMessages.length > 0 && 
-    chatMessages[chatMessages.length - 1]?.generatedImages?.some(img => img.selected)
+  // Vérifier s'il y a une image sélectionnée dans TOUS les messages
+  const hasSelectedImage = chatMessages.some(msg => 
+    msg.generatedImages?.some(img => img.selected)
+  )
 
 
 
@@ -245,12 +278,53 @@ export function DefineActorStep({
                 
                 {/* AI Response for this specific message */}
                 <div className="flex justify-start w-full mb-4">
-                  <div className={`${message.generatedImages ? 'w-full' : 'max-w-[70%]'} bg-muted rounded-2xl px-4 py-3`}>
+                  <div className={`${message.generatedImages || message.isGenerating ? 'w-full' : 'max-w-[70%]'} bg-muted rounded-2xl px-4 py-3`}>
                     {message.isGenerating ? (
-                      /* Loading state */
-                      <div className="flex items-center gap-3">
-                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm text-muted-foreground">Generating images...</span>
+                      /* Loading state with 4 skeleton placeholders */
+                      <div className="relative">
+                        <p className="text-sm text-muted-foreground mb-3">Generating images...</p>
+                        <div className="flex gap-3 w-full">
+                          {Array.from({ length: 4 }).map((_, index) => (
+                            <div key={`skeleton-${index}`} className="relative flex-1">
+                              <div className="aspect-[9/16] rounded-lg overflow-hidden border-2 border-border">
+                                {/* Effet de génération simplifié et élégant */}
+                                <div className="relative w-full h-full overflow-hidden simple-ai-generation">
+                                  {/* Fond dégradé subtil */}
+                                  <div className="absolute inset-0 bg-gradient-to-br from-muted/20 via-muted/40 to-muted/20" />
+                                  
+                                  {/* Deux blobs simples qui bougent lentement */}
+                                  <div className="absolute inset-0 opacity-40">
+                                    {/* Blob principal */}
+                                    <div 
+                                      className="absolute w-40 h-40 bg-gradient-to-br from-primary/30 to-primary/10 rounded-full blur-3xl simple-float"
+                                      style={{ 
+                                        top: '20%',
+                                        left: '10%',
+                                        animationDelay: `${index * 0.4}s`,
+                                        animationDuration: '6s'
+                                      }}
+                                    />
+                                    {/* Blob secondaire */}
+                                    <div 
+                                      className="absolute w-32 h-32 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full blur-3xl simple-float"
+                                      style={{ 
+                                        bottom: '20%',
+                                        right: '15%',
+                                        animationDelay: `${index * 0.6}s`,
+                                        animationDuration: '8s'
+                                      }}
+                                    />
+                                  </div>
+                                  
+                                  {/* Indicateur central minimaliste */}
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-6 h-6 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ) : message.generatedImages ? (
                       /* Generated images */
@@ -265,10 +339,14 @@ export function DefineActorStep({
                             })
                           }}
                         >
-                          {message.generatedImages.map((image) => (
+                          {message.generatedImages.map((image, imgIndex) => (
                             <div
                               key={image.id}
-                              className="relative flex-1 group"
+                              className="relative flex-1 group animate-in"
+                              style={{ 
+                                animationDelay: `${imgIndex * 100}ms`,
+                                animationDuration: '600ms'
+                              }}
                             >
                               <div
                                 onClick={() => handleImageSelect(messageIndex, image.id)}
@@ -280,37 +358,45 @@ export function DefineActorStep({
                                     : 'border-border hover:border-primary/50'
                                 }`}
                               >
-                                {image.loading ? (
-                                  /* Loader placeholder */
-                                  <div className="w-full h-full bg-muted/30 flex items-center justify-center">
-                                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                  </div>
-                                ) : (
-                                  <Image
-                                    src={image.url}
-                                    alt={`Generated avatar ${image.id}`}
-                                    width={270}
-                                    height={480}
-                                    className="w-full h-full object-cover"
-                                  />
-                                )}
+                                <Image
+                                  src={image.url}
+                                  alt={`Generated avatar ${image.id}`}
+                                  width={270}
+                                  height={480}
+                                  className="w-full h-full object-cover"
+                                />
                                 
-                                {/* Download button - top right - only when image is loaded */}
-                                {!image.loading && (
+                                                                  {/* Download button - top right avec feedback */}
                                   <button
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                       e.stopPropagation()
-                                      // Télécharger l'image
-                                      const link = document.createElement('a')
-                                      link.href = image.url
-                                      link.download = `avatar-${image.id}.jpg`
-                                      link.click()
+                                      setDownloadingImageId(image.id)
+                                      
+                                      // Délai pour montrer l'animation
+                                      setTimeout(() => {
+                                        const link = document.createElement('a')
+                                        link.href = image.url
+                                        link.download = `avatar-${image.id}.jpg`
+                                        link.click()
+                                        
+                                        // Reset après le téléchargement
+                                        setTimeout(() => {
+                                          setDownloadingImageId(null)
+                                        }, 1000)
+                                      }, 200)
                                     }}
-                                    className="absolute top-2 right-2 w-6 h-6 bg-background/80 hover:bg-background rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer backdrop-blur-sm"
+                                    className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm ${
+                                      downloadingImageId === image.id
+                                        ? 'bg-foreground scale-110 animate-pulse'
+                                        : 'bg-background/80 hover:bg-background hover:scale-105'
+                                    }`}
                                   >
-                                    <IconDownload className="w-3 h-3 text-foreground" />
+                                    {downloadingImageId === image.id ? (
+                                      <IconCheck className="w-3 h-3 text-background" />
+                                    ) : (
+                                      <IconDownload className="w-3 h-3 text-foreground" />
+                                    )}
                                   </button>
-                                )}
                                 
                                 {image.selected && (
                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
@@ -363,6 +449,14 @@ export function DefineActorStep({
 
       {/* Input area - absolutely positioned at bottom */}
       <div className="absolute bottom-0 left-0 right-0 bg-card z-10 rounded-b-lg">
+        {/* Affichage des erreurs */}
+        {(generationError || uploadError) && (
+          <div className="mx-6 mb-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+            {generationError && <p className="text-sm text-destructive">{generationError}</p>}
+            {uploadError && <p className="text-sm text-destructive">Upload: {uploadError}</p>}
+          </div>
+        )}
+        
         <div className="relative border border-border bg-card border-t-2 mx-6 mb-6 rounded-xl overflow-hidden">
           <textarea
             value={prompt}
@@ -380,7 +474,6 @@ export function DefineActorStep({
                 <input
                   type="file"
                   accept="image/*"
-                  multiple
                   onChange={handleImageUpload}
                   className="sr-only"
                 />
@@ -389,13 +482,13 @@ export function DefineActorStep({
                 </div>
               </label>
 
-              {/* Uploaded Images */}
-              {uploadedImages.map((file, index) => (
-                <div key={index} className="relative group">
+              {/* Uploaded Image */}
+              {uploadedImage && (
+                <div className="relative group">
                   <div className="w-8 h-8 rounded-lg overflow-hidden border border-border">
                     <Image
-                      src={createImageUrl(file)}
-                      alt={`Upload ${index + 1}`}
+                      src={createImageUrl(uploadedImage)}
+                      alt="Reference image"
                       width={32}
                       height={32}
                       className="w-full h-full object-cover"
@@ -403,13 +496,19 @@ export function DefineActorStep({
                   </div>
                   {/* Close button on hover */}
                   <button
-                    onClick={() => handleRemoveImage(index)}
+                    onClick={handleRemoveImage}
                     className="absolute -top-1 -right-1 w-3 h-3 bg-foreground text-background rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     <IconX className="w-2 h-2" />
                   </button>
+                  {/* Upload indicator */}
+                  {isUploadingReference && (
+                    <div className="absolute inset-0 bg-background/80 rounded-lg flex items-center justify-center">
+                      <div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
                 </div>
-              ))}
+              )}
 
               {/* Aspect Ratio - Fixed to 9:16 for stories */}
               <div className="flex items-center gap-1">
@@ -423,11 +522,11 @@ export function DefineActorStep({
             {/* Generate Button */}
             <button
               onClick={handleSubmit}
-              disabled={!canSubmit || isGenerating}
+              disabled={!canSubmit}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer"
             >
               <IconSparkles className="w-4 h-4" />
-              {isGenerating ? "Generating..." : "Generate"}
+              {isGeneratingImages ? "Generating..." : "Generate"}
             </button>
           </div>
         </div>

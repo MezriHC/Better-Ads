@@ -3,40 +3,48 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
+import { useImageUpload } from "../../hooks/useImageUpload"
 
 interface SelectActorStepProps {
   onNext: () => void
   selectedImageUrl?: string
   method?: "generate" | "upload"
   onImageUpload?: (imageUrl: string) => void
+  onPromptChange?: (prompt: string) => void
 }
 
 export function SelectActorStep({ 
   onNext, 
   selectedImageUrl, 
   method = "generate", 
-  onImageUpload 
+  onImageUpload,
+  onPromptChange
 }: SelectActorStepProps) {
   const [prompt, setPrompt] = useState("")
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { uploadImage, isUploading, error: uploadError } = useImageUpload()
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      const imageUrl = URL.createObjectURL(file)
-      onImageUpload?.(imageUrl)
+      const falUrl = await uploadImage(file)
+      if (falUrl) {
+        onImageUpload?.(falUrl)
+      }
     }
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
     
     const file = e.dataTransfer.files[0]
     if (file && file.type.startsWith('image/')) {
-      const imageUrl = URL.createObjectURL(file)
-      onImageUpload?.(imageUrl)
+      const falUrl = await uploadImage(file)
+      if (falUrl) {
+        onImageUpload?.(falUrl)
+      }
     }
   }
 
@@ -54,6 +62,8 @@ export function SelectActorStep({
     fileInputRef.current?.click()
   }
 
+
+
   return (
     <div className="relative h-full">
       {/* Content area - no scroll needed with larger modal */}
@@ -66,7 +76,10 @@ export function SelectActorStep({
           <div className="relative">
             <textarea
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={(e) => {
+                setPrompt(e.target.value)
+                onPromptChange?.(e.target.value)
+              }}
               placeholder='Like "Make the actor talk with excitement while looking at the camera"'
               className="w-full h-32 p-4 border border-border rounded-xl bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary"
             />
@@ -122,6 +135,13 @@ export function SelectActorStep({
                           </div>
                         </div>
                       )}
+                      
+                      {/* Loading overlay pendant upload */}
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-background/80 rounded-xl flex items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
                     </>
                   ) : (
                     /* Zone d'upload initiale pour mode upload */
@@ -152,6 +172,14 @@ export function SelectActorStep({
             </div>
           </div>
         </div>
+
+        {/* Error message */}
+        {uploadError && (
+          <div className="mt-4 text-center text-sm text-red-500 bg-red-50 dark:bg-red-950/20 rounded-lg p-3">
+            Erreur upload: {uploadError}
+          </div>
+        )}
+
       </div>
 
       {/* Button fixed at bottom - outside scroll area */}
