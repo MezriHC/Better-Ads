@@ -1,15 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
 import Image from "next/image"
-import { IconCheck, IconPhoto, IconTrash, IconSparkles, IconX, IconBolt, IconDownload } from "@tabler/icons-react"
+import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload } from "@tabler/icons-react"
 
-type CreateMethod = "generate" | "upload"
+
 
 interface DefineActorStepProps {
-  method: CreateMethod
   onDefineActor: (prompt: string, image?: File) => void
-  onBack: () => void
   onNext: (imageUrl?: string) => void
   isGenerating: boolean
 }
@@ -31,9 +29,7 @@ interface ChatMessage {
 }
 
 export function DefineActorStep({ 
-  method, 
   onDefineActor, 
-  onBack, 
   onNext,
   isGenerating
 }: DefineActorStepProps) {
@@ -50,6 +46,8 @@ export function DefineActorStep({
       setUploadedImages(prev => [...prev, ...files])
     }
   }
+
+
 
   const handleRemoveImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index))
@@ -178,6 +176,9 @@ export function DefineActorStep({
   const hasSelectedImage = chatMessages.length > 0 && 
     chatMessages[chatMessages.length - 1]?.generatedImages?.some(img => img.selected)
 
+
+
+  // Interface generate (interface actuelle)
   return (
     <div className="relative h-full">
       {/* Messages area - scrollable with fixed bottom space */}

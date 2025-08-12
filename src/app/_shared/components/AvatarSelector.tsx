@@ -215,7 +215,8 @@ export function AvatarSelector({ selectedAvatarId, onSelectAvatar }: AvatarSelec
     }
     
     setCustomAvatars(prev => [...prev, avatar])
-    setIsCreateModalOpen(false)
+    // Ne pas fermer la modal ici - seulement ajouter l'avatar
+    // La modal se fermera quand l'utilisateur clique sur "Go to Library" ou ferme manuellement
     onSelectAvatar(avatar)
   }
 

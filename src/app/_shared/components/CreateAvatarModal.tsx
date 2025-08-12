@@ -47,8 +47,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
   const [step, setStep] = useState<AvatarStep>("get-started")
   const [method, setMethod] = useState<CreateMethod | null>(null)
   const [actorPrompt, setActorPrompt] = useState("")
-  const [referenceImage, setReferenceImage] = useState<File | null>(null)
-  const [generatedActors, setGeneratedActors] = useState<GeneratedActor[]>([])
   const [selectedActor, setSelectedActor] = useState<GeneratedActor | null>(null)
   const [selectedVoice, setSelectedVoice] = useState<SelectedVoice | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -75,8 +73,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     setStep("get-started")
     setMethod(null)
     setActorPrompt("")
-    setReferenceImage(null)
-    setGeneratedActors([])
     setSelectedActor(null)
     setSelectedVoice(null)
     setIsGenerating(false)
@@ -106,51 +102,36 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
 
   const handleMethodSelect = (selectedMethod: CreateMethod) => {
     setMethod(selectedMethod)
-    setStep("define-actor")
+    
+    if (selectedMethod === "upload") {
+      // Pour upload, aller directement à select-actor
+      setStep("select-actor")
+    } else {
+      // Pour generate, aller à define-actor
+      setStep("define-actor")
+    }
   }
 
   const handleDefineActor = async (prompt: string, image?: File) => {
     setActorPrompt(prompt)
-    if (image) setReferenceImage(image)
     
     if (method === "upload" && image) {
-      // For upload method, go directly to voice selection
-      setStep("select-voice")
+      // For upload method, set selectedImageUrl and go to select-actor
+      setSelectedImageUrl(URL.createObjectURL(image))
+      setStep("select-actor")
     } else {
       // For generate method, create mock generated actors but stay on same step
       setIsGenerating(true)
       
       // Simulate generation delay
       setTimeout(() => {
-        const mockActors: GeneratedActor[] = [
-          {
-            id: "1",
-            imageUrl: "/ai-avatars/avatar-1.jpg",
-            description: "Professional business attire, confident pose"
-          },
-          {
-            id: "2", 
-            imageUrl: "/ai-avatars/avatar-2.jpg",
-            description: "Casual smart outfit, friendly expression"
-          },
-          {
-            id: "3",
-            imageUrl: "/ai-avatars/avatar-3.jpg", 
-            description: "Modern style, approachable demeanor"
-          }
-        ]
-        
-        setGeneratedActors(mockActors)
         setIsGenerating(false)
         // Stay on define-actor step to show integrated interface
       }, 2000)
     }
   }
 
-  const handleActorSelect = (actor: GeneratedActor) => {
-    setSelectedActor(actor)
-    setStep("select-voice")
-  }
+
 
   const handleVoiceSelect = (voice: SelectedVoice) => {
     setSelectedVoice(voice)
@@ -204,9 +185,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           
           {step === "define-actor" && (
             <DefineActorStep
-              method={method!}
               onDefineActor={handleDefineActor}
-              onBack={() => setStep("get-started")}
               onNext={(imageUrl?: string) => {
                 if (imageUrl) setSelectedImageUrl(imageUrl)
                 setStep("select-actor")
@@ -219,6 +198,8 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
             <SelectActorStep
               onNext={() => setStep("select-voice")}
               selectedImageUrl={selectedImageUrl}
+              method={method || "generate"}
+              onImageUpload={(imageUrl) => setSelectedImageUrl(imageUrl)}
             />
           )}
           
@@ -250,7 +231,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           {step === "launch-training" && (
             <LaunchTrainingStep
               actor={selectedActor}
-              voice={selectedVoice}
               isGenerating={isGenerating}
               selectedImageUrl={selectedImageUrl}
             />

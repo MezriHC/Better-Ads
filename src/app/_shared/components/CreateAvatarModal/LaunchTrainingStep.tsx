@@ -9,27 +9,16 @@ interface GeneratedActor {
   description: string
 }
 
-interface SelectedVoice {
-  id: string
-  name: string
-  gender: string
-  age: string
-  language: string
-  accent: string
-  tags: string[]
-  audioUrl?: string
-}
+
 
 interface LaunchTrainingStepProps {
   actor: GeneratedActor | null
-  voice: SelectedVoice | null
   isGenerating: boolean
   selectedImageUrl?: string
 }
 
 export function LaunchTrainingStep({ 
   actor, 
-  voice, 
   isGenerating,
   selectedImageUrl 
 }: LaunchTrainingStepProps) {
@@ -78,10 +67,7 @@ export function LaunchTrainingStep({
           
           <div className="text-sm text-muted-foreground space-y-1">
             {isGenerating ? (
-              <>
-                <p>We&apos;re generating your avatar with the selected voice and appearance.</p>
-                <p>You&apos;ll receive a notification when it&apos;s ready.</p>
-              </>
+              <p>We&apos;re generating your avatar with the selected voice and appearance.</p>
             ) : (
               <>
                 <p>Your avatar will be trained with the selected voice and appearance.</p>
@@ -93,7 +79,6 @@ export function LaunchTrainingStep({
 
         {/* Training Status */}
         <div className="space-y-3">
-          <div className="text-primary font-medium">Training in progress...</div>
           <button
             onClick={() => {/* Navigate to library */}}
             className="w-full py-2 bg-muted text-foreground rounded-lg font-medium hover:bg-accent transition-colors cursor-pointer"
