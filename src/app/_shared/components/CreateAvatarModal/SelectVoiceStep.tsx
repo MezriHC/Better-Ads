@@ -348,18 +348,17 @@ export function SelectVoiceStep({ onVoiceSelect, onStartTraining, isUploading }:
       </div>
 
       {/* Button fixed at bottom */}
-      {selectedVoice && (
-        <div className="absolute bottom-0 left-0 right-0 bg-card z-10">
-          <div className="p-6">
-            <button
-              onClick={onStartTraining}
-              className="w-full bg-foreground text-background py-3 rounded-xl font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
-            >
-              Start Training
-            </button>
-          </div>
+      <div className="absolute bottom-0 left-0 right-0 bg-card z-10">
+        <div className="p-6">
+          <button
+            onClick={onStartTraining}
+            disabled={!selectedVoice}
+            className="w-full py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-foreground text-background hover:bg-foreground/90 cursor-pointer"
+          >
+            Start Training
+          </button>
         </div>
-      )}
+      </div>
     </div>
   )
 }

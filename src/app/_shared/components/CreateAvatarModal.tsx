@@ -154,26 +154,9 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
 
   const handleVoiceSelect = (voice: SelectedVoice) => {
     setSelectedVoice(voice)
-    setStep("launch-training")
   }
 
-  const handleLaunchTraining = async () => {
-    // Simulate training launch
-    setIsGenerating(true)
-    
-    // Create avatar immediately but don't close modal
-    const newAvatar = {
-      id: Date.now().toString(),
-      name: actorPrompt.slice(0, 30) + "...",
-      imageUrl: selectedImageUrl || selectedActor?.imageUrl || "/ai-avatars/avatar-1.jpg",
-      voice: selectedVoice,
-      method,
-      status: "training"
-    }
-    
-    onAvatarCreated?.(newAvatar)
-    // Modal stays open to show training progress
-  }
+
 
   if (!isOpen) return null
 
@@ -244,7 +227,21 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               onVoiceSelect={handleVoiceSelect}
               onStartTraining={() => {
                 setStep("launch-training")
-                handleLaunchTraining()
+                // Simulate training launch
+                setIsGenerating(true)
+                
+                // Create avatar immediately but don't close modal
+                const newAvatar = {
+                  id: Date.now().toString(),
+                  name: actorPrompt.slice(0, 30) + "...",
+                  imageUrl: selectedImageUrl || selectedActor?.imageUrl || "/ai-avatars/avatar-1.jpg",
+                  voice: selectedVoice,
+                  method,
+                  status: "training"
+                }
+                
+                onAvatarCreated?.(newAvatar)
+                // Modal stays open to show training progress
               }}
               isUploading={method === "upload"}
             />

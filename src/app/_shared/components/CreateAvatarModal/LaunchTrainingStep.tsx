@@ -62,11 +62,9 @@ export function LaunchTrainingStep({
             )}
             
             {/* Loading overlay when generating */}
-            {isGenerating && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
           </div>
         </div>
       </div>
@@ -95,10 +93,7 @@ export function LaunchTrainingStep({
 
         {/* Training Status */}
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-lg">
-            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-primary font-medium">Training in progress...</span>
-          </div>
+          <div className="text-primary font-medium">Training in progress...</div>
           <button
             onClick={() => {/* Navigate to library */}}
             className="w-full py-2 bg-muted text-foreground rounded-lg font-medium hover:bg-accent transition-colors cursor-pointer"

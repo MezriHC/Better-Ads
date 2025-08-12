@@ -489,8 +489,10 @@ npx prisma db push
 
 ### **Gestion Git et déploiement :**
 - **RÈGLE IMPÉRATIVE** : Ne JAMAIS exécuter `git push`
+- **RÈGLE IMPÉRATIVE** : Ne PAS commiter après chaque petit changement
 - **Contexte** : L'utilisateur gère lui-même les push depuis GitHub Desktop
-- **Autorisation** : Commits locaux (`git add` + `git commit`) autorisés pour organiser le travail
+- **Commits** : Grouper les changements liés et commiter seulement quand une fonctionnalité complète est terminée
+- **Autorisation** : Commits locaux (`git add` + `git commit`) autorisés pour organiser le travail complet
 - **Déploiement** : Utiliser `./deploy.sh` pour déployer sur le VPS après que l'utilisateur ait pushé
 
 ### **Couleurs et design :**
