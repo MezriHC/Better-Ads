@@ -11,7 +11,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Installer les dépendances et générer Prisma client
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copier le code source
 COPY . .
