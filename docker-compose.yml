@@ -1,43 +1,8 @@
 services:
-  # MinIO S3 Storage
-  minio:
-    image: minio/minio:latest
-    container_name: betterads-minio
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin123
-    ports:
-      - "9000:9000"  # MinIO API
-      - "9001:9001"  # MinIO Console
-    volumes:
-      - minio_data:/data
-    networks:
-      - betterads-network
-
-  # MinIO Client (for bucket creation)
-  minio-init:
-    image: minio/mc:latest
-    container_name: betterads-minio-init
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin123;
-      /usr/bin/mc mb myminio/uploads --ignore-existing;
-      /usr/bin/mc mb myminio/avatars --ignore-existing;
-      /usr/bin/mc mb myminio/videos --ignore-existing;
-      /usr/bin/mc policy set public myminio/uploads;
-      /usr/bin/mc policy set public myminio/avatars;
-      /usr/bin/mc policy set public myminio/videos;
-      echo 'MinIO buckets created successfully';
-      "
-    networks:
-      - betterads-network
-
+  # Pas de services locaux - PostgreSQL et MinIO sont sur le VPS distant
+  
 volumes:
-  minio_data:
+  # Pas de volumes nécessaires - stockage distant
 
 networks:
   betterads-network:
