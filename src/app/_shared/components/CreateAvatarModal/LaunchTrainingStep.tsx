@@ -23,7 +23,6 @@ interface SelectedVoice {
 interface LaunchTrainingStepProps {
   actor: GeneratedActor | null
   voice: SelectedVoice | null
-  onLaunchTraining: () => void
   isGenerating: boolean
   selectedImageUrl?: string
 }
@@ -31,7 +30,6 @@ interface LaunchTrainingStepProps {
 export function LaunchTrainingStep({ 
   actor, 
   voice, 
-  onLaunchTraining, 
   isGenerating,
   selectedImageUrl 
 }: LaunchTrainingStepProps) {
@@ -95,28 +93,19 @@ export function LaunchTrainingStep({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        {!isGenerating ? (
-          <button
-            onClick={onLaunchTraining}
-            className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors cursor-pointer"
-          >
-            Start Training
-          </button>
-        ) : (
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-lg">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-primary font-medium">Training in progress...</span>
-            </div>
-            <button
-              onClick={() => {/* Navigate to library */}}
-              className="w-full py-2 bg-muted text-foreground rounded-lg font-medium hover:bg-accent transition-colors cursor-pointer"
-            >
-              Go to Library
-            </button>
+        {/* Training Status */}
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-lg">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-primary font-medium">Training in progress...</span>
           </div>
-        )}
+          <button
+            onClick={() => {/* Navigate to library */}}
+            className="w-full py-2 bg-muted text-foreground rounded-lg font-medium hover:bg-accent transition-colors cursor-pointer"
+          >
+            Go to Library
+          </button>
+        </div>
       </div>
     </div>
   )

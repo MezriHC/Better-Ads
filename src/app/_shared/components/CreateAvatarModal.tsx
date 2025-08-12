@@ -161,19 +161,18 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     // Simulate training launch
     setIsGenerating(true)
     
-    setTimeout(() => {
-      const newAvatar = {
-        id: Date.now().toString(),
-        name: actorPrompt.slice(0, 30) + "...",
-        imageUrl: selectedActor?.imageUrl || "/ai-avatars/avatar-1.jpg",
-        voice: selectedVoice,
-        method,
-        status: "training"
-      }
-      
-      onAvatarCreated?.(newAvatar)
-      handleClose()
-    }, 1000)
+    // Create avatar immediately but don't close modal
+    const newAvatar = {
+      id: Date.now().toString(),
+      name: actorPrompt.slice(0, 30) + "...",
+      imageUrl: selectedImageUrl || selectedActor?.imageUrl || "/ai-avatars/avatar-1.jpg",
+      voice: selectedVoice,
+      method,
+      status: "training"
+    }
+    
+    onAvatarCreated?.(newAvatar)
+    // Modal stays open to show training progress
   }
 
   if (!isOpen) return null
@@ -242,9 +241,10 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           
           {step === "select-voice" && (
             <SelectVoiceStep
-              onVoiceSelect={(voice) => {
-                handleVoiceSelect(voice)
+              onVoiceSelect={handleVoiceSelect}
+              onStartTraining={() => {
                 setStep("launch-training")
+                handleLaunchTraining()
               }}
               isUploading={method === "upload"}
             />
@@ -254,7 +254,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
             <LaunchTrainingStep
               actor={selectedActor}
               voice={selectedVoice}
-              onLaunchTraining={handleLaunchTraining}
               isGenerating={isGenerating}
               selectedImageUrl={selectedImageUrl}
             />
