@@ -214,7 +214,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           </button>
         </div>
 
-        {/* Content - sans scroll */}
+        {/* Content - flex-1 pour les steps */}
         <div className="flex-1 flex flex-col">
           {step === "get-started" && (
             <GetStartedStep onMethodSelect={handleMethodSelect} />

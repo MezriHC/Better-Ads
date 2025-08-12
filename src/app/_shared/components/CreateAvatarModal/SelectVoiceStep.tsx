@@ -174,9 +174,9 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Search and Filters */}
-      <div className="flex-shrink-0 p-6 border-b border-border">
+    <div className="relative h-full">
+      {/* Search and Filters - Fixed at top */}
+      <div className="absolute top-0 left-0 right-0 p-6 border-b border-border bg-card z-10">
         <div className="flex items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -273,8 +273,8 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
         </div>
       </div>
 
-      {/* Voice List */}
-      <div className="flex-1 overflow-y-auto p-6">
+      {/* Voice List - Scrollable content */}
+      <div className="absolute inset-0 overflow-y-auto pt-[120px] pb-4 px-6">
         <div className="space-y-2">
           {filteredVoices.map((voice) => (
             <div
