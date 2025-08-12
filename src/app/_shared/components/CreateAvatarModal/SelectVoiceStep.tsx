@@ -174,9 +174,9 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Search and Filters - Fixed at top */}
-      <div className="flex-shrink-0 p-8 pb-4 border-b border-border">
+    <div className="h-full flex flex-col">
+      {/* Search and Filters */}
+      <div className="flex-shrink-0 p-6 border-b border-border">
         <div className="flex items-center gap-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -216,8 +216,6 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
               </div>
             )}
           </div>
-
-
 
           {/* Language Filter */}
           <div className="relative">
@@ -275,64 +273,64 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
         </div>
       </div>
 
-      {/* Voice List - Flexible height with precise scroll */}
-      <div className="flex-1 overflow-y-auto px-8 py-4">
+      {/* Voice List */}
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="space-y-2">
-        {filteredVoices.map((voice) => (
-          <div
-            key={voice.id}
-            className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
-            onClick={() => handleVoiceSelect(voice)}
-          >
-            <div className="flex items-center gap-4">
-              {/* Radio Button */}
-              <div className="w-5 h-5 border-2 border-border rounded-full flex items-center justify-center group-hover:border-primary transition-colors">
-                <div className="w-2 h-2 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+          {filteredVoices.map((voice) => (
+            <div
+              key={voice.id}
+              className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
+              onClick={() => handleVoiceSelect(voice)}
+            >
+              <div className="flex items-center gap-4">
+                {/* Radio Button */}
+                <div className="w-5 h-5 border-2 border-border rounded-full flex items-center justify-center group-hover:border-primary transition-colors">
+                  <div className="w-2 h-2 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
 
-              {/* Voice Info */}
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-medium text-foreground">{voice.name}</h3>
-                  {voice.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-muted text-xs text-muted-foreground rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  <span className="text-sm text-muted-foreground">{voice.language}</span>
-                  <span className="text-sm text-muted-foreground">{voice.accent}</span>
-                  <span className="text-sm text-muted-foreground">{voice.gender}</span>
+                {/* Voice Info */}
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h3 className="font-medium text-foreground">{voice.name}</h3>
+                    {voice.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-1 bg-muted text-xs text-muted-foreground rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="text-sm text-muted-foreground">{voice.language}</span>
+                    <span className="text-sm text-muted-foreground">{voice.accent}</span>
+                    <span className="text-sm text-muted-foreground">{voice.gender}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Play Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                handlePlayVoice(voice.id)
-              }}
-              className="w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center hover:bg-foreground/90 transition-colors"
-            >
-              <IconPlayerPlay className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+              {/* Play Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handlePlayVoice(voice.id)
+                }}
+                className="w-10 h-10 bg-foreground text-background rounded-full flex items-center justify-center hover:bg-foreground/90 transition-colors"
+              >
+                <IconPlayerPlay className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+
+          {/* Status */}
+          {isUploading && (
+            <div className="text-center py-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-muted-foreground">Uploading image</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Status - Fixed at bottom */}
-      {isUploading && (
-        <div className="flex-shrink-0 text-center py-4 border-t border-border">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
-            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm text-muted-foreground">Uploading image</span>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
