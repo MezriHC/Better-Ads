@@ -102,7 +102,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     }
   }
 
-  const canGoBack = step !== "get-started"
+  const canGoBack = step !== "get-started" && step !== "launch-training"
 
   const handleMethodSelect = (selectedMethod: CreateMethod) => {
     setMethod(selectedMethod)
@@ -242,8 +242,10 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           
           {step === "select-voice" && (
             <SelectVoiceStep
-              onVoiceSelect={handleVoiceSelect}
-              onNext={() => setStep("launch-training")}
+              onVoiceSelect={(voice) => {
+                handleVoiceSelect(voice)
+                setStep("launch-training")
+              }}
               isUploading={method === "upload"}
             />
           )}
@@ -254,6 +256,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               voice={selectedVoice}
               onLaunchTraining={handleLaunchTraining}
               isGenerating={isGenerating}
+              selectedImageUrl={selectedImageUrl}
             />
           )}
         </div>

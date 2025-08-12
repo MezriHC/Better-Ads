@@ -26,7 +26,6 @@ interface SelectedVoice {
 
 interface SelectVoiceStepProps {
   onVoiceSelect: (voice: SelectedVoice) => void
-  onNext: () => void
   isUploading?: boolean
 }
 
@@ -129,7 +128,7 @@ const mockVoices: Voice[] = [
   }
 ]
 
-export function SelectVoiceStep({ onVoiceSelect, onNext, isUploading }: SelectVoiceStepProps) {
+export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedVoice, setSelectedVoice] = useState<Voice | null>(null)
   const [genderFilter, setGenderFilter] = useState("all")
@@ -276,7 +275,7 @@ export function SelectVoiceStep({ onVoiceSelect, onNext, isUploading }: SelectVo
       </div>
 
       {/* Voice List - Scrollable content */}
-      <div className="absolute inset-0 overflow-y-auto px-6" style={{ paddingTop: '120px', paddingBottom: '120px' }}>
+      <div className="absolute inset-0 overflow-y-auto px-6" style={{ paddingTop: '120px', paddingBottom: '40px' }}>
         <div className="space-y-2">
           {filteredVoices.map((voice) => (
             <div
@@ -347,19 +346,7 @@ export function SelectVoiceStep({ onVoiceSelect, onNext, isUploading }: SelectVo
         </div>
       </div>
 
-      {/* Button fixed at bottom */}
-      {selectedVoice && (
-        <div className="absolute bottom-0 left-0 right-0 bg-card z-10">
-          <div className="p-6">
-            <button
-              onClick={onNext}
-              className="w-full bg-foreground text-background py-3 rounded-xl font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
-            >
-              Train Avatar
-            </button>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }
