@@ -24,6 +24,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/client": "^6.13.0",
+    "@prisma/studio-core": "^0.4.0",
     "@tabler/icons-react": "^3.34.1",
     "clsx": "^2.1.1",
     "geist": "^1.4.2",

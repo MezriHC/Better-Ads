@@ -20,22 +20,23 @@
 - **Coolify production** : Déploiement simplifié
 
 ### **Architecture Environnements**
-- **Local** : Docker Compose (PostgreSQL + MinIO) + `npm run dev`
+- **Local** : Docker Compose (MinIO seul) + PostgreSQL distant + `npm run dev`
 - **Production** : 3 services Coolify séparés (App + PostgreSQL + MinIO)
 
 ---
 
 ## 🔄 Workflow de Développement
 
-### **Principe : Local ≠ Production**
-- **Local** : Prototypage rapide avec `db:push` (synchronisation directe)
-- **Production** : Migrations versionnées avec `db:migrate` (traçabilité)
+### **Principe : Base de données partagée**
+- **PostgreSQL** : Base de données hébergée sur le VPS (port 5432 exposé)
+- **Développement** : Connexion directe à la base distante via IP publique
+- **Collaboration** : Tous les développeurs partagent les mêmes données
 
 ### **1️⃣ Développement Local**
 ```bash
-npm run docker:up      # Démarrer PostgreSQL + MinIO
-npm run db:push        # Sync schéma → DB (prototypage rapide)
-npm run dev            # Next.js avec hot reload
+npm run docker:up      # Démarrer MinIO uniquement
+npm run db:push        # Sync schéma → Base distante (prototypage rapide)
+npm run dev            # Next.js avec hot reload + base distante
 ```
 
 ### **2️⃣ Prêt pour Production**
@@ -91,9 +92,9 @@ npm run build            # Build production
 npm run start            # Démarrer version build
 
 # Services Docker (Local uniquement)
-npm run docker:up        # PostgreSQL + MinIO
+npm run docker:up        # MinIO uniquement (PostgreSQL distant)
 npm run docker:down      # Arrêter services
-npm run docker:reset     # Reset complet (supprime données)
+npm run docker:reset     # Reset MinIO (données locales uniquement)
 
 # Base de données (Prisma)
 npm run db:push          # Sync direct schéma (développement)
@@ -110,6 +111,37 @@ npm run db:generate      # Régénérer client Prisma
 
 ---
 
+## 🌐 Base de Données Distante
+
+### **Architecture Actuelle**
+- **PostgreSQL** hébergé sur le VPS de production
+- **Port 5432** exposé publiquement pour le développement
+- **Données partagées** entre tous les développeurs
+- **MinIO** reste en local pour le stockage de fichiers
+
+### **Configuration VPS**
+```bash
+# Conteneur PostgreSQL exposé
+docker run -d -p 5432:5432 \
+  -e POSTGRES_DB=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=... \
+  postgres:17-alpine
+```
+
+### **Avantages**
+- ✅ **Collaboration** : Données synchronisées entre développeurs
+- ✅ **Simplicité** : Plus de Docker PostgreSQL local
+- ✅ **Réalisme** : Développement sur environnement proche de la prod
+- ✅ **Debugging** : Problèmes visibles par toute l'équipe
+
+### **Sécurité**
+- ⚠️ **Port exposé** : PostgreSQL accessible depuis internet
+- ⚠️ **Données partagées** : Modifications visibles par tous
+- ⚠️ **Backup essentiel** : Base unique pour tout le développement
+
+---
+
 ## ⚙️ Configuration Environnements
 
 ### **Local vs Production**
@@ -120,7 +152,7 @@ npm run db:generate      # Régénérer client Prisma
 ```env
 NEXTAUTH_SECRET=          # Secret 64 chars pour NextAuth
 NEXTAUTH_URL=             # http://localhost:3000
-DATABASE_URL=             # PostgreSQL Docker local
+DATABASE_URL=             # PostgreSQL distant (VPS avec port 5432 exposé)
 GOOGLE_CLIENT_ID=         # OAuth Google (dev)
 GOOGLE_CLIENT_SECRET=     # OAuth Google (dev)
 ```

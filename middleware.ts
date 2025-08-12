@@ -4,10 +4,23 @@ import { getToken } from "next-auth/jwt"
 // Routes protégées par NextAuth
 const PROTECTED_ROUTES = ["/dashboard"]
 
+// Routes admin protégées
+const ADMIN_ROUTES = ["/admin"]
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // Vérifier si la route est protégée
+  // Vérifier si c'est une route admin
+  const isAdminRoute = ADMIN_ROUTES.some(route => 
+    pathname.startsWith(route)
+  )
+
+  // Les routes admin utilisent leur propre système d'authentification côté client
+  if (isAdminRoute) {
+    return NextResponse.next()
+  }
+  
+  // Vérifier si la route est protégée par NextAuth
   const isProtectedRoute = PROTECTED_ROUTES.some(route => 
     pathname.startsWith(route)
   )
