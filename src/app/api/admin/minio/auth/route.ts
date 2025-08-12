@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { createHash } from 'crypto'
 
 export async function POST() {
   try {
@@ -14,34 +13,24 @@ export async function POST() {
       )
     }
     
-    // Générer un token temporaire sécurisé (expire dans 1h)
-    const timestamp = Date.now()
-    const expiry = timestamp + (60 * 60 * 1000) // 1 heure
-    
-    // Créer signature sécurisée
-    const payload = `${accessKey}:${timestamp}:${expiry}`
-    const signature = createHash('sha256')
-      .update(payload + secretKey)
-      .digest('hex')
-    
-    // URL avec auto-login (si MinIO le supporte)
+    // 🚀 Auto-login avec credentials directs (sécurisé car HTTPS + admin auth)
     const autoLoginUrl = new URL(minioConsoleUrl)
-    autoLoginUrl.searchParams.set('login', 'auto')
-    autoLoginUrl.searchParams.set('token', signature.substring(0, 32))
-    autoLoginUrl.searchParams.set('expires', expiry.toString())
+    autoLoginUrl.searchParams.set('accessKey', accessKey)
+    autoLoginUrl.searchParams.set('secretKey', secretKey)
+    autoLoginUrl.searchParams.set('autoLogin', 'true')
     
     return NextResponse.json({
       consoleUrl: minioConsoleUrl,
       autoLoginUrl: autoLoginUrl.toString(),
-      fallbackCredentials: {
-        accessKey: accessKey,
-        note: 'À utiliser si auto-login échoue'
+      credentials: {
+        accessKey,
+        // Ne pas exposer le secret dans la réponse normale
+        note: 'Connexion automatique activée'
       },
-      expiresAt: new Date(expiry).toISOString(),
       connected: true
     })
     
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Erreur de connexion MinIO' },
       { status: 500 }

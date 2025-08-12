@@ -5,58 +5,49 @@ import { IconExternalLink, IconLoader } from "@tabler/icons-react"
 
 export default function StorageTab() {
   const [loading, setLoading] = useState(true)
-  const [connected, setConnected] = useState(false)
+  const [autoLoginUrl, setAutoLoginUrl] = useState<string>('')
 
   useEffect(() => {
-    // Génération d'un token temporaire sécurisé
-    const generateSecureSession = async () => {
+    // 🚀 Connexion immédiate et automatique
+    const setupAutoLogin = async () => {
       try {
-        // 🎫 Demander un token temporaire au serveur
-        const response = await fetch('/api/admin/minio/session', { method: 'POST' })
+        const response = await fetch('/api/admin/minio/auth', { method: 'POST' })
         const data = await response.json()
         
-        if (data.success && data.autoLoginUrl) {
-          setConnected(true)
-          // 🔄 Mettre à jour l'iframe avec l'URL d'auto-login
+        if (data.autoLoginUrl) {
+          setAutoLoginUrl(data.autoLoginUrl)
+          // ⚡ Connexion immédiate dans l'iframe
           const iframe = document.querySelector('#minio-console') as HTMLIFrameElement
           if (iframe) {
             iframe.src = data.autoLoginUrl
           }
-        } else {
-          setConnected(false)
         }
-      } catch {
-        setConnected(false)
+      } catch (error) {
+        console.error('Erreur auto-login MinIO:', error)
+        // 🔄 Fallback : URL normale
+        const iframe = document.querySelector('#minio-console') as HTMLIFrameElement
+        if (iframe) {
+          iframe.src = 'https://minio.trybetterads.com'
+        }
       } finally {
         setLoading(false)
       }
     }
 
-    generateSecureSession()
+    setupAutoLogin()
   }, [])
 
-  const openMinIOConsole = async () => {
-    try {
-      // 🎫 Générer un nouveau token pour la nouvelle fenêtre
-      const response = await fetch('/api/admin/minio/session', { method: 'POST' })
-      const data = await response.json()
-      
-      if (data.success && data.autoLoginUrl) {
-        window.open(data.autoLoginUrl, '_blank')
-      } else {
-        // Fallback vers l'URL normale
-        window.open('https://minio.trybetterads.com', '_blank')
-      }
-    } catch {
-      window.open('https://minio.trybetterads.com', '_blank')
-    }
+  const openInNewWindow = () => {
+    // 🪟 Ouvrir avec auto-login dans nouvelle fenêtre
+    const url = autoLoginUrl || 'https://minio.trybetterads.com'
+    window.open(url, '_blank', 'width=1200,height=800')
   }
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <IconLoader className="w-6 h-6 animate-spin border-white" />
+      <div className="h-full flex items-center justify-center bg-white">
+        <div className="flex items-center gap-3 text-gray-600">
+          <IconLoader className="w-6 h-6 animate-spin" />
           <span>Connexion à MinIO...</span>
         </div>
       </div>
@@ -64,41 +55,30 @@ export default function StorageTab() {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* En-tête avec connexion directe */}
-      <div className="bg-card border-b border-border p-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-foreground">MinIO Storage Console</h2>
-          <p className="text-sm text-muted-foreground">
-            Interface de gestion du stockage S3 - Connexion automatique
-          </p>
+    <div className="h-full flex flex-col bg-white">
+      {/* Barre d'outils minimale */}
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          Console MinIO - Stockage S3
         </div>
-        <div className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm text-muted-foreground">
-            {connected ? 'Connecté' : 'Déconnecté'}
-          </span>
-          <button
-            onClick={openMinIOConsole}
-            className="px-4 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors cursor-pointer flex items-center gap-2"
-          >
-            <IconExternalLink className="w-4 h-4" />
-            Nouvelle fenêtre
-          </button>
-        </div>
+        <button
+          onClick={openInNewWindow}
+          className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors cursor-pointer flex items-center gap-2"
+        >
+          <IconExternalLink className="w-4 h-4" />
+          Nouvelle fenêtre
+        </button>
       </div>
 
-      {/* Console MinIO intégrée */}
-      <div className="flex-1 p-4">
-        <div className="h-full bg-white rounded-xl border border-border overflow-hidden">
-          <iframe
-            id="minio-console"
-            src="about:blank"
-            className="w-full h-full border-0"
-            title="Console MinIO - Connexion automatique"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
-          />
-        </div>
+      {/* Console MinIO pleine largeur */}
+      <div className="flex-1">
+        <iframe
+          id="minio-console"
+          src="about:blank"
+          className="w-full h-full border-0"
+          title="Console MinIO"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation allow-downloads"
+        />
       </div>
     </div>
   )
