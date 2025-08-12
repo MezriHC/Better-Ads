@@ -55,8 +55,18 @@ function serializeError(error: Error) {
   }
 }
 
+// Types pour Prisma Studio Core
+interface StudioQuery {
+  sql?: string
+  parameters?: unknown[]
+  values?: unknown[]
+  params?: unknown[]
+  type?: string
+  action?: string
+}
+
 // Fonction principale pour exécuter les requêtes selon le format Studio Core officiel
-async function executeStudioCoreQuery(query: any): Promise<[Error | null, any]> {
+async function executeStudioCoreQuery(query: StudioQuery): Promise<[Error | null, unknown]> {
   try {
     console.log("Exécution query Studio Core:", JSON.stringify(query, null, 2))
 
@@ -139,7 +149,7 @@ async function getSchemaInformation() {
 }
 
 // Fonction pour convertir les BigInt en string pour la sérialisation JSON
-function convertBigIntToString(obj: any): any {
+function convertBigIntToString(obj: unknown): unknown {
   if (obj === null || obj === undefined) {
     return obj
   }
@@ -153,7 +163,7 @@ function convertBigIntToString(obj: any): any {
   }
   
   if (typeof obj === 'object') {
-    const result: any = {}
+    const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(obj)) {
       result[key] = convertBigIntToString(value)
     }
