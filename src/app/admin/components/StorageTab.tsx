@@ -8,12 +8,23 @@ export default function StorageTab() {
   const [connected, setConnected] = useState(false)
 
   useEffect(() => {
-    // Vérification rapide de la connexion MinIO
-    const checkConnection = async () => {
+    // Génération d'un token temporaire sécurisé
+    const generateSecureSession = async () => {
       try {
-        const response = await fetch('/api/admin/minio/auth', { method: 'POST' })
+        // 🎫 Demander un token temporaire au serveur
+        const response = await fetch('/api/admin/minio/session', { method: 'POST' })
         const data = await response.json()
-        setConnected(!!data.consoleUrl)
+        
+        if (data.success && data.autoLoginUrl) {
+          setConnected(true)
+          // 🔄 Mettre à jour l'iframe avec l'URL d'auto-login
+          const iframe = document.querySelector('#minio-console') as HTMLIFrameElement
+          if (iframe) {
+            iframe.src = data.autoLoginUrl
+          }
+        } else {
+          setConnected(false)
+        }
       } catch {
         setConnected(false)
       } finally {
@@ -21,11 +32,24 @@ export default function StorageTab() {
       }
     }
 
-    checkConnection()
+    generateSecureSession()
   }, [])
 
-  const openMinIOConsole = () => {
-    window.open('https://minio.trybetterads.com', '_blank')
+  const openMinIOConsole = async () => {
+    try {
+      // 🎫 Générer un nouveau token pour la nouvelle fenêtre
+      const response = await fetch('/api/admin/minio/session', { method: 'POST' })
+      const data = await response.json()
+      
+      if (data.success && data.autoLoginUrl) {
+        window.open(data.autoLoginUrl, '_blank')
+      } else {
+        // Fallback vers l'URL normale
+        window.open('https://minio.trybetterads.com', '_blank')
+      }
+    } catch {
+      window.open('https://minio.trybetterads.com', '_blank')
+    }
   }
 
   if (loading) {
@@ -68,9 +92,10 @@ export default function StorageTab() {
       <div className="flex-1 p-4">
         <div className="h-full bg-white rounded-xl border border-border overflow-hidden">
           <iframe
-            src="https://minio.trybetterads.com"
+            id="minio-console"
+            src="about:blank"
             className="w-full h-full border-0"
-            title="Console MinIO"
+            title="Console MinIO - Connexion automatique"
             sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
           />
         </div>
