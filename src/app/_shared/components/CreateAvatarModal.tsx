@@ -62,7 +62,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
       case "define-actor":
         return "h-[800px]" // Grand pour le chat et les images
       case "select-actor":
-        return "h-[650px]" // Plus d'espace pour éviter le débordement
+        return "h-[750px]" // Plus grand pour éviter le scroll interne
       case "select-voice":
         return "h-[700px]" // Espace pour la liste des voix
       default:

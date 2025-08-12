@@ -14,8 +14,8 @@ export function SelectActorStep({ onNext, selectedImageUrl }: SelectActorStepPro
 
   return (
     <div className="relative h-full">
-      {/* Content area - scrollable */}
-      <div className="absolute inset-0 overflow-y-auto p-8" style={{ paddingBottom: '120px' }}>
+      {/* Content area - no scroll needed with larger modal */}
+      <div className="absolute inset-0 p-8" style={{ paddingBottom: '120px' }}>
         {/* Question */}
         <div className="mb-8">
           <h3 className="text-lg font-medium text-foreground mb-4">
@@ -31,10 +31,10 @@ export function SelectActorStep({ onNext, selectedImageUrl }: SelectActorStepPro
           </div>
         </div>
 
-        {/* Starting frame */}
+        {/* Your Actor */}
         <div className="mb-8">
           <div className="border border-border rounded-xl bg-background p-6">
-            <h4 className="text-base font-medium text-foreground mb-6 text-center">Starting frame</h4>
+            <h4 className="text-base font-medium text-foreground mb-6 text-center">Your Actor</h4>
             <div className="flex justify-center">
               <div className="relative inline-block">
                 <div className="w-32 h-48 bg-muted rounded-xl overflow-hidden border-2 border-border shadow-lg">
