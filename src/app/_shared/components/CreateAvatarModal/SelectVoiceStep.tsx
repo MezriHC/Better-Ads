@@ -274,7 +274,7 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
       </div>
 
       {/* Voice List - Scrollable content */}
-      <div className="absolute inset-0 overflow-y-auto pt-[120px] pb-4 px-6">
+      <div className="absolute inset-0 overflow-y-auto pt-[120px] pb-8 px-6">
         <div className="space-y-2">
           {filteredVoices.map((voice) => (
             <div
@@ -329,6 +329,9 @@ export function SelectVoiceStep({ onVoiceSelect, isUploading }: SelectVoiceStepP
               </div>
             </div>
           )}
+          
+          {/* Espacement final pour équilibrer avec le haut */}
+          <div className="h-4"></div>
         </div>
       </div>
     </div>
