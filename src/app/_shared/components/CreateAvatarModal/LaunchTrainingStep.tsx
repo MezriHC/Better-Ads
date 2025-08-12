@@ -26,31 +26,112 @@ export function LaunchTrainingStep({
   const [generatedVideo, setGeneratedVideo] = useState<GeneratedVideoData | null>(null)
   const [downloadingVideo, setDownloadingVideo] = useState(false)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
+  const [isPreparingVideo, setIsPreparingVideo] = useState(false)
+  const [isConverting, setIsConverting] = useState(false)
   const { generateVideo, isGenerating, error } = useVideoGeneration()
 
+  const convertDataUrlToFalUrl = async (dataUrl: string): Promise<string | null> => {
+    try {
+      // Convertir Data URL en Blob
+      const response = await fetch(dataUrl)
+      const blob = await response.blob()
+      
+      // Créer un FormData pour envoyer à notre API d'upload
+      const formData = new FormData()
+      formData.append('image', blob, 'generated-image.jpg')
+      
+      // Utiliser notre API d'upload existante
+      const uploadResponse = await fetch('/api/upload-reference', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image')
+      }
+      
+      const uploadData = await uploadResponse.json()
+      return uploadData.imageUrl
+    } catch (error) {
+      console.error('Erreur conversion Data URL:', error)
+      return null
+    }
+  }
+
   const handleGenerateVideo = useCallback(async () => {
-    if (!selectedImageUrl || !prompt) {
+    if (!selectedImageUrl || !prompt || isConverting || isGenerating) {
       return
     }
 
-    // Vérifier que l'URL est valide
-    if (!selectedImageUrl.includes('fal.media')) {
+    let finalImageUrl = selectedImageUrl
+    
+    // Si c'est une Data URL, la convertir en URL fal.media
+    if (selectedImageUrl.startsWith('data:')) {
+      setIsConverting(true)
+      console.log('[LaunchTrainingStep] Conversion Data URL vers fal.ai...')
+      
+      try {
+        const convertedUrl = await convertDataUrlToFalUrl(selectedImageUrl)
+        
+        if (!convertedUrl) {
+          console.error('[LaunchTrainingStep] Échec conversion Data URL')
+          return
+        }
+        
+        finalImageUrl = convertedUrl
+        console.log('[LaunchTrainingStep] ✅ Conversion réussie:', finalImageUrl.substring(0, 50) + '...')
+      } finally {
+        setIsConverting(false)
+      }
+    }
+
+    // Vérifier que l'URL finale est valide
+    if (!finalImageUrl.includes('fal.media')) {
+      console.error('[LaunchTrainingStep] URL finale invalide:', finalImageUrl.substring(0, 50) + '...')
       return
     }
     
-    const video = await generateVideo(prompt, selectedImageUrl)
+    console.log('[LaunchTrainingStep] 🎬 Démarrage génération vidéo avec URL:', finalImageUrl.substring(0, 50) + '...')
+    const video = await generateVideo(prompt, finalImageUrl)
+    
     if (video) {
       setGeneratedVideo(video)
+      console.log('[LaunchTrainingStep] ✅ Vidéo générée avec succès!')
     }
-  }, [selectedImageUrl, prompt, generateVideo])
+  }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating])
 
   useEffect(() => {
+    console.log('[LaunchTrainingStep] useEffect - Vérification conditions:', {
+      selectedImageUrl: selectedImageUrl ? `présent (${selectedImageUrl.substring(0, 50)}...)` : 'MANQUANT',
+      prompt: prompt ? `présent (${prompt.substring(0, 30)}...)` : 'MANQUANT',
+      hasStartedGeneration,
+      shouldStart: selectedImageUrl && prompt && !hasStartedGeneration
+    })
+    
     // Démarrer automatiquement la génération vidéo UNE SEULE FOIS
     if (selectedImageUrl && prompt && !hasStartedGeneration) {
+      console.log('[LaunchTrainingStep] ✅ Conditions remplies - Démarrage génération')
       setHasStartedGeneration(true)
+      setIsPreparingVideo(true) // Commencer l'état "preparing"
       handleGenerateVideo()
+    } else {
+      console.log('[LaunchTrainingStep] ❌ Conditions non remplies pour démarrer')
     }
   }, [selectedImageUrl, prompt, hasStartedGeneration, handleGenerateVideo])
+  
+  // Mettre à jour l'état preparing quand la génération démarre
+  useEffect(() => {
+    if (isGenerating && isPreparingVideo) {
+      setIsPreparingVideo(false) // La vraie génération a commencé
+    }
+  }, [isGenerating, isPreparingVideo])
+  
+  // Réinitialiser l'état si une vidéo est générée
+  useEffect(() => {
+    if (generatedVideo) {
+      setIsPreparingVideo(false)
+    }
+  }, [generatedVideo])
 
   const handleDownloadVideo = async () => {
     if (!generatedVideo) return
@@ -165,8 +246,8 @@ export function LaunchTrainingStep({
                   </div>
                 )}
                 
-                {/* Loading overlay when generating */}
-                {isGenerating && (
+                {/* Loading overlay when generating, preparing, or converting */}
+                {(isGenerating || isPreparingVideo || isConverting) && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
                     <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
@@ -178,7 +259,7 @@ export function LaunchTrainingStep({
           {/* Status avec enthousiasme */}
           <div className="text-center">
             <h3 className="text-xl font-bold text-foreground mb-3">
-              {isGenerating ? "🎬 Generating..." : error ? "⚠️ Oops, an error!" : "🚀 Preparing..."}
+              {isGenerating ? "🎬 Generating..." : error ? "⚠️ Oops, an error!" : isConverting ? "🔄 Converting..." : isPreparingVideo ? "🚀 Preparing..." : "🎥 Ready to generate"}
             </h3>
             
             <div className="text-base text-muted-foreground mb-6">
@@ -186,8 +267,12 @@ export function LaunchTrainingStep({
                 <p>Creating your magical video! ✨</p>
               ) : error ? (
                 <p className="text-red-500">Error: {error}</p>
-              ) : (
+              ) : isConverting ? (
+                <p>Converting your image for video generation...</p>
+              ) : isPreparingVideo ? (
                 <p>We&apos;re preparing something incredible for you...</p>
+              ) : (
+                <p>Everything is ready to generate your video!</p>
               )}
             </div>
 
@@ -196,9 +281,10 @@ export function LaunchTrainingStep({
               <button
                 onClick={() => {
                   setHasStartedGeneration(false)
+                  setIsPreparingVideo(false)
                   handleGenerateVideo()
                 }}
-                disabled={isGenerating}
+                disabled={isGenerating || isPreparingVideo || isConverting}
                 className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Try Again

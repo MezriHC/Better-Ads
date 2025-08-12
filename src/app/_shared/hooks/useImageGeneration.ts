@@ -44,6 +44,12 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
       const data = await response.json()
       
+      console.log('[useImageGeneration] Données reçues de l\'API:', data.images?.map((img: GeneratedImageData) => ({
+        id: img.id,
+        url: img.url.substring(0, 50) + '...',
+        urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
+      })))
+      
       if (!data.success) {
         throw new Error(data.error || `${baseImageUrl ? 'L\'édition' : 'La génération'} a échoué`)
       }

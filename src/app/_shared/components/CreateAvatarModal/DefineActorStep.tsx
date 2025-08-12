@@ -85,6 +85,12 @@ export function DefineActorStep({
         .flatMap(msg => msg.generatedImages || [])
         .find(img => img.selected)?.url
       
+      console.log('[DefineActorStep] handleSubmit - Recherche image sélectionnée:', {
+        totalMessages: chatMessages.length,
+        totalImages: chatMessages.flatMap(msg => msg.generatedImages || []).length,
+        selectedImage: selectedImage ? selectedImage.substring(0, 50) + '...' : 'AUCUNE'
+      })
+      
       // Déterminer le mode : édition si une image est sélectionnée, génération sinon
       const isEditMode = !!selectedImage
       
@@ -136,6 +142,12 @@ export function DefineActorStep({
           generatedImages = await generateImages(currentPrompt)
         }
         
+        console.log('[DefineActorStep] Images générées reçues:', generatedImages.map(img => ({
+          id: img.id,
+          url: img.url.substring(0, 50) + '...',
+          urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
+        })))
+        
         // Mettre à jour le message avec les images générées
         setChatMessages(prev => 
           prev.map((msg, index) => 
@@ -171,6 +183,12 @@ export function DefineActorStep({
       
       // Appeler l'API pour notifier le parent avec l'image sélectionnée ou uploadée
       const finalImageUrl = selectedImage || uploadedImageUrl
+      console.log('[DefineActorStep] Appel onDefineActor:', {
+        currentPrompt: currentPrompt ? `présent (${currentPrompt.substring(0, 30)}...)` : 'MANQUANT',
+        selectedImage: selectedImage ? `présent (${selectedImage.substring(0, 50)}...)` : 'MANQUANT',
+        uploadedImageUrl: uploadedImageUrl ? `présent (${uploadedImageUrl.substring(0, 50)}...)` : 'MANQUANT',
+        finalImageUrl: finalImageUrl ? `présent (${finalImageUrl.substring(0, 50)}...)` : 'MANQUANT'
+      })
       onDefineActor(currentPrompt, finalImageUrl || undefined)
     }
   }
@@ -536,8 +554,13 @@ export function DefineActorStep({
           <div className="mt-8 px-8 pb-6">
             <button
               onClick={() => {
-                // Passer à l'étape suivante avec l'image sélectionnée
-                const selectedImage = chatMessages[chatMessages.length - 1]?.generatedImages?.find(img => img.selected)
+                // Passer à l'étape suivante avec l'image sélectionnée dans TOUS les messages
+                const selectedImage = chatMessages
+                  .flatMap(msg => msg.generatedImages || [])
+                  .find(img => img.selected)
+                
+                console.log('[DefineActorStep] Bouton Select Actor - Image trouvée:', selectedImage?.url ? selectedImage.url.substring(0, 50) + '...' : 'AUCUNE')
+                
                 if (selectedImage) {
                   onNext(selectedImage.url) // Passer l'URL de l'image sélectionnée
                 }

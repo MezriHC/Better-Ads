@@ -48,6 +48,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, video: generatedVideo })
 
   } catch (error) {
+    const { prompt: errorPrompt, imageUrl: errorImageUrl } = await request.json().catch(() => ({ prompt: 'N/A', imageUrl: 'N/A' }))
+    
+    console.error('[API] Erreur détaillée génération vidéo:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      prompt: errorPrompt,
+      imageUrl: errorImageUrl && typeof errorImageUrl === 'string' ? errorImageUrl.substring(0, 50) + '...' : 'missing'
+    })
+    
     return NextResponse.json({ 
       error: 'Failed to generate video',
       details: error instanceof Error ? error.message : 'Unknown error'

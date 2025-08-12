@@ -115,11 +115,24 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
   }
 
   const handleDefineActor = async (prompt: string, imageUrl?: string) => {
+    console.log('[CreateAvatarModal] handleDefineActor appelé:', {
+      prompt: prompt ? `présent (${prompt.substring(0, 30)}...)` : 'MANQUANT',
+      imageUrl: imageUrl ? `présent (${imageUrl.substring(0, 50)}...)` : 'MANQUANT',
+      method
+    })
+    
     setActorPrompt(prompt)
     
-    if (method === "upload" && imageUrl) {
-      // For upload method, set selectedImageUrl and go to select-actor
+    // Sauvegarder l'imageUrl quelle que soit la méthode
+    if (imageUrl) {
+      console.log('[CreateAvatarModal] ✅ Sauvegarde selectedImageUrl:', imageUrl.substring(0, 50) + '...')
       setSelectedImageUrl(imageUrl)
+    } else {
+      console.log('[CreateAvatarModal] ❌ Aucune imageUrl fournie')
+    }
+    
+    if (method === "upload" && imageUrl) {
+      // For upload method, go to select-actor
       setStep("select-actor")
     } else {
       // For generate method, stay on define-actor step to show integrated interface

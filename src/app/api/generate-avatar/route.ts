@@ -41,6 +41,12 @@ export async function POST(request: NextRequest) {
       }
     }) as { data: FalGenerationResponse }
 
+    console.log('[API] Réponse fal.ai reçue:', result.data.images.map((img, i) => ({
+      index: i,
+      url: img.url.substring(0, 50) + '...',
+      urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
+    })))
+
     // Transformer la réponse pour notre format
     const generatedImages = result.data.images.map((image, index) => ({
       id: `${Date.now()}-${index + 1}`,
@@ -48,6 +54,12 @@ export async function POST(request: NextRequest) {
       selected: false,
       loading: false
     }))
+
+    console.log('[API] Images transformées:', generatedImages.map(img => ({
+      id: img.id,
+      url: img.url.substring(0, 50) + '...',
+      urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
+    })))
 
     return NextResponse.json({
       success: true,
