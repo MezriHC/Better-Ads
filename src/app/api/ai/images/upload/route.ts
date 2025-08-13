@@ -35,8 +35,7 @@ export async function POST(request: NextRequest) {
         imageUrl: uploadedFile
       })
 
-    } catch (uploadError) {
-
+    } catch {
       
       try {
         // Fallback : convertir en Data URL

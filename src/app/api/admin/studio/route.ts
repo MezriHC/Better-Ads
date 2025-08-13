@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Extraire query et customPayload selon le format officiel Studio Core
+    // Extraire query selon le format officiel Studio Core
     const body = await request.json()
     
-    const { query, customPayload } = body
+    const { query } = body
     
 
     // Exécuter la requête en suivant le format Studio Core officiel

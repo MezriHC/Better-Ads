@@ -131,7 +131,7 @@ export function ContentInput({
       intervalRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1)
       }, 1000)
-    } catch (error) {
+    } catch {
       setRecordingState("idle")
     }
   }

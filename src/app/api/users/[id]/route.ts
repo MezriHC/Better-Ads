@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       success: true,
       data: user,
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }
@@ -86,7 +86,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       data: updatedUser,
       message: 'Utilisateur mis à jour avec succès',
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la mise à jour' },
       { status: 500 }
@@ -133,7 +133,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
       data: { deleted: true },
       message: 'Utilisateur supprimé avec succès',
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la suppression' },
       { status: 500 }

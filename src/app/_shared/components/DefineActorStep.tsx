@@ -61,7 +61,7 @@ export function DefineActorStep({
       try {
         const uploadedUrl = await uploadImage(file)
         setUploadedImageUrl(uploadedUrl)
-      } catch (error) {
+      } catch {
         // On garde l'image localement même si l'upload échoue
       }
     }
@@ -155,7 +155,7 @@ export function DefineActorStep({
           }
         }, 100)
         
-      } catch (error) {
+      } catch {
         // En cas d'erreur, mettre à jour le message
         setChatMessages(prev => 
           prev.map((msg, index) => 

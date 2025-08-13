@@ -52,7 +52,7 @@ export function LaunchTrainingStep({
       
       const uploadData = await uploadResponse.json()
       return uploadData.imageUrl
-    } catch (error) {
+    } catch {
       return null
     }
   }
