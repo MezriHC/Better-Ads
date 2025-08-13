@@ -522,8 +522,9 @@ export function DefineActorStep({
             <GradientButton
               onClick={handleSubmit}
               disabled={!canSubmit}
-              icon={<IconSparkles className="w-4 h-4" />}
-              className="text-sm"
+              icon={<IconSparkles />}
+              fullWidth={false}
+              size="md"
             >
               {isGeneratingImages ? "Generating..." : "Generate"}
             </GradientButton>

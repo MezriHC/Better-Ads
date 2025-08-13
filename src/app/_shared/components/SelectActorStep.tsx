@@ -63,6 +63,9 @@ export function SelectActorStep({
     fileInputRef.current?.click()
   }
 
+  // Validation: image ET prompt obligatoires
+  const canProceed = !!(selectedImageUrl && prompt.trim())
+
 
 
   return (
@@ -186,9 +189,24 @@ export function SelectActorStep({
       {/* Button fixed at bottom - outside scroll area */}
       <div className="absolute bottom-0 left-0 right-0 bg-card z-10">
         <div className="p-8">
-          <GradientButton onClick={onNext}>
+          <GradientButton 
+            onClick={canProceed ? onNext : undefined}
+            disabled={!canProceed}
+          >
             Turn into talking actor
           </GradientButton>
+          
+          {/* Message d'aide quand validation échoue */}
+          {!canProceed && (
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              {!selectedImageUrl && !prompt.trim() 
+                ? "Add an image and describe the behavior"
+                : !selectedImageUrl 
+                  ? "Add an image to continue"
+                  : "Describe how your avatar should behave"
+              }
+            </p>
+          )}
         </div>
       </div>
     </div>

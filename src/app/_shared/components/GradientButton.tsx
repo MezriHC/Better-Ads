@@ -8,6 +8,8 @@ interface GradientButtonProps {
   disabled?: boolean
   className?: string
   icon?: ReactNode
+  fullWidth?: boolean
+  size?: "sm" | "md" | "lg"
 }
 
 export function GradientButton({ 
@@ -15,11 +17,38 @@ export function GradientButton({
   onClick, 
   disabled = false, 
   className = "",
-  icon 
+  icon,
+  fullWidth = true,
+  size = "md"
 }: GradientButtonProps) {
+  // Configuration des tailles
+  const sizeConfig = {
+    sm: {
+      padding: "px-4 py-2",
+      iconSize: "w-4 h-4",
+      textSize: "text-sm",
+      gap: "gap-2"
+    },
+    md: {
+      padding: "px-6 py-3",
+      iconSize: "w-5 h-5",
+      textSize: "text-base",
+      gap: "gap-3"
+    },
+    lg: {
+      padding: "px-8 py-4",
+      iconSize: "w-6 h-6",
+      textSize: "text-lg",
+      gap: "gap-4"
+    }
+  }
+
+  const config = sizeConfig[size]
+  const widthClass = fullWidth ? "w-full" : "w-fit"
+
   return (
     <div 
-      className={`w-full ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${className}`}
+      className={`${widthClass} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       onClick={disabled ? undefined : onClick}
     >
       <div
@@ -30,19 +59,19 @@ export function GradientButton({
         }`}
       >
         <div
-          className={`group rounded-[14px] shadow-lg transition-all w-full ${
+          className={`group rounded-[14px] shadow-lg transition-all ${widthClass} ${
             disabled
               ? 'bg-muted cursor-not-allowed opacity-50'
               : 'bg-foreground dark:bg-white hover:shadow-md active:shadow-sm active:scale-[0.98] cursor-pointer'
           }`}
         >
-          <div className={`px-6 py-3 bg-gradient-to-b from-transparent to-white/10 dark:to-black/10 rounded-[12px] flex items-center justify-center gap-3`}>
+          <div className={`${config.padding} bg-gradient-to-b from-transparent to-white/10 dark:to-black/10 rounded-[12px] flex items-center justify-center ${config.gap}`}>
             {icon && (
-              <span className={`w-6 h-6 shrink-0 ${disabled ? 'text-muted-foreground' : 'text-background dark:text-black'}`}>
+              <span className={`${config.iconSize} shrink-0 flex items-center justify-center ${disabled ? 'text-muted-foreground' : 'text-background dark:text-black'}`}>
                 {icon}
               </span>
             )}
-            <span className={`font-semibold ${disabled ? 'text-muted-foreground' : 'text-background dark:text-black'}`}>
+            <span className={`font-semibold ${config.textSize} ${disabled ? 'text-muted-foreground' : 'text-background dark:text-black'}`}>
               {children}
             </span>
           </div>
