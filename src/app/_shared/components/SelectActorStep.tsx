@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import { useImageUpload } from "../hooks/useImageUpload"
+import { GradientButton } from "./GradientButton"
 
 interface SelectActorStepProps {
   onNext: () => void
@@ -185,12 +186,9 @@ export function SelectActorStep({
       {/* Button fixed at bottom - outside scroll area */}
       <div className="absolute bottom-0 left-0 right-0 bg-card z-10">
         <div className="p-8">
-          <button
-            onClick={onNext}
-            className="w-full bg-foreground text-background py-3 rounded-xl font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
-          >
+          <GradientButton onClick={onNext}>
             Turn into talking actor
-          </button>
+          </GradientButton>
         </div>
       </div>
     </div>

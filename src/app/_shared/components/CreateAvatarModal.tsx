@@ -87,7 +87,13 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
         setStep("get-started")
         break
       case "select-actor":
-        setStep("define-actor")
+        // Si on est en mode upload, retourner à get-started
+        // Si on est en mode generate, retourner à define-actor
+        if (method === "upload") {
+          setStep("get-started")
+        } else {
+          setStep("define-actor")
+        }
         break
       case "select-voice":
         setStep("select-actor")

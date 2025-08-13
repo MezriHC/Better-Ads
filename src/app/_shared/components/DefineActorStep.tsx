@@ -6,6 +6,7 @@ import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload } from "@tabler
 import { useImageGeneration } from "../hooks/useImageGeneration"
 import { useImageUpload } from "../hooks/useImageUpload"
 import { GeneratedImageData } from "../types/ai"
+import { GradientButton } from "./GradientButton"
 
 
 
@@ -518,21 +519,21 @@ export function DefineActorStep({
             </div>
 
             {/* Generate Button */}
-            <button
+            <GradientButton
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 text-sm cursor-pointer"
+              icon={<IconSparkles className="w-4 h-4" />}
+              className="text-sm"
             >
-              <IconSparkles className="w-4 h-4" />
               {isGeneratingImages ? "Generating..." : "Generate"}
-            </button>
+            </GradientButton>
           </div>
         </div>
         
         {/* Select Actor Button */}
         {hasSelectedImage && (
           <div className="mt-8 px-8 pb-6">
-            <button
+            <GradientButton
               onClick={() => {
                 // Passer à l'étape suivante avec l'image sélectionnée dans TOUS les messages
                 const selectedImage = chatMessages
@@ -544,10 +545,9 @@ export function DefineActorStep({
                   onNext(selectedImage.url) // Passer l'URL de l'image sélectionnée
                 }
               }}
-              className="w-full bg-foreground text-background py-3 rounded-xl font-medium hover:bg-foreground/90 transition-colors cursor-pointer"
             >
               Select Actor
-            </button>
+            </GradientButton>
           </div>
         )}
       </div>
