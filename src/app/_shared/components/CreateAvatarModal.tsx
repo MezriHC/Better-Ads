@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { IconX, IconArrowLeft } from "@tabler/icons-react"
-import { GetStartedStep } from "./CreateAvatarModal/GetStartedStep"
-import { DefineActorStep } from "./CreateAvatarModal/DefineActorStep"
-import { SelectActorStep } from "./CreateAvatarModal/SelectActorStep"
-import { SelectVoiceStep } from "./CreateAvatarModal/SelectVoiceStep"
-import { LaunchTrainingStep } from "./CreateAvatarModal/LaunchTrainingStep"
+import { GetStartedStep } from "./GetStartedStep"
+import { DefineActorStep } from "./DefineActorStep"
+import { SelectActorStep } from "./SelectActorStep"
+import { SelectVoiceStep } from "./SelectVoiceStep"
+import { LaunchTrainingStep } from "./LaunchTrainingStep"
 // Import supprimé - GeneratedVideoData non utilisé dans ce fichier
 
 type CreateMethod = "generate" | "upload"
@@ -115,20 +115,13 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
   }
 
   const handleDefineActor = async (prompt: string, imageUrl?: string) => {
-    console.log('[CreateAvatarModal] handleDefineActor appelé:', {
-      prompt: prompt ? `présent (${prompt.substring(0, 30)}...)` : 'MANQUANT',
-      imageUrl: imageUrl ? `présent (${imageUrl.substring(0, 50)}...)` : 'MANQUANT',
-      method
-    })
     
     setActorPrompt(prompt)
     
     // Sauvegarder l'imageUrl quelle que soit la méthode
     if (imageUrl) {
-      console.log('[CreateAvatarModal] ✅ Sauvegarde selectedImageUrl:', imageUrl.substring(0, 50) + '...')
       setSelectedImageUrl(imageUrl)
     } else {
-      console.log('[CreateAvatarModal] ❌ Aucune imageUrl fournie')
     }
     
     if (method === "upload" && imageUrl) {

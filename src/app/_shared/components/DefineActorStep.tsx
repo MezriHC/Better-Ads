@@ -3,9 +3,9 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload } from "@tabler/icons-react"
-import { useImageGeneration } from "../../hooks/useImageGeneration"
-import { useImageUpload } from "../../hooks/useImageUpload"
-import { GeneratedImageData } from "../../types/fal"
+import { useImageGeneration } from "../hooks/useImageGeneration"
+import { useImageUpload } from "../hooks/useImageUpload"
+import { GeneratedImageData } from "../types/ai"
 
 
 
@@ -61,7 +61,6 @@ export function DefineActorStep({
         const uploadedUrl = await uploadImage(file)
         setUploadedImageUrl(uploadedUrl)
       } catch (error) {
-        console.error('Erreur lors de l\'upload de l\'image:', error)
         // On garde l'image localement même si l'upload échoue
       }
     }
@@ -84,12 +83,6 @@ export function DefineActorStep({
       const selectedImage = chatMessages
         .flatMap(msg => msg.generatedImages || [])
         .find(img => img.selected)?.url
-      
-      console.log('[DefineActorStep] handleSubmit - Recherche image sélectionnée:', {
-        totalMessages: chatMessages.length,
-        totalImages: chatMessages.flatMap(msg => msg.generatedImages || []).length,
-        selectedImage: selectedImage ? selectedImage.substring(0, 50) + '...' : 'AUCUNE'
-      })
       
       // Déterminer le mode : édition si une image est sélectionnée, génération sinon
       const isEditMode = !!selectedImage
@@ -142,12 +135,6 @@ export function DefineActorStep({
           generatedImages = await generateImages(currentPrompt)
         }
         
-        console.log('[DefineActorStep] Images générées reçues:', generatedImages.map(img => ({
-          id: img.id,
-          url: img.url.substring(0, 50) + '...',
-          urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
-        })))
-        
         // Mettre à jour le message avec les images générées
         setChatMessages(prev => 
           prev.map((msg, index) => 
@@ -177,18 +164,11 @@ export function DefineActorStep({
           )
         )
         
-        console.error('Erreur lors de la génération:', error)
         // Optionnel: Afficher une notification d'erreur à l'utilisateur
       }
       
       // Appeler l'API pour notifier le parent avec l'image sélectionnée ou uploadée
       const finalImageUrl = selectedImage || uploadedImageUrl
-      console.log('[DefineActorStep] Appel onDefineActor:', {
-        currentPrompt: currentPrompt ? `présent (${currentPrompt.substring(0, 30)}...)` : 'MANQUANT',
-        selectedImage: selectedImage ? `présent (${selectedImage.substring(0, 50)}...)` : 'MANQUANT',
-        uploadedImageUrl: uploadedImageUrl ? `présent (${uploadedImageUrl.substring(0, 50)}...)` : 'MANQUANT',
-        finalImageUrl: finalImageUrl ? `présent (${finalImageUrl.substring(0, 50)}...)` : 'MANQUANT'
-      })
       onDefineActor(currentPrompt, finalImageUrl || undefined)
     }
   }
@@ -559,7 +539,6 @@ export function DefineActorStep({
                   .flatMap(msg => msg.generatedImages || [])
                   .find(img => img.selected)
                 
-                console.log('[DefineActorStep] Bouton Select Actor - Image trouvée:', selectedImage?.url ? selectedImage.url.substring(0, 50) + '...' : 'AUCUNE')
                 
                 if (selectedImage) {
                   onNext(selectedImage.url) // Passer l'URL de l'image sélectionnée

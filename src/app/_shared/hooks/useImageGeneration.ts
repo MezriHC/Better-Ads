@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { GeneratedImageData } from '../types/fal'
+import { GeneratedImageData } from '../types/ai'
 
 interface UseImageGenerationReturn {
   generateImages: (prompt: string, baseImageUrl?: string) => Promise<GeneratedImageData[]>
@@ -24,7 +24,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
     try {
       // Choisir l'endpoint selon le mode
-      const endpoint = baseImageUrl ? '/api/edit-avatar' : '/api/generate-avatar'
+      const endpoint = baseImageUrl ? '/api/ai/images/edit' : '/api/ai/images/generate'
       const requestBody = baseImageUrl 
         ? { prompt, baseImageUrl }
         : { prompt }
@@ -43,12 +43,6 @@ export function useImageGeneration(): UseImageGenerationReturn {
       }
 
       const data = await response.json()
-      
-      console.log('[useImageGeneration] Données reçues de l\'API:', data.images?.map((img: GeneratedImageData) => ({
-        id: img.id,
-        url: img.url.substring(0, 50) + '...',
-        urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
-      })))
       
       if (!data.success) {
         throw new Error(data.error || `${baseImageUrl ? 'L\'édition' : 'La génération'} a échoué`)

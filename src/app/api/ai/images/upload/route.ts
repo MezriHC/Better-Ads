@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       })
 
     } catch (uploadError) {
-      console.error('Erreur lors de l\'upload vers fal.ai, tentative avec Data URL:', uploadError)
+
       
       try {
         // Fallback : convertir en Data URL
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
           isDataUrl: true
         })
       } catch (fallbackError) {
-        console.error('Erreur lors du fallback Data URL:', fallbackError)
+
         
         return NextResponse.json(
           { 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (error) {
-    console.error('Erreur lors du traitement de la requête:', error)
+
     
     return NextResponse.json(
       { 

@@ -24,7 +24,7 @@ export function useImageUpload(): UseImageUploadReturn {
       const formData = new FormData()
       formData.append('image', file)
 
-      const response = await fetch('/api/upload-reference', {
+      const response = await fetch('/api/ai/images/upload', {
         method: 'POST',
         body: formData
       })

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
-import { useImageUpload } from "../../hooks/useImageUpload"
+import { useImageUpload } from "../hooks/useImageUpload"
 
 interface SelectActorStepProps {
   onNext: () => void

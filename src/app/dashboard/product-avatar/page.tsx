@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { AvatarSelector } from "../../_shared/components/AvatarSelector"
-import { ProductPlacementStep } from "./components/ProductPlacementStep"
+import { ProductPlacementStep } from "../../_shared/components/ProductPlacementStep"
 import { ScriptAudioStep } from "../../_shared/components/ScriptAudioStep"
 // Note: ProductGenerationStep supprimé - utiliser CreateAvatarModal à la place
 import { SectionHeader } from "../components/SectionHeader"

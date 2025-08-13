@@ -132,7 +132,6 @@ export function ContentInput({
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (error) {
-      console.error('Recording failed:', error)
       setRecordingState("idle")
     }
   }

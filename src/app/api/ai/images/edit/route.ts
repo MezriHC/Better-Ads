@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fal } from '@fal-ai/client'
-import { FalImageEditingRequest, FalGenerationResponse } from '../../_shared/types/fal'
+import { FalImageEditingRequest, FalGenerationResponse } from '../../../../_shared/types/ai'
 
 // Configurer fal.ai avec la clé API depuis les variables d'environnement
 fal.config({
@@ -40,12 +40,7 @@ export async function POST(request: NextRequest) {
     // Appeler l'API fal.ai avec le modèle FLUX Kontext Editing Max
     const result = await fal.subscribe('fal-ai/flux-pro/kontext/max', {
       input: requestData,
-      logs: true,
-      onQueueUpdate: (update) => {
-        if (update.status === 'IN_PROGRESS') {
-          console.log('Édition en cours:', update.logs?.map(log => log.message).join(', '))
-        }
-      }
+      logs: true
     }) as { data: FalGenerationResponse }
 
     // Transformer la réponse pour notre format
@@ -68,7 +63,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Erreur lors de l\'édition d\'images:', error)
+
     
     return NextResponse.json(
       { 

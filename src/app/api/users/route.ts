@@ -47,7 +47,6 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Erreur GET /api/users:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }
@@ -87,7 +86,6 @@ export async function POST(request: NextRequest) {
       message: 'Utilisateur créé avec succès',
     })
   } catch (error) {
-    console.error('Erreur POST /api/users:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur lors de la création' },
       { status: 500 }

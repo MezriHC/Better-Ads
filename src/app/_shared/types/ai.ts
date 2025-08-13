@@ -1,6 +1,7 @@
-// Types pour l'intégration fal.ai FLUX Kontext Max
+// Types unifiés pour toutes les intégrations IA (fal.ai, FLUX, Seedance)
 
-// Interface pour la génération d'images (text-to-image)
+// === GÉNÉRATION D'IMAGES (FLUX Kontext Max) ===
+
 export interface FalImageGenerationRequest {
   prompt: string
   seed?: number
@@ -12,7 +13,6 @@ export interface FalImageGenerationRequest {
   aspect_ratio?: '21:9' | '16:9' | '4:3' | '3:2' | '1:1' | '2:3' | '3:4' | '9:16' | '9:21'
 }
 
-// Interface pour l'édition d'images (image-to-image)
 export interface FalImageEditingRequest {
   prompt: string
   image_url: string
@@ -47,11 +47,37 @@ export interface GeneratedImageData {
   loading?: boolean
 }
 
-// Types pour différencier les modes de génération
 export type ImageGenerationMode = 'generate' | 'edit'
 
 export interface ImageGenerationRequest {
   prompt: string
   mode: ImageGenerationMode
-  baseImageUrl?: string // Pour le mode édition
+  baseImageUrl?: string
+}
+
+// === GÉNÉRATION DE VIDÉOS (Seedance) ===
+
+export interface VideoGenerationRequest {
+  prompt: string
+  image_url: string
+  resolution?: '480p' | '720p' | '1080p'
+  duration?: '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | '11' | '12'
+  camera_fixed?: boolean
+  seed?: number
+}
+
+export interface VideoGenerationResponse {
+  video: {
+    url: string
+  }
+  seed: number
+}
+
+export interface GeneratedVideoData {
+  id: string
+  url: string
+  duration: string
+  resolution: string
+  prompt: string
+  loading: boolean
 }

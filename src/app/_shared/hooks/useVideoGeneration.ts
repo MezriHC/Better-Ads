@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { GeneratedVideoData } from '../types/seedance'
+import { GeneratedVideoData } from '../types/ai'
 
 export function useVideoGeneration() {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -12,7 +12,7 @@ export function useVideoGeneration() {
       setIsGenerating(true)
       setError(null)
 
-      const response = await fetch('/api/generate-video', {
+                const response = await fetch('/api/ai/video/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

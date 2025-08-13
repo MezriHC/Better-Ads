@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fal } from '@fal-ai/client'
-import { FalImageGenerationRequest, FalGenerationResponse } from '../../_shared/types/fal'
+import { FalImageGenerationRequest, FalGenerationResponse } from '../../../../_shared/types/ai'
 
 // Configurer fal.ai avec la clé API depuis les variables d'environnement
 fal.config({
@@ -33,21 +33,10 @@ export async function POST(request: NextRequest) {
     // Appeler l'API fal.ai avec le modèle FLUX Kontext Max
     const result = await fal.subscribe('fal-ai/flux-pro/kontext/max/text-to-image', {
       input: requestData,
-      logs: true,
-      onQueueUpdate: (update) => {
-        if (update.status === 'IN_PROGRESS') {
-          console.log('Génération en cours:', update.logs?.map(log => log.message).join(', '))
-        }
-      }
+      logs: true
     }) as { data: FalGenerationResponse }
 
-    console.log('[API] Réponse fal.ai reçue:', result.data.images.map((img, i) => ({
-      index: i,
-      url: img.url.substring(0, 50) + '...',
-      urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
-    })))
-
-    // Transformer la réponse pour notre format
+// Transformer la réponse pour notre format
     const generatedImages = result.data.images.map((image, index) => ({
       id: `${Date.now()}-${index + 1}`,
       url: image.url,
@@ -55,11 +44,7 @@ export async function POST(request: NextRequest) {
       loading: false
     }))
 
-    console.log('[API] Images transformées:', generatedImages.map(img => ({
-      id: img.id,
-      url: img.url.substring(0, 50) + '...',
-      urlType: img.url.startsWith('data:') ? 'DATA_URL' : img.url.includes('fal.media') ? 'FAL_MEDIA' : 'OTHER'
-    })))
+
 
     return NextResponse.json({
       success: true,
@@ -72,7 +57,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Erreur lors de la génération d\'images:', error)
+
     
     return NextResponse.json(
       { 

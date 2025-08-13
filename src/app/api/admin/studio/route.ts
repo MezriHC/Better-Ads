@@ -22,24 +22,19 @@ export async function POST(request: NextRequest) {
 
     // Extraire query et customPayload selon le format officiel Studio Core
     const body = await request.json()
-    console.log("Corps complet de la requête:", JSON.stringify(body, null, 2))
     
     const { query, customPayload } = body
     
-    console.log("Studio Query reçue:", JSON.stringify(query, null, 2))
-    console.log("Custom Payload:", customPayload)
 
     // Exécuter la requête en suivant le format Studio Core officiel
     const [error, results] = await executeStudioCoreQuery(query)
     
     if (error) {
-      console.error("Erreur Studio:", error)
       return NextResponse.json([serializeError(error)])
     }
     
     return NextResponse.json([null, results])
   } catch (error) {
-    console.error("Erreur Studio API:", error)
     return NextResponse.json([
       serializeError(error instanceof Error ? error : new Error("Erreur inconnue"))
     ])
@@ -68,15 +63,11 @@ interface StudioQuery {
 // Fonction principale pour exécuter les requêtes selon le format Studio Core officiel
 async function executeStudioCoreQuery(query: StudioQuery): Promise<[Error | null, unknown]> {
   try {
-    console.log("Exécution query Studio Core:", JSON.stringify(query, null, 2))
 
     // Si c'est une requête SQL directe avec la structure attendue
     if (query && query.sql) {
-      console.log("SQL détecté:", query.sql)
-      console.log("Paramètres détectés:", query.values || query.parameters || [])
       
       const params = query.values || query.parameters || query.params || []
-      console.log("Utilisation des paramètres:", params)
       
       const result = await prisma.$queryRawUnsafe(query.sql, ...params)
       return [null, convertBigIntToString(result)]
@@ -84,7 +75,6 @@ async function executeStudioCoreQuery(query: StudioQuery): Promise<[Error | null
 
     // Si c'est juste une string SQL
     if (typeof query === 'string') {
-      console.log("SQL string direct:", query)
       const result = await prisma.$queryRawUnsafe(query)
       return [null, convertBigIntToString(result)]
     }
@@ -101,11 +91,9 @@ async function executeStudioCoreQuery(query: StudioQuery): Promise<[Error | null
       return [null, { status: 'connected' }]
     }
 
-    console.warn("Type de requête non géré:", query)
     return [null, { status: 'not_implemented', query }]
 
   } catch (error) {
-    console.error("Erreur lors de l'exécution de la requête:", error)
     return [error instanceof Error ? error : new Error(String(error)), null]
   }
 }
@@ -143,7 +131,6 @@ async function getSchemaInformation() {
       timestamp: new Date().toISOString()
     }
   } catch (error) {
-    console.error("Erreur lors de la récupération du schéma:", error)
     throw error
   }
 }

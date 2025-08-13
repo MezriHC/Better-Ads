@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "./_shared/components/ThemeProvider";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { SessionProvider } from "./_shared/components/SessionProvider";

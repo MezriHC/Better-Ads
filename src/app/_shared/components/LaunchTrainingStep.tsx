@@ -3,8 +3,8 @@
 import Image from "next/image"
 import { IconMicrophone, IconDownload } from "@tabler/icons-react"
 import { useEffect, useState, useCallback } from "react"
-import { useVideoGeneration } from "../../hooks/useVideoGeneration"
-import { GeneratedVideoData } from "../../types/seedance"
+import { useVideoGeneration } from "../hooks/useVideoGeneration"
+import { GeneratedVideoData } from "../types/ai"
 
 interface GeneratedActor {
   id: string
@@ -41,7 +41,7 @@ export function LaunchTrainingStep({
       formData.append('image', blob, 'generated-image.jpg')
       
       // Utiliser notre API d'upload existante
-      const uploadResponse = await fetch('/api/upload-reference', {
+                const uploadResponse = await fetch('/api/ai/images/upload', {
         method: 'POST',
         body: formData
       })
@@ -53,7 +53,6 @@ export function LaunchTrainingStep({
       const uploadData = await uploadResponse.json()
       return uploadData.imageUrl
     } catch (error) {
-      console.error('Erreur conversion Data URL:', error)
       return null
     }
   }
@@ -68,18 +67,15 @@ export function LaunchTrainingStep({
     // Si c'est une Data URL, la convertir en URL fal.media
     if (selectedImageUrl.startsWith('data:')) {
       setIsConverting(true)
-      console.log('[LaunchTrainingStep] Conversion Data URL vers fal.ai...')
       
       try {
         const convertedUrl = await convertDataUrlToFalUrl(selectedImageUrl)
         
         if (!convertedUrl) {
-          console.error('[LaunchTrainingStep] Échec conversion Data URL')
           return
         }
         
         finalImageUrl = convertedUrl
-        console.log('[LaunchTrainingStep] ✅ Conversion réussie:', finalImageUrl.substring(0, 50) + '...')
       } finally {
         setIsConverting(false)
       }
@@ -87,35 +83,24 @@ export function LaunchTrainingStep({
 
     // Vérifier que l'URL finale est valide
     if (!finalImageUrl.includes('fal.media')) {
-      console.error('[LaunchTrainingStep] URL finale invalide:', finalImageUrl.substring(0, 50) + '...')
       return
     }
     
-    console.log('[LaunchTrainingStep] 🎬 Démarrage génération vidéo avec URL:', finalImageUrl.substring(0, 50) + '...')
     const video = await generateVideo(prompt, finalImageUrl)
     
     if (video) {
       setGeneratedVideo(video)
-      console.log('[LaunchTrainingStep] ✅ Vidéo générée avec succès!')
     }
   }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating])
 
   useEffect(() => {
-    console.log('[LaunchTrainingStep] useEffect - Vérification conditions:', {
-      selectedImageUrl: selectedImageUrl ? `présent (${selectedImageUrl.substring(0, 50)}...)` : 'MANQUANT',
-      prompt: prompt ? `présent (${prompt.substring(0, 30)}...)` : 'MANQUANT',
-      hasStartedGeneration,
-      shouldStart: selectedImageUrl && prompt && !hasStartedGeneration
-    })
     
     // Démarrer automatiquement la génération vidéo UNE SEULE FOIS
     if (selectedImageUrl && prompt && !hasStartedGeneration) {
-      console.log('[LaunchTrainingStep] ✅ Conditions remplies - Démarrage génération')
       setHasStartedGeneration(true)
       setIsPreparingVideo(true) // Commencer l'état "preparing"
       handleGenerateVideo()
     } else {
-      console.log('[LaunchTrainingStep] ❌ Conditions non remplies pour démarrer')
     }
   }, [selectedImageUrl, prompt, hasStartedGeneration, handleGenerateVideo])
   

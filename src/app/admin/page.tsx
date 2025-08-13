@@ -50,7 +50,6 @@ export default function AdminPage() {
         throw new Error("Authentification échouée")
       }
     } catch (error) {
-      console.error("Erreur de connexion:", error)
       throw error
     }
   }

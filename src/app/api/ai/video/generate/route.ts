@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fal } from '@fal-ai/client'
-import { SeedanceVideoRequest, SeedanceVideoResponse, GeneratedVideoData } from '../../_shared/types/seedance'
+import { VideoGenerationRequest, VideoGenerationResponse, GeneratedVideoData } from '../../../../_shared/types/ai'
 
 // Configuration fal.ai
 fal.config({
@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
         duration: '5',
         camera_fixed: false,
         seed: -1
-      } as SeedanceVideoRequest,
+      } as VideoGenerationRequest,
       logs: true,
     })
 
-    const result = response.data as SeedanceVideoResponse
+    const result = response.data as VideoGenerationResponse
     
     if (!result || !result.video || !result.video.url) {
       return NextResponse.json({ 
@@ -48,14 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, video: generatedVideo })
 
   } catch (error) {
-    const { prompt: errorPrompt, imageUrl: errorImageUrl } = await request.json().catch(() => ({ prompt: 'N/A', imageUrl: 'N/A' }))
     
-    console.error('[API] Erreur détaillée génération vidéo:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      prompt: errorPrompt,
-      imageUrl: errorImageUrl && typeof errorImageUrl === 'string' ? errorImageUrl.substring(0, 50) + '...' : 'missing'
-    })
     
     return NextResponse.json({ 
       error: 'Failed to generate video',
