@@ -37,17 +37,17 @@ export default function CreatePage() {
   const [selectedVideoFormat, setSelectedVideoFormat] = useState("16:9")
   const [isVideoFormatDropdownOpen, setIsVideoFormatDropdownOpen] = useState(false)
   
-  // Placeholders contextuels
+  // Contextual placeholders
   const getPlaceholder = () => {
     switch (selectedType) {
       case "talking-actor":
-        return "Script de l'avatar : écrivez ce que l'avatar doit dire..."
+        return "Avatar script: write what the avatar should say..."
       case "scenes":
-        return "Description de la scène : décrivez l'ambiance et l'action désirée..."
+        return "Scene description: describe the atmosphere and desired action..."
       case "b-rolls":
-        return "Description du B-Roll : produit, environnement, style visuel..."
+        return "B-Roll description: product, environment, visual style..."
       default:
-        return "Décrivez votre vidéo..."
+        return "Describe your video..."
     }
   }
   
@@ -246,9 +246,18 @@ export default function CreatePage() {
         {/* Creation Modal en bas */}
         <div className="pb-8">
           <div className="flex justify-center">
-            <div className="w-full max-w-5xl relative">
-              {/* Main Creation Section - Toujours centré */}
-              <div className="bg-card border border-border rounded-2xl p-4 shadow-lg w-full max-w-4xl mx-auto">
+            <div className="w-full max-w-5xl">
+              <div className={`flex gap-4 transition-all duration-300 ${
+                selectedType === "talking-actor" && isAudioSettingsOpen 
+                  ? "justify-between" 
+                  : "justify-center"
+              }`}>
+                {/* Main Creation Section */}
+                <div className={`bg-card border border-border rounded-2xl p-4 shadow-lg transition-all duration-300 ${
+                  selectedType === "talking-actor" && isAudioSettingsOpen 
+                    ? "w-full max-w-3xl" 
+                    : "w-full max-w-4xl"
+                }`}>
             <div className="flex items-center justify-between mb-3">
               {/* Creation Type Dropdown - Compact */}
               <CreationTypeDropdown
@@ -340,21 +349,24 @@ export default function CreatePage() {
               onOpenActorModal={() => setIsActorModalOpen(true)}
               onSubmit={handleSubmit}
             />
-              </div>
-              
-              {/* Audio Settings Drawer - Positionné absolument pour ne pas affecter le centrage */}
-              {selectedType === "talking-actor" && (
-                <div className="absolute top-0 -right-4 translate-x-full">
-                  <AudioSettingsDrawer
-                    isOpen={isAudioSettingsOpen}
-                    selectedVoice={selectedVoice}
-                    audioSettings={audioSettings}
-                    onClose={() => setIsAudioSettingsOpen(false)}
-                    onAudioSettingsChange={setAudioSettings}
-                    onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
-                  />
                 </div>
-              )}
+                
+                {/* Audio Settings Drawer - Dans le flex layout pour être responsive */}
+                {selectedType === "talking-actor" && (
+                  <div className={`transition-all duration-300 ${
+                    isAudioSettingsOpen ? "w-80 opacity-100" : "w-0 opacity-0 overflow-hidden"
+                  }`}>
+                    <AudioSettingsDrawer
+                      isOpen={isAudioSettingsOpen}
+                      selectedVoice={selectedVoice}
+                      audioSettings={audioSettings}
+                      onClose={() => setIsAudioSettingsOpen(false)}
+                      onAudioSettingsChange={setAudioSettings}
+                      onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
