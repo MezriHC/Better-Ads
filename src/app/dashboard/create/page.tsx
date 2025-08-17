@@ -79,8 +79,57 @@ export default function CreatePage() {
     similarity: 0.75,
     styleExaggeration: 0.0
   })
+  
+  // Refs pour la synchronisation des hauteurs
+  const mainCardRef = useRef<HTMLDivElement>(null)
+  const audioDrawerRef = useRef<HTMLDivElement>(null)
+  const [syncedHeight, setSyncedHeight] = useState<string>("auto")
 
-
+  // Synchronisation bidirectionnelle des hauteurs
+  useEffect(() => {
+    if (selectedType === "talking-actor" && isAudioSettingsOpen && mainCardRef.current && audioDrawerRef.current) {
+      const updateHeights = () => {
+        const mainCardHeight = mainCardRef.current?.offsetHeight || 0
+        const audioDrawerHeight = audioDrawerRef.current?.offsetHeight || 0
+        
+        // Prendre la plus grande hauteur pour synchroniser
+        const maxHeight = Math.max(mainCardHeight, audioDrawerHeight)
+        setSyncedHeight(`${maxHeight}px`)
+        
+        // Appliquer la hauteur synchronisée à la MainCard aussi
+        if (mainCardRef.current) {
+          mainCardRef.current.style.minHeight = `${maxHeight}px`
+        }
+      }
+      
+      // Délai pour que le contenu se soit rendu
+      const timeoutId = setTimeout(updateHeights, 150)
+      
+      // Observer les changements de taille sur les deux éléments
+      const resizeObserver = new ResizeObserver(updateHeights)
+      if (mainCardRef.current) {
+        resizeObserver.observe(mainCardRef.current)
+      }
+      if (audioDrawerRef.current) {
+        resizeObserver.observe(audioDrawerRef.current)
+      }
+      
+      return () => {
+        clearTimeout(timeoutId)
+        resizeObserver.disconnect()
+        // Reset de la hauteur minimale
+        if (mainCardRef.current) {
+          mainCardRef.current.style.minHeight = 'auto'
+        }
+      }
+    } else {
+      setSyncedHeight("auto")
+      // Reset de la hauteur minimale quand fermé
+      if (mainCardRef.current) {
+        mainCardRef.current.style.minHeight = 'auto'
+      }
+    }
+  }, [selectedType, isAudioSettingsOpen, script, speechMode])
 
   const currentType = creationTypes.find(type => type.id === selectedType)
   const currentSpeechMode = speechModes.find(mode => mode.id === speechMode)
@@ -243,21 +292,25 @@ export default function CreatePage() {
           <HeroSection currentProject={currentProject} />
         </div>
 
-        {/* Creation Modal en bas */}
+        {/* Creation Modal en bas - Position fixe par rapport au bas */}
         <div className="pb-8">
-          <div className="flex justify-center">
-            <div className="w-full max-w-5xl">
-              <div className={`flex gap-4 transition-all duration-300 ${
+          <div className="w-full flex justify-center px-4">
+            <div className={`relative w-full transition-all duration-500 ease-in-out ${
+              selectedType === "talking-actor" && isAudioSettingsOpen 
+                ? "max-w-none pr-[400px]" 
+                : "max-w-7xl"
+            }`}>
+              {/* Container avec centrage intelligent */}
+              <div className={`flex transition-all duration-500 ease-in-out ${
                 selectedType === "talking-actor" && isAudioSettingsOpen 
-                  ? "justify-between" 
+                  ? "justify-start pl-4 pr-4" 
                   : "justify-center"
               }`}>
-                {/* Main Creation Section */}
-                <div className={`bg-card border border-border rounded-2xl p-4 shadow-lg transition-all duration-300 ${
-                  selectedType === "talking-actor" && isAudioSettingsOpen 
-                    ? "w-full max-w-3xl" 
-                    : "w-full max-w-4xl"
-                }`}>
+                {/* Main Creation Section - Hauteur adaptative */}
+                <div 
+                  ref={mainCardRef}
+                  className="bg-card border border-border rounded-2xl p-4 shadow-lg w-full max-w-4xl transition-all duration-500 ease-in-out"
+                >
             <div className="flex items-center justify-between mb-3">
               {/* Creation Type Dropdown - Compact */}
               <CreationTypeDropdown
@@ -350,23 +403,31 @@ export default function CreatePage() {
               onSubmit={handleSubmit}
             />
                 </div>
-                
-                {/* Audio Settings Drawer - Dans le flex layout pour être responsive */}
-                {selectedType === "talking-actor" && (
-                  <div className={`transition-all duration-300 ${
-                    isAudioSettingsOpen ? "w-80 opacity-100" : "w-0 opacity-0 overflow-hidden"
-                  }`}>
-                    <AudioSettingsDrawer
-                      isOpen={isAudioSettingsOpen}
-                      selectedVoice={selectedVoice}
-                      audioSettings={audioSettings}
-                      onClose={() => setIsAudioSettingsOpen(false)}
-                      onAudioSettingsChange={setAudioSettings}
-                      onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
-                    />
-                  </div>
-                )}
               </div>
+              
+              {/* Audio Settings Drawer - Position absolue, vient de la droite */}
+              {selectedType === "talking-actor" && (
+                <div 
+                  ref={audioDrawerRef}
+                  className={`absolute top-0 right-0 w-96 transition-all duration-500 ease-in-out ${
+                    isAudioSettingsOpen 
+                      ? "opacity-100 transform translate-x-0" 
+                      : "opacity-0 transform translate-x-full pointer-events-none"
+                  }`}
+                  style={{
+                    height: syncedHeight
+                  }}
+                >
+                  <AudioSettingsDrawer
+                    isOpen={isAudioSettingsOpen}
+                    selectedVoice={selectedVoice}
+                    audioSettings={audioSettings}
+                    onClose={() => setIsAudioSettingsOpen(false)}
+                    onAudioSettingsChange={setAudioSettings}
+                    onOpenVoiceModal={() => setIsVoiceModalOpen(true)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

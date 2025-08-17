@@ -43,8 +43,8 @@ export function AudioSettingsDrawer({
   }
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 shadow-lg h-fit">
-      <div className="w-full">
+    <div className="bg-card border border-border rounded-2xl p-4 shadow-lg w-full h-fit min-h-full">
+      <div className="flex flex-col h-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">Audio Settings</h3>
           <button 
@@ -55,20 +55,17 @@ export function AudioSettingsDrawer({
           </button>
         </div>
 
-        {/* Selected Voice */}
+        {/* Selected Voice - Simplified */}
         <div className="mb-4">
           <button
             onClick={onOpenVoiceModal}
-            className="w-full flex items-center justify-between p-3 bg-muted border border-border rounded-xl hover:bg-accent transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between p-2 bg-muted border border-border rounded-lg hover:bg-accent transition-colors cursor-pointer"
           >
-            <div className="flex items-center gap-3">
-              <div className="text-2xl">{selectedVoice.flag}</div>
-              <div className="text-left">
-                <div className="font-medium text-foreground">{selectedVoice.name}</div>
-                <div className="text-sm text-muted-foreground">{selectedVoice.language}</div>
-              </div>
+            <div className="flex items-center gap-2">
+              <div className="text-lg">{selectedVoice.flag}</div>
+              <div className="text-sm font-medium text-foreground">{selectedVoice.name}</div>
             </div>
-            <div className="text-xs text-muted-foreground">Change</div>
+            <div className="text-xs font-medium text-primary hover:text-primary/80 cursor-pointer">Change</div>
           </button>
         </div>
 
