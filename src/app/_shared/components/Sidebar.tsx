@@ -5,25 +5,54 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   IconLayoutDashboard,
-  IconCamera,
-  IconBox,
-  IconArchive,
+  IconFolder,
+  IconSettings,
   IconCirclePlusFilled,
   IconBolt,
   IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand
+  IconLayoutSidebarLeftExpand,
+  IconChevronRight
 } from "@tabler/icons-react"
 
 const menuItems = [
   { title: "Dashboard", href: "/dashboard", icon: IconLayoutDashboard },
-  { title: "Video Avatar", href: "/dashboard/video-avatar", icon: IconCamera },
-  { title: "Product Avatar", href: "/dashboard/product-avatar", icon: IconBox },
-  { title: "Library", href: "/dashboard/library", icon: IconArchive },
+  { title: "Folders", href: "#", icon: IconFolder },
+  { title: "Settings", href: "/dashboard/settings", icon: IconSettings },
+]
+
+const foldersData = [
+  {
+    id: "july-week-3",
+    name: "July week 3",
+    isOpen: true,
+    projects: [
+      { id: "smm-go-2", name: "smm go 2", isActive: true },
+      { id: "smm-go-1", name: "smm go 1" },
+      { id: "leads-sniper-2", name: "leads sniper 2" },
+      { id: "leads-sniper-1", name: "leads sniper 1" },
+      { id: "ugc-team-3", name: "ugc team 3" },
+      { id: "ugc-team-2", name: "ugc team 2" },
+      { id: "ugc-team-1", name: "ugc team 1" },
+      { id: "proxy4u-5", name: "proxy4u 5" },
+      { id: "proxy4u-4", name: "proxy4u 4" },
+      { id: "proxy4u-3", name: "proxy4u 3" },
+      { id: "proxy4u-2", name: "proxy4u 2" },
+    ]
+  }
 ]
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [openFolders, setOpenFolders] = useState<string[]>(["july-week-3"])
   const pathname = usePathname()
+
+  const toggleFolder = (folderId: string) => {
+    setOpenFolders(prev => 
+      prev.includes(folderId) 
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    )
+  }
 
   return (
     <aside className={`${isCollapsed ? 'w-20' : 'w-72'} bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out flex flex-col h-full`}>
@@ -53,10 +82,10 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <div className="flex-grow p-4 flex flex-col gap-4">
+      <div className="flex-grow p-4 flex flex-col gap-4 overflow-y-auto">
         
-        {/* Bouton Create Video */}
-        <div className="w-full cursor-pointer">
+        {/* Bouton New Project */}
+        <Link href="/dashboard/create" className="w-full cursor-pointer">
           <div
             className="p-[2px] rounded-[16px] bg-gradient-to-b from-black/20 to-transparent dark:from-white/20"
           >
@@ -65,16 +94,16 @@ export function Sidebar() {
             >
               <div className={`${isCollapsed ? 'px-3 py-3' : 'px-6 py-3'} bg-gradient-to-b from-transparent to-white/10 dark:to-black/10 rounded-[12px] flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
                 <IconCirclePlusFilled className="w-6 h-6 shrink-0 text-background dark:text-black" />
-                {!isCollapsed && <span className="font-semibold text-background dark:text-black truncate">Create Video</span>}
+                {!isCollapsed && <span className="font-semibold text-background dark:text-black truncate">New project</span>}
               </div>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Menu Items */}
         <div className="flex flex-col gap-2">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href && item.href !== "#"
             return (
               <Link
                 key={item.href}
@@ -96,6 +125,59 @@ export function Sidebar() {
             )
           })}
         </div>
+
+        {/* Folders Section */}
+        {!isCollapsed && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between px-3 mb-3">
+              <h3 className="text-sm font-semibold text-sidebar-foreground">
+                Folders
+              </h3>
+            </div>
+            
+            <div className="space-y-2">
+              {foldersData.map((folder) => {
+                const isFolderOpen = openFolders.includes(folder.id)
+                
+                return (
+                  <div key={folder.id}>
+                    <button
+                      onClick={() => toggleFolder(folder.id)}
+                      className="w-full flex items-center justify-between px-3 py-3 text-left text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-lg transition-colors duration-200 group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <IconFolder className="w-5 h-5 text-muted-foreground" />
+                        <span className="font-medium truncate">
+                          {folder.name}
+                        </span>
+                      </div>
+                      <IconChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isFolderOpen ? 'rotate-90' : ''}`} />
+                    </button>
+                    
+                    {isFolderOpen && (
+                      <div className="ml-8 mt-2 space-y-1">
+                        {folder.projects.map((project) => (
+                          <button
+                            key={project.id}
+                            className={`
+                              w-full flex items-center px-3 py-2.5 rounded-lg text-left transition-colors duration-200
+                              ${project.isActive 
+                                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
+                                : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/30'
+                              }
+                            `}
+                          >
+                            <span className="truncate">{project.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Footer - Bouton Collapse */}
