@@ -82,7 +82,7 @@ export default function DatabaseTab() {
 
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-white text-black rounded-lg hover:bg-white/90 font-medium cursor-pointer flex items-center gap-2 mx-auto"
+            className="px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 font-medium cursor-pointer flex items-center gap-2 mx-auto"
           >
             <IconRefresh className="w-4 h-4" />
             Réessayer la connexion

@@ -1,58 +1,139 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   IconLayoutDashboard,
-  IconFolder,
   IconSettings,
   IconCirclePlusFilled,
   IconBolt,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
-  IconChevronRight
+  IconDots,
+  IconEdit,
+  IconTrash,
+  IconCheck,
+  IconX
 } from "@tabler/icons-react"
+import { useProjectContext } from "../contexts/ProjectContext"
+import { useRouter } from "next/navigation"
 
 const menuItems = [
   { title: "Dashboard", href: "/dashboard", icon: IconLayoutDashboard },
-  { title: "Folders", href: "#", icon: IconFolder },
   { title: "Settings", href: "/dashboard/settings", icon: IconSettings },
-]
-
-const foldersData = [
-  {
-    id: "july-week-3",
-    name: "July week 3",
-    isOpen: true,
-    projects: [
-      { id: "smm-go-2", name: "smm go 2", isActive: true },
-      { id: "smm-go-1", name: "smm go 1" },
-      { id: "leads-sniper-2", name: "leads sniper 2" },
-      { id: "leads-sniper-1", name: "leads sniper 1" },
-      { id: "ugc-team-3", name: "ugc team 3" },
-      { id: "ugc-team-2", name: "ugc team 2" },
-      { id: "ugc-team-1", name: "ugc team 1" },
-      { id: "proxy4u-5", name: "proxy4u 5" },
-      { id: "proxy4u-4", name: "proxy4u 4" },
-      { id: "proxy4u-3", name: "proxy4u 3" },
-      { id: "proxy4u-2", name: "proxy4u 2" },
-    ]
-  }
 ]
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [openFolders, setOpenFolders] = useState<string[]>(["july-week-3"])
-  const pathname = usePathname()
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState("")
 
-  const toggleFolder = (folderId: string) => {
-    setOpenFolders(prev => 
-      prev.includes(folderId) 
-        ? prev.filter(id => id !== folderId)
-        : [...prev, folderId]
-    )
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const { projects, currentProject, setCurrentProject, setShouldShowNewProjectModal, updateProject, deleteProject, isLoading } = useProjectContext()
+
+  const switchToProject = (project: { id: string; name: string }) => {
+    setCurrentProject(project)
+    
+    // Rediriger vers create si on n'y est pas déjà
+    if (pathname !== '/dashboard/create') {
+      router.push('/dashboard/create')
+    }
   }
+
+  const handleNewProject = () => {
+    // Si on est déjà sur la page create, ouvrir la modal directement
+    if (pathname === '/dashboard/create') {
+      setShouldShowNewProjectModal(true)
+    } else {
+      // Sinon, aller sur create et marquer qu'il faut ouvrir la modal
+      setShouldShowNewProjectModal(true)
+      router.push('/dashboard/create')
+    }
+  }
+
+  const handleRenameProject = (project: { id: string; name: string }) => {
+    setEditingId(project.id)
+    setEditingName(project.name)
+    setOpenMenuId(null)
+  }
+
+  const handleSaveRename = async (projectId: string) => {
+    if (editingName.trim() && editingName.trim() !== projects.find(p => p.id === projectId)?.name) {
+      // Fermeture immédiate de l'édition
+      setEditingId(null)
+      setEditingName("")
+      
+      // Mise à jour en arrière-plan (optimiste)
+      try {
+        await updateProject(projectId, editingName.trim())
+      } catch (error) {
+        console.error("Error updating project:", error)
+      }
+    } else {
+      setEditingId(null)
+      setEditingName("")
+    }
+  }
+
+  const handleCancelRename = () => {
+    setEditingId(null)
+    setEditingName("")
+  }
+
+  const handleDeleteProject = (project: { id: string; name: string }) => {
+    setProjectToDelete(project)
+    setOpenMenuId(null)
+  }
+
+  const confirmDeleteProject = async () => {
+    if (!projectToDelete) return
+    
+    setIsDeleting(true)
+    try {
+      await deleteProject(projectToDelete.id)
+      setProjectToDelete(null)
+    } catch (error) {
+      console.error("Error deleting project:", error)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const cancelDeleteProject = () => {
+    setProjectToDelete(null)
+    setIsDeleting(false)
+  }
+
+  // Fermer les menus quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenMenuId(null)
+    }
+
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [openMenuId])
+
+  // Fermer la modale de suppression avec Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && projectToDelete && !isDeleting) {
+        cancelDeleteProject()
+      }
+    }
+
+    if (projectToDelete) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [projectToDelete, isDeleting])
 
   return (
     <aside className={`${isCollapsed ? 'w-20' : 'w-72'} bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out flex flex-col h-full`}>
@@ -85,20 +166,23 @@ export function Sidebar() {
       <div className="flex-grow p-4 flex flex-col gap-4 overflow-y-auto">
         
         {/* Bouton New Project */}
-        <Link href="/dashboard/create" className="w-full cursor-pointer">
+        <button 
+          onClick={handleNewProject}
+          className="w-full cursor-pointer"
+        >
           <div
             className="p-[2px] rounded-[16px] bg-gradient-to-b from-black/20 to-transparent dark:from-white/20"
           >
             <div
-              className="group rounded-[14px] bg-foreground dark:bg-white shadow-lg hover:shadow-md active:shadow-sm transition-all active:scale-[0.98] w-full cursor-pointer"
+              className="group rounded-[14px] bg-foreground shadow-lg hover:shadow-md active:shadow-sm transition-all active:scale-[0.98] w-full cursor-pointer"
             >
               <div className={`${isCollapsed ? 'px-3 py-3' : 'px-6 py-3'} bg-gradient-to-b from-transparent to-white/10 dark:to-black/10 rounded-[12px] flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-                <IconCirclePlusFilled className="w-6 h-6 shrink-0 text-background dark:text-black" />
-                {!isCollapsed && <span className="font-semibold text-background dark:text-black truncate">New project</span>}
+                <IconCirclePlusFilled className="w-6 h-6 shrink-0 text-background" />
+                {!isCollapsed && <span className="font-semibold text-background truncate">New project</span>}
               </div>
             </div>
           </div>
-        </Link>
+        </button>
 
         {/* Menu Items */}
         <div className="flex flex-col gap-2">
@@ -126,55 +210,145 @@ export function Sidebar() {
           })}
         </div>
 
-        {/* Folders Section */}
+        {/* Projects Section */}
         {!isCollapsed && (
           <div className="mt-6">
             <div className="flex items-center justify-between px-3 mb-3">
               <h3 className="text-sm font-semibold text-sidebar-foreground">
-                Folders
+                Projects
               </h3>
             </div>
             
-            <div className="space-y-2">
-              {foldersData.map((folder) => {
-                const isFolderOpen = openFolders.includes(folder.id)
+            <div className="space-y-1">
+              {isLoading ? (
+                // Skeleton loader pendant le chargement
+                [...Array(3)].map((_, i) => (
+                  <div key={i} className="px-3 py-3">
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                    </div>
+                  </div>
+                ))
+              ) : projects.map((project) => {
+                // Un projet est actif seulement si on est sur /create ET qu'il est le projet actuel
+                const isActive = pathname === '/dashboard/create' && currentProject?.id === project.id
+                const isEditing = editingId === project.id
                 
                 return (
-                  <div key={folder.id}>
-                    <button
-                      onClick={() => toggleFolder(folder.id)}
-                      className="w-full flex items-center justify-between px-3 py-3 text-left text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-lg transition-colors duration-200 group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <IconFolder className="w-5 h-5 text-muted-foreground" />
-                        <span className="font-medium truncate">
-                          {folder.name}
-                        </span>
-                      </div>
-                      <IconChevronRight className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isFolderOpen ? 'rotate-90' : ''}`} />
-                    </button>
-                    
-                    {isFolderOpen && (
-                      <div className="ml-8 mt-2 space-y-1">
-                        {folder.projects.map((project) => (
-                          <button
-                            key={project.id}
-                            className={`
-                              w-full flex items-center px-3 py-2.5 rounded-lg text-left transition-colors duration-200
-                              ${project.isActive 
-                                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
-                                : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/30'
+                  <div
+                    key={project.id}
+                    className={`
+                      group relative w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors duration-200 ${!isEditing ? 'cursor-pointer' : ''}
+                      ${isActive 
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                      }
+                    `}
+                    onClick={() => !isEditing && switchToProject(project)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      {isEditing ? (
+                        <div className="w-full flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                handleSaveRename(project.id)
+                              } else if (e.key === 'Escape') {
+                                handleCancelRename()
                               }
-                            `}
-                          >
-                            <span className="truncate">{project.name}</span>
-                          </button>
-                        ))}
+                            }}
+                            className="flex-1 px-2 py-1.5 text-sm font-medium bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            autoFocus
+                            onFocus={(e) => e.target.select()}
+                          />
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleSaveRename(project.id)
+                              }}
+                              className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                              title="Sauvegarder"
+                            >
+                              <IconCheck className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleCancelRename()
+                              }}
+                              className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                              title="Annuler"
+                            >
+                              <IconX className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`font-medium text-sm truncate ${
+                          isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground'
+                        }`}>
+                          {project.name}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Menu trois points */}
+                    {!isEditing && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenMenuId(openMenuId === project.id ? null : project.id)
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-sidebar-accent/70 transition-all duration-200 cursor-pointer"
+                        >
+                          <IconDots className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                        </button>
+
+                        {/* Dropdown menu */}
+                        {openMenuId === project.id && (
+                          <div className="absolute top-full right-0 mt-2 w-36 bg-card border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+                            <div className="py-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleRenameProject(project)
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+                              >
+                                <IconEdit className="w-4 h-4" />
+                                Renommer
+                              </button>
+                              <div className="h-px bg-border mx-1"></div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteProject(project)
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                              >
+                                <IconTrash className="w-4 h-4" />
+                                Supprimer
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 )
               })}
+              
+              {!isLoading && projects.length === 0 && (
+                <div className="px-3 py-4 text-center text-muted-foreground text-sm">
+                  No projects yet.<br />
+                  Click &quot;New project&quot; to start.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -195,9 +369,68 @@ export function Sidebar() {
             <IconLayoutSidebarLeftExpand className="w-6 h-6 shrink-0" />
           ) : (
             <IconLayoutSidebarLeftCollapse className="w-6 h-6 shrink-0" />
-          )}
-        </button>
+                  )}
+              </button>
       </div>
+
+      {/* Modale de suppression */}
+      {projectToDelete && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isDeleting) {
+              cancelDeleteProject()
+            }
+          }}
+        >
+          <div 
+            className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6 text-center">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <IconTrash className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground mb-2">Supprimer le projet</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Voulez-vous vraiment supprimer <span className="font-medium text-foreground">&quot;{projectToDelete.name}&quot;</span> ?
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* Bouton Annuler */}
+              <button
+                onClick={cancelDeleteProject}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground rounded-lg font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Annuler
+              </button>
+              
+              {/* Bouton Supprimer */}
+              <div className="flex-1 p-[2px] rounded-[12px] bg-gradient-to-b from-red-600/20 to-transparent dark:from-red-400/20">
+                <button
+                  onClick={confirmDeleteProject}
+                  disabled={isDeleting}
+                  className="group rounded-[10px] bg-red-600 dark:bg-red-500 shadow-lg hover:shadow-md active:shadow-sm transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed w-full cursor-pointer"
+                >
+                  <div className="px-4 py-2.5 bg-gradient-to-b from-transparent to-white/10 dark:to-black/10 rounded-[8px] flex items-center justify-center gap-2">
+                    {isDeleting ? (
+                      <div className="w-4 h-4 border-2 border-white dark:border-red-100 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <IconTrash className="w-4 h-4 shrink-0 text-white dark:text-red-100" />
+                    )}
+                    <span className="font-semibold text-white dark:text-red-100">
+                      {isDeleting ? "Suppression..." : "Supprimer"}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </aside>
   )
 }

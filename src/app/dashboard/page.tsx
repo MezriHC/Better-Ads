@@ -14,15 +14,15 @@ export default function Page() {
         />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <FeatureCard 
-            title="Product Avatar"
-            description="From prompt to product avatar video in just 3 clicks."
-            href="/dashboard/product-avatar"
+            title="Talking Avatars"
+            description="Create videos with AI avatars presenting your products or messages with natural speech."
+            href="/dashboard/create"
             imageUrl="https://picsum.photos/400/300?random=1"
           />
           <FeatureCard 
-            title="Video Avatar"
-            description="Turn a script into a talking avatar video in minutes."
-            href="/dashboard/video-avatar"
+            title="Scenes & B-Rolls"
+            description="Generate cinematic scenes and professional b-roll footage for your video projects."
+            href="/dashboard/create"
             imageUrl="https://picsum.photos/400/300?random=2"
           />
         </div>

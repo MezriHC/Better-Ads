@@ -34,7 +34,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
         <div className="text-center flex flex-col gap-8">
           <div className="flex flex-col gap-4 items-center">
             <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
-              <IconKey className="w-6 h-6 text-black" />
+              <IconKey className="w-6 h-6 text-foreground" />
             </div>
             <div className="flex flex-col gap-2">
               <h1 className="text-2xl font-bold text-foreground">
@@ -81,7 +81,7 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="w-full py-3 bg-foreground text-background rounded-lg font-medium hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               {isLoading ? "Connexion..." : "Se connecter"}
             </button>

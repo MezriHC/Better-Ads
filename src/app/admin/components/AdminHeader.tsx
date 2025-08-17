@@ -34,7 +34,7 @@ export default function AdminHeader({ activeTab, onTabChange, onLogout }: AdminH
               onClick={() => onTabChange("database")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 cursor-pointer ${
                 activeTab === "database" 
-                  ? "text-black" 
+                  ? "text-foreground" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -47,7 +47,7 @@ export default function AdminHeader({ activeTab, onTabChange, onLogout }: AdminH
               onClick={() => onTabChange("storage")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors duration-300 cursor-pointer ${
                 activeTab === "storage" 
-                  ? "text-black" 
+                  ? "text-foreground" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

@@ -6,6 +6,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { SessionProvider } from "./_shared/components/SessionProvider";
 import { AuthGuard } from "./_shared/components/AuthGuard";
+import { ProjectProvider } from "./_shared/contexts/ProjectContext";
 
 
 
@@ -30,7 +31,9 @@ export default function RootLayout({
               disableTransitionOnChange
             >
             <AuthGuard>
-              {children}
+              <ProjectProvider>
+                {children}
+              </ProjectProvider>
             </AuthGuard>
           </ThemeProvider>
         </SessionProvider>

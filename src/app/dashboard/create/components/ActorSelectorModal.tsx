@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react"
 import Image from "next/image"
 import { IconSearch, IconChevronDown, IconPlus, IconX } from "@tabler/icons-react"
-import { CreateAvatarModal } from "@/src/app/_shared/components/CreateAvatarModal"
+import { CreateAvatarModal } from "./CreateAvatarModal"
 
 type CreateMethod = "generate" | "upload"
 
@@ -239,17 +239,17 @@ export function ActorSelectorModal({ isOpen, onClose, onSelectActor, selectedAct
             <div className="flex flex-wrap gap-4">
               <FilterSelect
                 value={avatarType}
-                onChange={setAvatarType}
+                onChange={(value: string) => setAvatarType(value as "all" | "public" | "my")}
                 options={avatarTypeOptions}
               />
               <FilterSelect
                 value={selectedGender}
-                onChange={setSelectedGender}
+                onChange={(value: string) => setSelectedGender(value as "male" | "female" | "all")}
                 options={genderOptions}
               />
               <FilterSelect
                 value={selectedAge}
-                onChange={setSelectedAge}
+                onChange={(value: string) => setSelectedAge(value as "young" | "adult" | "all")}
                 options={ageOptions}
               />
               <FilterSelect

@@ -487,13 +487,22 @@ npx prisma db push
 - **Outils disponibles** : Utiliser `npm run clean:code` pour nettoyer automatiquement le code existant (script dans `scripts/cleanup-code.js`)
 - **Bonne pratique** : Écrire du code auto-documenté avec des noms de variables et fonctions explicites
 
+### **Éviter les diagrammes automatiques :**
+- **RÈGLE IMPÉRATIVE** : Ne JAMAIS créer de diagrammes Mermaid automatiquement après chaque modification
+- **Contexte** : Les diagrammes ne sont pas toujours nécessaires et peuvent encombrer la conversation
+- **Interdictions** :
+  - Diagrammes automatiques après chaque changement de code
+  - Diagrammes explicatifs non sollicités
+  - Visualisations systématiques des flux de données
+- **Exception UNIQUE** : Créer des diagrammes UNIQUEMENT si l'utilisateur le demande explicitement
+- **Bonne pratique** : Se concentrer sur l'implémentation fonctionnelle plutôt que sur la documentation visuelle
+
 ### **Gestion Git et déploiement :**
 - **RÈGLE IMPÉRATIVE** : Ne JAMAIS exécuter `git push`
 - **RÈGLE IMPÉRATIVE** : Ne PAS commiter après chaque petit changement
 - **Contexte** : L'utilisateur gère lui-même les push depuis GitHub Desktop
 - **Commits** : Grouper les changements liés et commiter seulement quand une fonctionnalité complète est terminée
 - **Autorisation** : Commits locaux (`git add` + `git commit`) autorisés pour organiser le travail complet
-- **Déploiement** : Utiliser `./deploy.sh` pour déployer sur le VPS après que l'utilisateur ait pushé
 
 ### **Couleurs et design :**
 - **RÈGLE IMPÉRATIVE** : TOUJOURS utiliser les couleurs CSS personnalisées définies dans `src/app/globals.css`
