@@ -43,9 +43,9 @@ export function AudioSettingsDrawer({
   }
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-4 shadow-lg w-full h-fit min-h-full">
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between mb-4">
+    <div className="bg-card border border-border rounded-2xl p-4 shadow-lg w-full">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">Audio Settings</h3>
           <button 
             onClick={onClose}
@@ -56,7 +56,7 @@ export function AudioSettingsDrawer({
         </div>
 
         {/* Selected Voice - Simplified */}
-        <div className="mb-4">
+        <div>
           <button
             onClick={onOpenVoiceModal}
             className="w-full flex items-center justify-between p-2 bg-muted border border-border rounded-lg hover:bg-accent transition-colors cursor-pointer"
@@ -70,7 +70,7 @@ export function AudioSettingsDrawer({
         </div>
 
         {/* Speed Setting */}
-        <div className="mb-4">
+        <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium text-foreground">Speed</label>
             <span className="text-sm text-muted-foreground">{audioSettings.speed}</span>
@@ -87,7 +87,7 @@ export function AudioSettingsDrawer({
         </div>
 
         {/* Stability Setting */}
-        <div className="mb-4">
+        <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium text-foreground">Stability</label>
             <span className="text-sm text-muted-foreground">{audioSettings.stability}</span>
@@ -104,7 +104,7 @@ export function AudioSettingsDrawer({
         </div>
 
         {/* Similarity Setting */}
-        <div className="mb-4">
+        <div>
           <div className="flex justify-between items-center mb-2">
             <label className="text-sm font-medium text-foreground">Similarity</label>
             <span className="text-sm text-muted-foreground">{audioSettings.similarity}</span>

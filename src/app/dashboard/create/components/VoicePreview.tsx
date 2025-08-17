@@ -49,7 +49,7 @@ export function VoicePreview({
   const isDisabled = isGeneratingVoice || (!isVoiceGenerated && (speechMode === "text-to-speech" ? !script.trim() : !audioFile))
 
   return (
-    <div className="mb-4">
+    <div>
       {/* Voice Preview - Default component */}
       <div className="flex items-center gap-3 p-4 bg-muted border border-border rounded-xl">
         {/* Avatar de l'acteur/voix */}
