@@ -14,14 +14,14 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
       )
     }
 
-    const projects = await projectQueries.findByUserId(session.user.id)
+    const projects = await projectQueries.findByUserId((session!.user as any).id)
 
     return NextResponse.json({ projects })
   } catch (error) {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const project = await projectQueries.create({
       name: validatedData.name,
-      userId: session.user.id,
+      userId: (session!.user as any).id,
     })
 
     return NextResponse.json({ project }, { status: 201 })

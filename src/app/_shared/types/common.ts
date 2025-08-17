@@ -1,0 +1,49 @@
+// Types communs partagés
+
+// Réponse API générique
+export type ApiResponse<T = unknown> = {
+  success: boolean
+  data: T
+  message?: string
+  error?: string
+}
+
+// Paramètres de pagination
+export type PaginationParams = {
+  page?: number
+  limit?: number
+  offset?: number
+}
+
+// Paramètres de tri
+export type SortParams = {
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+// Paramètres de recherche
+export type SearchParams = {
+  search?: string
+  filter?: Record<string, unknown>
+}
+
+// ID générique
+export type ID = string | number
+
+// Status générique
+export type Status = 'pending' | 'loading' | 'success' | 'error'
+
+// Metadata pour les réponses paginées
+export type PaginationMeta = {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+}
+
+// Réponse paginée
+export type PaginatedResponse<T> = ApiResponse<T> & {
+  meta: PaginationMeta
+}

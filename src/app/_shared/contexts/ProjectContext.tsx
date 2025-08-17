@@ -107,7 +107,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     const optimisticProject = projects.find(p => p.id === id)
     if (!optimisticProject) return null
 
-    const updatedProject = { ...optimisticProject, name, updatedAt: new Date().toISOString() }
+    const updatedProject = { ...optimisticProject, name, updatedAt: new Date() }
     
     // Mise à jour immédiate de l'interface
     setProjects(prev => prev.map(p => p.id === id ? updatedProject : p))

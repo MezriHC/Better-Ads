@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     }
 
     // Vérifier que l'utilisateur peut modifier ses propres données
-    if (session.user.id !== id) {
+    if ((session!.user as any).id !== id) {
       return NextResponse.json(
         { success: false, error: 'Non autorisé' },
         { status: 403 }
@@ -118,7 +118,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
     }
 
     // Vérifier que l'utilisateur peut supprimer son propre compte
-    if (session.user.id !== id) {
+    if ((session!.user as any).id !== id) {
       return NextResponse.json(
         { success: false, error: 'Non autorisé' },
         { status: 403 }

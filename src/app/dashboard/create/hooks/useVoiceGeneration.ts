@@ -21,9 +21,7 @@ export function useVoiceGeneration(initialVoice: Voice) {
       setIsGeneratingVoice(false)
       
       // Créer un blob de test (silence)
-      const audioContext = new AudioContext()
-      const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate)
-      const blob = new Blob([buffer], { type: 'audio/wav' })
+      const blob = new Blob([new ArrayBuffer(0)], { type: 'audio/wav' })
       setGeneratedVoiceBlob(blob)
     }, 2000)
   }

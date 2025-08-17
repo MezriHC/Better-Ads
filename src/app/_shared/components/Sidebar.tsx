@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react"
 import { useProjectContext } from "../contexts/ProjectContext"
 import { useRouter } from "next/navigation"
+import type { Project } from "../database/types"
 
 const menuItems = [
   { title: "Dashboard", href: "/dashboard", icon: IconLayoutDashboard },
@@ -30,13 +31,13 @@ export function Sidebar() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState("")
 
-  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const { projects, currentProject, setCurrentProject, setShouldShowNewProjectModal, updateProject, deleteProject, isLoading } = useProjectContext()
 
-  const switchToProject = (project: { id: string; name: string }) => {
+  const switchToProject = (project: Project) => {
     setCurrentProject(project)
     
     // Rediriger vers create si on n'y est pas déjà
@@ -56,7 +57,7 @@ export function Sidebar() {
     }
   }
 
-  const handleRenameProject = (project: { id: string; name: string }) => {
+  const handleRenameProject = (project: Project) => {
     setEditingId(project.id)
     setEditingName(project.name)
     setOpenMenuId(null)
@@ -85,7 +86,7 @@ export function Sidebar() {
     setEditingName("")
   }
 
-  const handleDeleteProject = (project: { id: string; name: string }) => {
+  const handleDeleteProject = (project: Project) => {
     setProjectToDelete(project)
     setOpenMenuId(null)
   }

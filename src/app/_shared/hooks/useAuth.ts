@@ -17,7 +17,7 @@ export function useAuth() {
     signOut: () => signOut({ callbackUrl: "/login" }),
     
     // Informations utilisateur
-    userId: session?.user?.id || null,
+    userId: (session?.user as any)?.id || null,
     userEmail: session?.user?.email || null,
     userName: session?.user?.name || null,
     userImage: session?.user?.image || null,
