@@ -12,19 +12,20 @@ const updateProjectSchema = z.object({
 // GET /api/projects/[id] - Récupérer un projet par ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
       )
     }
 
-    const project = await projectQueries.findById(params.id)
+    const project = await projectQueries.findById(id)
 
     if (!project) {
       return NextResponse.json(
@@ -34,7 +35,7 @@ export async function GET(
     }
 
     // Vérifier que l'utilisateur est propriétaire du projet
-    if (project.userId !== session.user.id) {
+    if (project.userId !== (session!.user as any).id) {
       return NextResponse.json(
         { error: 'Accès refusé' },
         { status: 403 }
@@ -53,12 +54,13 @@ export async function GET(
 // PATCH /api/projects/[id] - Mettre à jour un projet
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -66,7 +68,7 @@ export async function PATCH(
     }
 
     // Vérifier que le projet existe et appartient à l'utilisateur
-    const existingProject = await projectQueries.findById(params.id)
+    const existingProject = await projectQueries.findById(id)
 
     if (!existingProject) {
       return NextResponse.json(
@@ -75,7 +77,7 @@ export async function PATCH(
       )
     }
 
-    if (existingProject.userId !== session.user.id) {
+    if (existingProject.userId !== (session!.user as any).id) {
       return NextResponse.json(
         { error: 'Accès refusé' },
         { status: 403 }
@@ -85,7 +87,7 @@ export async function PATCH(
     const body = await request.json()
     const validatedData = updateProjectSchema.parse(body)
 
-    const project = await projectQueries.update(params.id, validatedData)
+    const project = await projectQueries.update(id, validatedData)
 
     return NextResponse.json({ project })
   } catch (error) {
@@ -106,12 +108,13 @@ export async function PATCH(
 // DELETE /api/projects/[id] - Supprimer un projet
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user?.id) {
+    if (!(session?.user as any)?.id) {
       return NextResponse.json(
         { error: 'Non authentifié' },
         { status: 401 }
@@ -119,7 +122,7 @@ export async function DELETE(
     }
 
     // Vérifier que le projet existe et appartient à l'utilisateur
-    const existingProject = await projectQueries.findById(params.id)
+    const existingProject = await projectQueries.findById(id)
 
     if (!existingProject) {
       return NextResponse.json(
@@ -128,14 +131,14 @@ export async function DELETE(
       )
     }
 
-    if (existingProject.userId !== session.user.id) {
+    if (existingProject.userId !== (session!.user as any).id) {
       return NextResponse.json(
         { error: 'Accès refusé' },
         { status: 403 }
       )
     }
 
-    await projectQueries.delete(params.id)
+    await projectQueries.delete(id)
 
     return NextResponse.json({ message: 'Projet supprimé avec succès' })
   } catch (error) {
