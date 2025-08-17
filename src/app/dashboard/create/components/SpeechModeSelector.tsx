@@ -28,18 +28,19 @@ export function SpeechModeSelector({
   
   const currentSpeechMode = speechModes.find(mode => mode.id === speechMode)
 
-  // Calculer la direction optimale du dropdown quand il s'ouvre
-  useEffect(() => {
-    if (isOpen && buttonRef.current) {
+  // Calculer la direction optimale du dropdown au moment du clic
+  const handleToggleOpen = () => {
+    if (!isOpen && buttonRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect()
       const dropdownHeight = speechModes.length * 48 + 16 // hauteur approximative
       const spaceBelow = window.innerHeight - buttonRect.bottom
       const spaceAbove = buttonRect.top
       
-      // Ouvrir vers le haut si pas assez de place en bas
+      // Déterminer la direction AVANT d'ouvrir pour éviter le flickering
       setDropdownDirection(spaceBelow < dropdownHeight && spaceAbove > dropdownHeight ? 'up' : 'down')
     }
-  }, [isOpen, speechModes.length])
+    onToggleOpen()
+  }
 
   const handleModeSelect = (modeId: string) => {
     onModeChange(modeId as "text-to-speech" | "speech-to-speech")
@@ -50,7 +51,7 @@ export function SpeechModeSelector({
     <div className="relative">
       <button 
         ref={buttonRef}
-        onClick={onToggleOpen}
+        onClick={handleToggleOpen}
         className="flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg hover:bg-accent transition-all cursor-pointer h-[44px]"
       >
         <span className="text-sm font-medium text-foreground">{currentSpeechMode?.label}</span>

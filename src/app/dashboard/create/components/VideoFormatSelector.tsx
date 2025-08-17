@@ -1,6 +1,7 @@
 "use client"
 
 import { IconChevronDown } from "@tabler/icons-react"
+import { useRef, useState } from "react"
 
 interface VideoFormat {
   id: string
@@ -23,7 +24,24 @@ export function VideoFormatSelector({
   isOpen,
   onToggleOpen
 }: VideoFormatSelectorProps) {
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [dropdownDirection, setDropdownDirection] = useState<'down' | 'up'>('down')
+  
   const currentVideoFormat = videoFormats.find(format => format.id === selectedVideoFormat)
+
+  // Calculer la direction optimale du dropdown au moment du clic
+  const handleToggleOpen = () => {
+    if (!isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect()
+      const dropdownHeight = videoFormats.length * 56 + 16 // hauteur approximative
+      const spaceBelow = window.innerHeight - buttonRect.bottom
+      const spaceAbove = buttonRect.top
+      
+      // Déterminer la direction AVANT d'ouvrir pour éviter le flickering
+      setDropdownDirection(spaceBelow < dropdownHeight && spaceAbove > dropdownHeight ? 'up' : 'down')
+    }
+    onToggleOpen()
+  }
 
   const handleFormatSelect = (formatId: string) => {
     onFormatChange(formatId)
@@ -42,7 +60,8 @@ export function VideoFormatSelector({
   return (
     <div className="relative">
       <button 
-        onClick={onToggleOpen}
+        ref={buttonRef}
+        onClick={handleToggleOpen}
         className="flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg hover:bg-accent transition-all cursor-pointer h-[44px]"
       >
         <div className="w-6 h-5 bg-background border border-border rounded flex items-center justify-center">
@@ -64,7 +83,11 @@ export function VideoFormatSelector({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={onToggleOpen} />
-          <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[200px]">
+          <div className={`absolute left-0 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[200px] ${
+            dropdownDirection === 'up' 
+              ? 'bottom-full mb-2' 
+              : 'top-full mt-2'
+          }`}>
             {videoFormats.map((format) => {
               const dimensions = getFormatDimensions(format.id)
               return (
