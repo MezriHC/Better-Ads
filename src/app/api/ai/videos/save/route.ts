@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/src/app/_shared/lib/auth'
 import { prisma } from '@/src/app/_shared/database/client'
+import { Client } from 'minio'
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     const avatar = await prisma.avatar.create({
       data: {
         title: prompt.slice(0, 50) + "...",
-        videoUrl: avatarImageUrl || "",
+        videoUrl: minioVideoUrl, // URL de la vidéo générée
         posterUrl: minioThumbnailUrl || avatarImageUrl || "",
         visibility: "private",
         userId: userId,
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           prompt,
           originalVideoUrl: videoUrl,
+          avatarImageUrl: avatarImageUrl,
           createdAt: new Date().toISOString()
         }
       }
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
         userId: userId,
         avatarId: avatar.id,
         videoUrl: minioVideoUrl, // URL MinIO, pas fal.ai
-        thumbnailUrl: minioThumbnailUrl || avatarImageUrl || "",
+        thumbnailUrl: minioThumbnailUrl || "", // Utiliser seulement l'URL MinIO, pas l'avatar original
         status: "ready",
         scriptText: prompt,
         ttsVoiceId: "default",
@@ -103,25 +105,29 @@ export async function POST(request: NextRequest) {
 
 // Fonction d'upload vers MinIO
 async function uploadToMinIO(buffer: ArrayBuffer, fileName: string, userId: string, projectId: string): Promise<string> {
-  const formData = new FormData()
-  const blob = new Blob([buffer])
-  
-  // Structure: videos/generated/{userId}/{projectId}/filename
+  // Configuration MinIO
+  const minioClient = new Client({
+    endPoint: process.env.MINIO_ENDPOINT?.replace('https://', '') || 'localhost',
+    port: 443,
+    useSSL: true,
+    accessKey: process.env.MINIO_ACCESS_KEY || '',
+    secretKey: process.env.MINIO_SECRET_KEY || '',
+  })
+
+  const bucketName = 'mini-prod-media'
   const objectPath = `videos/generated/${userId}/${projectId}/${fileName}`
   
-  formData.append('file', blob, fileName)
-  formData.append('path', objectPath)
-  
-  const uploadResponse = await fetch('/api/minio/upload', {
-    method: 'POST',
-    body: formData
-  })
-  
-  if (!uploadResponse.ok) {
-    const errorText = await uploadResponse.text()
-    throw new Error(`Erreur upload MinIO: ${errorText}`)
-  }
-  
-  const uploadData = await uploadResponse.json()
-  return uploadData.url
+  // Upload vers MinIO
+  await minioClient.putObject(
+    bucketName,
+    objectPath,
+    Buffer.from(buffer),
+    buffer.byteLength,
+    {
+      'Content-Type': fileName.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg',
+    }
+  )
+
+  // Retourner l'URL publique
+  return `${process.env.MINIO_ENDPOINT}/${bucketName}/${objectPath}`
 }
