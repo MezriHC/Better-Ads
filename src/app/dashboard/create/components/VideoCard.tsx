@@ -90,8 +90,8 @@ export function VideoCard({ video, onDelete }: VideoCardProps) {
 
   return (
     <>
-      <div className="bg-card border border-border rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-lg">
-        <div className="relative aspect-[9/16] overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden group cursor-pointer">
+        <div className="relative h-72 overflow-hidden">
           {video.isGenerating || video.status === "processing" || video.status === "queued" ? (
             // État de génération ou processing
             <>
@@ -167,7 +167,7 @@ export function VideoCard({ video, onDelete }: VideoCardProps) {
         </div>
         
         {/* Card Content */}
-        <div className="p-3 flex flex-col gap-2">
+        <div className="p-3 flex flex-col gap-1">
           <h3 className="font-semibold text-card-foreground text-sm line-clamp-2">
             {video.prompt || "Generated Video"}
           </h3>
