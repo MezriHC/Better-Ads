@@ -4,6 +4,7 @@ import Image from "next/image"
 import { IconMicrophone, IconDownload } from "@tabler/icons-react"
 import { useEffect, useState, useCallback } from "react"
 import { useVideoGeneration } from "@/src/app/_shared/hooks/useVideoGeneration"
+import { useProjects } from "@/src/app/_shared/hooks/useProjects"
 import { GeneratedVideoData } from "@/src/app/_shared/types/ai"
 
 interface GeneratedActor {
@@ -16,19 +17,23 @@ interface LaunchTrainingStepProps {
   actor?: GeneratedActor | null
   selectedImageUrl?: string
   prompt?: string
+  onVideoGenerated?: (video: any) => void
 }
 
 export function LaunchTrainingStep({ 
   actor, 
   selectedImageUrl,
-  prompt 
+  prompt,
+  onVideoGenerated
 }: LaunchTrainingStepProps) {
   const [generatedVideo, setGeneratedVideo] = useState<GeneratedVideoData | null>(null)
   const [downloadingVideo, setDownloadingVideo] = useState(false)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
   const [isPreparingVideo, setIsPreparingVideo] = useState(false)
   const [isConverting, setIsConverting] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const { generateVideo, isGenerating, error } = useVideoGeneration()
+  const { currentProject } = useProjects()
 
   const convertDataUrlToFalUrl = async (dataUrl: string): Promise<string | null> => {
     try {
@@ -54,6 +59,50 @@ export function LaunchTrainingStep({
       return uploadData.imageUrl
     } catch {
       return null
+    }
+  }
+
+  const handleSaveVideoAuto = async (video: any) => {
+    if (!currentProject || isSaving) return
+    
+    setIsSaving(true)
+    
+    try {
+      console.log('Sauvegarde automatique vers MinIO...', {
+        videoUrl: video.url,
+        prompt: prompt,
+        projectId: currentProject.id
+      })
+
+      const response = await fetch('/api/ai/videos/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          videoUrl: video.url,
+          prompt: prompt,
+          avatarImageUrl: selectedImageUrl,
+          projectId: currentProject.id
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.details || 'Erreur lors de la sauvegarde')
+      }
+
+      const data = await response.json()
+      console.log('Vidéo sauvegardée avec succès:', data)
+      
+      // Notifier le parent avec les données sauvegardées (URL MinIO)
+      onVideoGenerated?.(data.video)
+      
+    } catch (error) {
+      console.error('Erreur sauvegarde vidéo:', error)
+      alert(`Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -90,6 +139,8 @@ export function LaunchTrainingStep({
     
     if (video) {
       setGeneratedVideo(video)
+      // Sauvegarder automatiquement la vidéo
+      await handleSaveVideoAuto(video)
     }
   }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating])
 
@@ -197,6 +248,7 @@ export function LaunchTrainingStep({
               </button>
             </div>
           </div>
+
 
 
         </div>

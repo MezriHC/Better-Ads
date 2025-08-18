@@ -69,7 +69,7 @@ export function CreatePageGuard({ children }: CreatePageGuardProps) {
         // Pas besoin de recharger la page !
       }
     } catch (error) {
-      console.error("Error creating project:", error)
+
     } finally {
       setIsCreating(false)
     }

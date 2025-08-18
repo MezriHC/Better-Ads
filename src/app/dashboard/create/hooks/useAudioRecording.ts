@@ -49,7 +49,7 @@ export function useAudioRecording() {
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (error) {
-      console.error('Error starting recording:', error)
+
       setRecordingState("idle")
     }
   }

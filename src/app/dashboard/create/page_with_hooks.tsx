@@ -54,7 +54,7 @@ export default function CreatePage() {
     const hasContent = speechMode === "text-to-speech" ? script.trim() : audioRecording.audioFile
     if (hasContent) {
       // Logique de génération
-      console.log("Generating content...")
+
     }
   }
 
@@ -178,6 +178,11 @@ export default function CreatePage() {
         isOpen={isActorModalOpen}
         onClose={() => setIsActorModalOpen(false)}
         onSelectActor={(actor) => {
+          // Pour les avatars créés custom - ne pas fermer la modal
+          setSelectedActor(actor)
+        }}
+        onSelectExistingActor={(actor) => {
+          // Pour les avatars existants - fermer la modal
           setSelectedActor(actor)
           setIsActorModalOpen(false)
         }}

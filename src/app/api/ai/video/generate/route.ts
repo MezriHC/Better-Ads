@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
       input: {
         prompt,
         image_url: imageUrl,
-        resolution: '720p',
-        duration: '5',
+        resolution: '1080p',        // QUALITÉ MAX
+        duration: '12',             // DURÉE MAX
         camera_fixed: false,
         seed: -1
       } as VideoGenerationRequest,
@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
     const generatedVideo: GeneratedVideoData = {
       id: `video-${Date.now()}`,
       url: result.video.url,
-      duration: '5',
-      resolution: '720p',
+      duration: '12',
+      resolution: '1080p',
       prompt,
       loading: false,
     }

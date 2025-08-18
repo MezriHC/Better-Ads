@@ -5,12 +5,12 @@ import { IconX, IconArrowLeft } from "@tabler/icons-react"
 import { GetStartedStep } from "./GetStartedStep"
 import { DefineActorStep } from "./DefineActorStep"
 import { SelectActorStep } from "./SelectActorStep"
-import { SelectVoiceStep } from "./SelectVoiceStep"
+
 import { LaunchTrainingStep } from "./LaunchTrainingStep"
 // Import supprimé - GeneratedVideoData non utilisé dans ce fichier
 
 type CreateMethod = "generate" | "upload"
-type AvatarStep = "get-started" | "define-actor" | "select-actor" | "select-voice" | "launch-training"
+type AvatarStep = "get-started" | "define-actor" | "select-actor" | "launch-training"
 
 interface GeneratedActor {
   id: string
@@ -42,14 +42,15 @@ interface CreateAvatarModalProps {
   isOpen: boolean
   onClose: () => void
   onAvatarCreated?: (avatar: CreatedAvatar) => void
+  onVideoGenerated?: (video: any) => void
 }
 
-export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAvatarModalProps) {
+export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated, onVideoGenerated }: CreateAvatarModalProps) {
   const [step, setStep] = useState<AvatarStep>("get-started")
   const [method, setMethod] = useState<CreateMethod | null>(null)
   const [actorPrompt, setActorPrompt] = useState("")
   const [selectedActor, setSelectedActor] = useState<GeneratedActor | null>(null)
-  const [selectedVoice, setSelectedVoice] = useState<SelectedVoice | null>(null)
+
 
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>()
 
@@ -62,8 +63,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
         return "h-[800px]" // Grand pour le chat et les images
       case "select-actor":
         return "h-[750px]" // Plus grand pour éviter le scroll interne
-      case "select-voice":
-        return "h-[850px]" // Plus grand pour voir plus de voix sans coupure
+
       case "launch-training":
         return "h-[700px]" // Adapté pour la vidéo + infos avec plus d'espace
       default:
@@ -77,7 +77,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
     setMethod(null)
     setActorPrompt("")
     setSelectedActor(null)
-    setSelectedVoice(null)
+
     onClose()
   }
 
@@ -95,11 +95,8 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           setStep("define-actor")
         }
         break
-      case "select-voice":
-        setStep("select-actor")
-        break
       case "launch-training":
-        setStep("select-voice")
+        setStep("select-actor")
         break
       default:
         break
@@ -141,9 +138,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
 
 
 
-  const handleVoiceSelect = (voice: SelectedVoice) => {
-    setSelectedVoice(voice)
-  }
+
 
 
 
@@ -173,7 +168,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               {step === "get-started" && "Create Actor"}
               {step === "define-actor" && "Define Actor"}
               {step === "select-actor" && "Create Custom Actor"}
-              {step === "select-voice" && "Select Voice"}
               {step === "launch-training" && "Launch Training"}
             </h2>
           </div>
@@ -203,18 +197,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
           
           {step === "select-actor" && (
             <SelectActorStep
-              onNext={() => setStep("select-voice")}
-              selectedImageUrl={selectedImageUrl}
-              method={method || "generate"}
-              onImageUpload={(imageUrl) => setSelectedImageUrl(imageUrl)}
-              onPromptChange={(prompt) => setActorPrompt(prompt)}
-            />
-          )}
-          
-          {step === "select-voice" && (
-            <SelectVoiceStep
-              onVoiceSelect={handleVoiceSelect}
-              onStartTraining={() => {
+              onNext={() => {
                 setStep("launch-training")
                 
                 // Create avatar immediately but don't close modal
@@ -222,7 +205,7 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
                   id: Date.now().toString(),
                   name: actorPrompt.slice(0, 30) + "...",
                   imageUrl: selectedImageUrl || selectedActor?.imageUrl || "/ai-avatars/avatar-1.jpg",
-                  voice: selectedVoice,
+                  voice: null, // Pas de voix sélectionnée
                   method,
                   status: "training"
                 }
@@ -230,7 +213,10 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
                 onAvatarCreated?.(newAvatar)
                 // Modal stays open to show training progress
               }}
-              isUploading={method === "upload"}
+              selectedImageUrl={selectedImageUrl}
+              method={method || "generate"}
+              onImageUpload={(imageUrl) => setSelectedImageUrl(imageUrl)}
+              onPromptChange={(prompt) => setActorPrompt(prompt)}
             />
           )}
           
@@ -239,6 +225,11 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated }: CreateAv
               actor={selectedActor}
               selectedImageUrl={selectedImageUrl}
               prompt={actorPrompt}
+              onVideoGenerated={(video) => {
+                // Notifier le parent de la vidéo générée
+                // Le parent (ActorSelectorModal) se chargera de fermer la modal
+                onVideoGenerated?.(video)
+              }}
             />
           )}
         </div>

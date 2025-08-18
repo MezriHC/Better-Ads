@@ -33,7 +33,9 @@ interface ActorSelectorModalProps {
   isOpen: boolean
   onClose: () => void
   onSelectActor: (actor: Avatar) => void
+  onSelectExistingActor?: (actor: Avatar) => void
   selectedActorId?: string
+  onVideoGenerated?: (video: any) => void
 }
 
 // Données simulées d'avatars
@@ -112,7 +114,7 @@ function FilterSelect({
   )
 }
 
-export function ActorSelectorModal({ isOpen, onClose, onSelectActor, selectedActorId }: ActorSelectorModalProps) {
+export function ActorSelectorModal({ isOpen, onClose, onSelectActor, onSelectExistingActor, selectedActorId, onVideoGenerated }: ActorSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGender, setSelectedGender] = useState<"all" | "male" | "female">("all")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -169,7 +171,8 @@ export function ActorSelectorModal({ isOpen, onClose, onSelectActor, selectedAct
     
     setCustomAvatars(prev => [...prev, avatar])
     onSelectActor(avatar)
-    setIsCreateModalOpen(false)
+    // Ne pas fermer la modal ici - elle se fermera après la génération vidéo
+    // setIsCreateModalOpen(false)
   }
 
   // Filtrer les avatars
@@ -302,7 +305,7 @@ export function ActorSelectorModal({ isOpen, onClose, onSelectActor, selectedAct
               return (
                 <div
                   key={avatar.id}
-                  onClick={() => onSelectActor(avatar)}
+                  onClick={() => onSelectExistingActor ? onSelectExistingActor(avatar) : onSelectActor(avatar)}
                   className={`
                     bg-card rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300
                     ${isSelected 
@@ -372,6 +375,12 @@ export function ActorSelectorModal({ isOpen, onClose, onSelectActor, selectedAct
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           onAvatarCreated={handleAvatarCreated}
+          onVideoGenerated={(video) => {
+            // Fermer la modal de création d'avatar une fois la vidéo sauvegardée
+            setIsCreateModalOpen(false)
+            // Transmettre la vidéo au parent
+            onVideoGenerated?.(video)
+          }}
         />
       </div>
     </div>

@@ -63,6 +63,10 @@ export default function CreatePage() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   
+  // Generated content states
+  const [generatedVideos, setGeneratedVideos] = useState<any[]>([])
+  const [videoRefreshTrigger, setVideoRefreshTrigger] = useState(0)
+  
   // Voice generation states
   const [selectedVoice, setSelectedVoice] = useState<Voice>({ id: "2", name: "Emma", gender: "female", language: "English", country: "US", flag: "🇺🇸" })
   const [isVoiceGenerated, setIsVoiceGenerated] = useState(false)
@@ -237,13 +241,19 @@ export default function CreatePage() {
   return (
     <CreatePageGuard>
       <div className="h-full flex flex-col">
-        {/* Hero Section centré */}
-        <div className="flex-1 flex items-center justify-center">
-          <HeroSection currentProject={currentProject} />
+        {/* Hero Section centré avec scroll */}
+        <div className="flex-1 flex items-center justify-center overflow-y-auto">
+          <div className="w-full py-8">
+            <HeroSection 
+            currentProject={currentProject} 
+            generatedVideos={generatedVideos}
+            onNewVideoAdded={() => setVideoRefreshTrigger(prev => prev + 1)}
+          />
+          </div>
         </div>
 
         {/* Creation Modal en bas - Position fixe par rapport au bas */}
-        <div className="pb-8">
+        <div className="pb-8 flex-shrink-0">
           <div className="w-full flex justify-center px-4">
             {/* Container centré avec largeur maximale intelligente */}
             <div className={`w-full transition-all duration-400 ease-in-out ${
@@ -377,10 +387,31 @@ export default function CreatePage() {
         isOpen={isActorModalOpen}
         onClose={() => setIsActorModalOpen(false)}
         onSelectActor={(actor) => {
+          // Pour les avatars créés custom - ne pas fermer la modal
+          setSelectedActor(actor)
+          
+          // Ajouter une vidéo en cours de génération à la liste temporaire
+          const generatingVideo = {
+            id: Date.now().toString(),
+            url: null,
+            thumbnailUrl: actor.imageUrl,
+            isGenerating: true,
+            prompt: `Génération en cours...`
+          }
+          setGeneratedVideos(prev => [...prev, generatingVideo])
+        }}
+        onSelectExistingActor={(actor) => {
+          // Pour les avatars existants - fermer la modal
           setSelectedActor(actor)
           setIsActorModalOpen(false)
         }}
         selectedActorId={selectedActor?.id}
+        onVideoGenerated={(video) => {
+          // Déclencher le refresh des vidéos depuis la base
+          setVideoRefreshTrigger(prev => prev + 1)
+          // Supprimer les vidéos temporaires en cours
+          setGeneratedVideos(prev => prev.filter(v => !v.isGenerating))
+        }}
       />
 
       {/* Voice Selection Modal */}
