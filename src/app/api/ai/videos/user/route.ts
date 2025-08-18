@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/src/app/_shared/lib/auth'
 import { prisma } from '@/src/app/_shared/database/client'
+import { getUserIdFromSession } from '@/src/app/_shared/types/api'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || !(session.user as any).id) {
+    const userId = getUserIdFromSession(session)
+    if (!userId) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
-
-    const userId = (session.user as any).id
 
     // Récupérer toutes les vidéos de l'utilisateur avec leurs avatars
     const videos = await prisma.video.findMany({

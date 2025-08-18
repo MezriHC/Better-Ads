@@ -1,6 +1,7 @@
 "use client"
 
 import { useSession, signIn, signOut } from "next-auth/react"
+import type { SessionUser } from '../types/api'
 
 export function useAuth() {
   const { data: session, status } = useSession()
@@ -17,7 +18,7 @@ export function useAuth() {
     signOut: () => signOut({ callbackUrl: "/login" }),
     
     // Informations utilisateur
-    userId: (session?.user as any)?.id || null,
+    userId: (session?.user as SessionUser)?.id || null,
     userEmail: session?.user?.email || null,
     userName: session?.user?.name || null,
     userImage: session?.user?.image || null,

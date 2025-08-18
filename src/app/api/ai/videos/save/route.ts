@@ -3,16 +3,16 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/src/app/_shared/lib/auth'
 import { prisma } from '@/src/app/_shared/database/client'
 import { Client } from 'minio'
+import { getUserIdFromSession } from '@/src/app/_shared/types/api'
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user || !(session.user as any).id) {
+    const userId = getUserIdFromSession(session)
+    if (!userId) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
-
-    const userId = (session.user as any).id
     const { videoUrl, prompt, avatarImageUrl, projectId } = await request.json()
 
     if (!videoUrl || !prompt || !projectId) {

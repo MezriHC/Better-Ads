@@ -2,6 +2,19 @@
 import type { User } from '../database/types'
 import type { ApiResponse, PaginationParams } from './common'
 
+// Type pour l'utilisateur de session NextAuth
+export type SessionUser = {
+  id: string
+  name?: string | null
+  email?: string | null
+  image?: string | null
+}
+
+// Utilitaire pour extraire l'ID utilisateur de la session
+export function getUserIdFromSession(session: { user?: unknown } | null): string | null {
+  return (session?.user as SessionUser)?.id || null
+}
+
 // Types pour l'API Users
 export type GetUserResponse = ApiResponse<User>
 export type GetUsersResponse = ApiResponse<User[]>
