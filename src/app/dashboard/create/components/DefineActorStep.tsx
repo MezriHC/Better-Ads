@@ -8,8 +8,6 @@ import { useImageUpload } from "@/src/app/_shared/hooks/useImageUpload"
 import { GeneratedImageData } from "@/src/app/_shared/types/ai"
 import { GradientButton } from "./GradientButton"
 
-
-
 interface DefineActorStepProps {
   onDefineActor: (prompt: string, imageUrl?: string) => void
   onNext: (imageUrl?: string) => void
@@ -66,8 +64,6 @@ export function DefineActorStep({
       }
     }
   }
-
-
 
   const handleRemoveImage = () => {
     setUploadedImage(null)
@@ -207,8 +203,6 @@ export function DefineActorStep({
   const hasSelectedImage = chatMessages.some(msg => 
     msg.generatedImages?.some(img => img.selected)
   )
-
-
 
   // Interface generate (interface actuelle)
   return (

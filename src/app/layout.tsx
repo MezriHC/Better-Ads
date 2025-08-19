@@ -8,8 +8,6 @@ import { SessionProvider } from "./_shared/components/SessionProvider";
 import { AuthGuard } from "./_shared/components/AuthGuard";
 import { ProjectProvider } from "./_shared/contexts/ProjectContext";
 
-
-
 export const metadata: Metadata = {
   title: "Better Ads",
   description: "Create amazing ads with AI",

@@ -85,7 +85,6 @@ export default function CreatePage() {
   })
   
 
-
   const currentType = creationTypes.find(type => type.id === selectedType)
   const currentSpeechMode = speechModes.find(mode => mode.id === speechMode)
   const currentVideoFormat = videoFormats.find(format => format.id === selectedVideoFormat)
@@ -219,10 +218,6 @@ export default function CreatePage() {
     setIsVoiceGenerated(false) // Reset generation when changing voice
   }
 
-
-
-
-
   const handleSubmit = () => {
     const hasContent = speechMode === "text-to-speech" ? script.trim() : audioFile
     if (hasContent) {
@@ -236,7 +231,6 @@ export default function CreatePage() {
       handleSubmit()
     }
   }
-
 
   return (
     <CreatePageGuard>
@@ -411,6 +405,8 @@ export default function CreatePage() {
           setVideoRefreshTrigger(prev => prev + 1)
           // Supprimer les vidéos temporaires en cours
           setGeneratedVideos(prev => prev.filter(v => !v.isGenerating))
+          // Fermer la modal d'avatars après génération
+          setIsActorModalOpen(false)
         }}
       />
 

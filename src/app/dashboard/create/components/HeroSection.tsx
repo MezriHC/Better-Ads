@@ -35,7 +35,6 @@ export function HeroSection({ currentProject, generatedVideos = [], onNewVideoAd
         setPersistedVideos(data.videos || [])
       }
     } catch (error) {
-      console.error('Erreur chargement vidéos:', error)
     } finally {
       setIsLoading(false)
     }

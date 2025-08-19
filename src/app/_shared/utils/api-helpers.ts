@@ -35,8 +35,6 @@ export async function withRetry<T>(
         maxDelay
       )
       
-      console.log(`Tentative ${attempt + 1}/${maxRetries + 1} échoué, retry dans ${delay}ms...`)
-      
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
@@ -70,8 +68,6 @@ export function createApiError(
   if (code) {
     response.code = code
   }
-
-  console.error(`API Error [${status}]:`, message, errorDetails)
 
   return NextResponse.json(response, { status })
 }
@@ -110,8 +106,8 @@ export async function downloadWithRetry(
   options: DownloadOptions = {}
 ): Promise<ArrayBuffer> {
   const {
-    maxSize = 100 * 1024 * 1024, // 100MB par défaut
-    timeout = 60000, // 60 secondes
+    maxSize = 100 * 1024 * 1024,
+    timeout = 60000,
     retryOptions = {}
   } = options
 

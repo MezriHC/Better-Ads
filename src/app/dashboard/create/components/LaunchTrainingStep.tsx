@@ -68,11 +68,6 @@ export function LaunchTrainingStep({
     setIsSaving(true)
     
     try {
-      console.log('Sauvegarde automatique vers MinIO...', {
-        videoUrl: video.url,
-        prompt: prompt,
-        projectId: currentProject.id
-      })
 
       const response = await fetch('/api/ai/videos/save', {
         method: 'POST',
@@ -93,13 +88,11 @@ export function LaunchTrainingStep({
       }
 
       const data = await response.json()
-      console.log('Vidéo sauvegardée avec succès:', data)
       
       // Notifier le parent avec les données sauvegardées (URL MinIO)
       onVideoGenerated?.(data.video)
       
     } catch (error) {
-      console.error('Erreur sauvegarde vidéo:', error)
       alert(`Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
     } finally {
       setIsSaving(false)
@@ -145,13 +138,11 @@ export function LaunchTrainingStep({
   }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating])
 
   useEffect(() => {
-    
     // Démarrer automatiquement la génération vidéo UNE SEULE FOIS
     if (selectedImageUrl && prompt && !hasStartedGeneration) {
       setHasStartedGeneration(true)
-      setIsPreparingVideo(true) // Commencer l'état "preparing"
+      setIsPreparingVideo(true)
       handleGenerateVideo()
-    } else {
     }
   }, [selectedImageUrl, prompt, hasStartedGeneration, handleGenerateVideo])
   
@@ -248,8 +239,6 @@ export function LaunchTrainingStep({
               </button>
             </div>
           </div>
-
-
 
         </div>
       ) : (

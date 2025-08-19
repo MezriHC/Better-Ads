@@ -47,10 +47,5 @@ export async function GET(_request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Erreur récupération vidéos:', error)
-    return NextResponse.json({ 
-      error: 'Erreur lors de la récupération des vidéos',
-      details: error instanceof Error ? error.message : 'Erreur inconnue'
-    }, { status: 500 })
-  }
+      }
 }

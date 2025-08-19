@@ -34,10 +34,10 @@ export async function POST(request: NextRequest) {
           } as VideoGenerationRequest,
           logs: true,
         })
-      }, 120000) // 2 minutes timeout
+      }, 600000) // 10 minutes timeout pour génération vidéo
     }, {
-      maxRetries: 2,
-      baseDelay: 2000
+      maxRetries: 1, // Réduire retry pour éviter multiplication d'appels
+      baseDelay: 5000
     })
 
     const result = response.data as VideoGenerationResponse

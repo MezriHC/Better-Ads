@@ -66,8 +66,6 @@ export function SelectActorStep({
   // Validation: image ET prompt obligatoires
   const canProceed = !!(selectedImageUrl && prompt.trim())
 
-
-
   return (
     <div className="relative h-full">
       {/* Content area - no scroll needed with larger modal */}

@@ -44,8 +44,6 @@ export async function POST(request: NextRequest) {
       loading: false
     }))
 
-
-
     return NextResponse.json({
       success: true,
       images: generatedImages,

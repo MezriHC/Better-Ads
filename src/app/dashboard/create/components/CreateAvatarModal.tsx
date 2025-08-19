@@ -51,7 +51,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated, onVideoGen
   const [actorPrompt, setActorPrompt] = useState("")
   const [selectedActor, setSelectedActor] = useState<GeneratedActor | null>(null)
 
-
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>()
 
   // Hauteur adaptative selon l'étape
@@ -135,12 +134,6 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated, onVideoGen
       // Generation will be handled directly in DefineActorStep
     }
   }
-
-
-
-
-
-
 
   if (!isOpen) return null
 
