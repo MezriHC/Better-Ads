@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Appeler l'API fal.ai avec le modèle FLUX Kontext Editing Max
-    const result = await fal.subscribe('fal-ai/flux-pro/kontext/max', {
+    const result = await fal.subscribe('fal-ai/flux-pro/kontext/max/image-to-image', {
       input: requestData,
       logs: true
     }) as { data: FalGenerationResponse }

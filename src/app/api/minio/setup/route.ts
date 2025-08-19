@@ -1,16 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from 'minio'
-
-// Configuration MinIO
-const minioClient = new Client({
-  endPoint: 'minio.trybetterads.com',
-  port: 443,
-  useSSL: true,
-  accessKey: process.env.MINIO_ACCESS_KEY!,
-  secretKey: process.env.MINIO_SECRET_KEY!,
-})
-
-const BUCKET_NAME = 'mini-prod-media'
+import { minioService } from '../../../_shared/services/minio'
 
 // Structure des dossiers selon le plan.md
 const REQUIRED_FOLDERS = [
@@ -23,16 +12,9 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Vérification de la configuration MinIO...')
 
-    // 1. Vérifier si le bucket existe
-    const bucketExists = await minioClient.bucketExists(BUCKET_NAME)
-    
-    if (!bucketExists) {
-      console.log(`Création du bucket ${BUCKET_NAME}...`)
-      await minioClient.makeBucket(BUCKET_NAME, 'us-east-1')
-      console.log(`Bucket ${BUCKET_NAME} créé avec succès`)
-    } else {
-      console.log(`Bucket ${BUCKET_NAME} existe déjà`)
-    }
+    // 1. S'assurer que le bucket existe
+    await minioService.ensureBucketExists()
+    console.log(`Bucket ${minioService.getBucketName()} vérifié`)
 
     // 2. Créer les dossiers de base (en uploadant un fichier .gitkeep)
     const gitkeepContent = Buffer.from('# Dossier géré par Better Ads\n')
@@ -40,23 +22,20 @@ export async function POST(request: NextRequest) {
     for (const folder of REQUIRED_FOLDERS) {
       const objectName = `${folder}.gitkeep`
       
-      try {
-        // Vérifier si le fichier existe déjà
-        await minioClient.statObject(BUCKET_NAME, objectName)
-        console.log(`Dossier ${folder} existe déjà`)
-      } catch (error) {
-        // Le fichier n'existe pas, on le crée
+      const exists = await minioService.fileExists(objectName)
+      if (!exists) {
         console.log(`Création du dossier ${folder}...`)
-        await minioClient.putObject(BUCKET_NAME, objectName, gitkeepContent, gitkeepContent.length, {
-          'Content-Type': 'text/plain',
-        })
+        await minioService.uploadFile(objectName, gitkeepContent, 'text/plain')
         console.log(`Dossier ${folder} créé`)
+      } else {
+        console.log(`Dossier ${folder} existe déjà`)
       }
     }
 
     // 3. Vérifier les permissions
     try {
-      const objects = await minioClient.listObjects(BUCKET_NAME, '', false)
+      const client = minioService.getClient()
+      const objects = await client.listObjects(minioService.getBucketName(), '', false)
       const objectsList = []
       
       for await (const obj of objects) {
@@ -67,10 +46,10 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Configuration MinIO vérifiée et mise à jour',
         details: {
-          bucketName: BUCKET_NAME,
+          bucketName: minioService.getBucketName(),
           bucketExists: true,
           folders: REQUIRED_FOLDERS,
-          objects: objectsList.slice(0, 10), // Limiter à 10 pour éviter une réponse trop lourde
+          objects: objectsList.slice(0, 10),
           totalObjects: objectsList.length
         }
       })
@@ -91,19 +70,21 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // API pour vérifier l'état de MinIO sans modifications
-    const bucketExists = await minioClient.bucketExists(BUCKET_NAME)
+    const client = minioService.getClient()
+    const bucketName = minioService.getBucketName()
+    const bucketExists = await client.bucketExists(bucketName)
     
     if (!bucketExists) {
       return NextResponse.json({
         success: false,
         message: 'Bucket principal manquant',
-        bucketName: BUCKET_NAME,
+        bucketName,
         bucketExists: false
       })
     }
 
     // Lister les objets pour vérifier la structure
-    const objects = await minioClient.listObjects(BUCKET_NAME, '', false)
+    const objects = await client.listObjects(bucketName, '', false)
     const objectsList: Array<{ name: string; size: number; lastModified: Date }> = []
     
     for await (const obj of objects) {
@@ -122,7 +103,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      bucketName: BUCKET_NAME,
+      bucketName: minioService.getBucketName(),
       bucketExists: true,
       folders: folderStatus,
       totalObjects: objectsList.length,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fal } from '@fal-ai/client'
 import { VideoGenerationRequest, VideoGenerationResponse, GeneratedVideoData } from '../../../../_shared/types/ai'
+import { withRetry, withTimeout, createApiError, validateRequiredFields } from '../../../../_shared/utils/api-helpers'
 
 // Configuration fal.ai
 fal.config({
@@ -9,31 +10,45 @@ fal.config({
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, imageUrl } = await request.json()
-
-    if (!prompt || !imageUrl) {
-      return NextResponse.json({ error: 'Prompt and image URL are required' }, { status: 400 })
+    const body = await request.json()
+    
+    // Validation des champs requis
+    const validationError = validateRequiredFields(body, ['prompt', 'imageUrl'])
+    if (validationError) {
+      return createApiError(validationError, undefined, 400, 'VALIDATION_ERROR')
     }
 
-    const response = await fal.subscribe('fal-ai/bytedance/seedance/v1/pro/image-to-video', {
-      input: {
-        prompt,
-        image_url: imageUrl,
-        resolution: '1080p',        // QUALITÉ MAX
-        duration: '12',             // DURÉE MAX
-        camera_fixed: false,
-        seed: -1
-      } as VideoGenerationRequest,
-      logs: true,
+    const { prompt, imageUrl } = body
+
+    // Génération vidéo avec retry et timeout
+    const response = await withRetry(async () => {
+      return withTimeout(async () => {
+        return await fal.subscribe('fal-ai/bytedance/seedance/v1/pro/image-to-video', {
+          input: {
+            prompt,
+            image_url: imageUrl,
+            resolution: '1080p',
+            duration: '12',
+            camera_fixed: false,
+            seed: -1
+          } as VideoGenerationRequest,
+          logs: true,
+        })
+      }, 120000) // 2 minutes timeout
+    }, {
+      maxRetries: 2,
+      baseDelay: 2000
     })
 
     const result = response.data as VideoGenerationResponse
     
     if (!result || !result.video || !result.video.url) {
-      return NextResponse.json({ 
-        error: 'Invalid response structure from video service',
-        details: 'Missing video.url in response'
-      }, { status: 500 })
+      return createApiError(
+        'Réponse invalide du service de génération vidéo',
+        'video.url manquant dans la réponse',
+        500,
+        'INVALID_RESPONSE'
+      )
     }
 
     const generatedVideo: GeneratedVideoData = {
@@ -48,11 +63,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, video: generatedVideo })
 
   } catch (error) {
-    
-    
-    return NextResponse.json({ 
-      error: 'Failed to generate video',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 })
+    return createApiError(
+      'Erreur lors de la génération de vidéo',
+      error,
+      500,
+      'VIDEO_GENERATION_ERROR'
+    )
   }
 }

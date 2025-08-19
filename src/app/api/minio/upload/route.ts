@@ -1,16 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Client } from 'minio'
-
-// Configuration MinIO
-const minioClient = new Client({
-  endPoint: 'minio.trybetterads.com',
-  port: 443,
-  useSSL: true,
-  accessKey: process.env.MINIO_ACCESS_KEY!,
-  secretKey: process.env.MINIO_SECRET_KEY!,
-})
-
-const BUCKET_NAME = 'mini-prod-media'
+import { minioService } from '../../../_shared/services/minio'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,13 +19,8 @@ export async function POST(request: NextRequest) {
     // Déterminer le content-type
     const contentType = file.type || (path.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg')
 
-    // Upload vers MinIO
-    await minioClient.putObject(BUCKET_NAME, path, buffer, buffer.length, {
-      'Content-Type': contentType,
-    })
-
-    // Construire l'URL publique
-    const publicUrl = `https://minio.trybetterads.com/${BUCKET_NAME}/${path}`
+    // Upload vers MinIO via service centralisé
+    const publicUrl = await minioService.uploadFile(path, buffer, contentType)
 
     console.log('Successfully uploaded to MinIO:', publicUrl)
 

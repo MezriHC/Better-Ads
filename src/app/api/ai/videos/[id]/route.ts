@@ -2,19 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/src/app/_shared/lib/auth'
 import { prisma } from '@/src/app/_shared/database/client'
-import { Client } from 'minio'
 import { getUserIdFromSession } from '@/src/app/_shared/types/api'
-
-// Configuration MinIO
-const minioClient = new Client({
-  endPoint: 'minio.trybetterads.com',
-  port: 443,
-  useSSL: true,
-  accessKey: process.env.MINIO_ACCESS_KEY!,
-  secretKey: process.env.MINIO_SECRET_KEY!,
-})
-
-const BUCKET_NAME = 'mini-prod-media'
+import { minioService } from '../../../../_shared/services/minio'
 
 export async function DELETE(
   request: NextRequest,
@@ -48,14 +37,18 @@ export async function DELETE(
     
     // Supprimer les fichiers de MinIO
     try {
-      if (videoUrl.includes(BUCKET_NAME)) {
-        const videoPath = videoUrl.split(`${BUCKET_NAME}/`)[1]
-        await minioClient.removeObject(BUCKET_NAME, videoPath)
+      const videoPath = minioService.extractObjectPath(videoUrl)
+      if (videoPath) {
+        await minioService.deleteFile(videoPath)
+        console.log('Fichier vidéo supprimé:', videoPath)
       }
       
-      if (thumbnailUrl && thumbnailUrl.includes(BUCKET_NAME)) {
-        const thumbnailPath = thumbnailUrl.split(`${BUCKET_NAME}/`)[1]
-        await minioClient.removeObject(BUCKET_NAME, thumbnailPath)
+      if (thumbnailUrl) {
+        const thumbnailPath = minioService.extractObjectPath(thumbnailUrl)
+        if (thumbnailPath) {
+          await minioService.deleteFile(thumbnailPath)
+          console.log('Fichier thumbnail supprimé:', thumbnailPath)
+        }
       }
     } catch (minioError) {
       console.error('Erreur suppression MinIO:', minioError)
