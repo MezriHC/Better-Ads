@@ -1,9 +1,0 @@
-services:
-  # Pas de services locaux - PostgreSQL et MinIO sont sur le VPS distant
-  
-volumes:
-  # Pas de volumes nécessaires - stockage distant
-
-networks:
-  betterads-network:
-    driver: bridge
