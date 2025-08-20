@@ -10,7 +10,13 @@ const REQUIRED_FOLDERS = [
 
 export async function POST(request: NextRequest) {
   try {
-        const objectsList: Array<{ name: string; size: number; lastModified: Date }> = []
+    await minioService.ensureBucketExists()
+    
+    const client = minioService.getClient()
+    const bucketName = minioService.getBucketName()
+    const objects = client.listObjects(bucketName, '', true)
+    
+    const objectsList: Array<{ name: string; size: number; lastModified: Date }> = []
     
     for await (const obj of objects) {
       objectsList.push({
@@ -36,5 +42,9 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-      }
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Erreur lors de la configuration MinIO' 
+    }, { status: 500 })
+  }
 }

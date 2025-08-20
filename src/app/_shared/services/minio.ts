@@ -51,7 +51,8 @@ export class MinIOService {
       { 'Content-Type': contentType }
     )
 
-    return `https://${process.env.MINIO_ENDPOINT}/${this.bucketName}/${objectName}`
+    // Utiliser l'URL proxy au lieu de l'IP publique
+    return this.generatePublicUrl(objectName)
   }
 
   async downloadFile(objectName: string): Promise<Buffer> {
@@ -79,7 +80,17 @@ export class MinIOService {
   }
 
   generateUrl(objectName: string): string {
-    return `https://${process.env.MINIO_ENDPOINT}/${this.bucketName}/${objectName}`
+    const protocol = process.env.MINIO_USE_SSL === 'true' ? 'https' : 'http'
+    const port = process.env.MINIO_PORT ? `:${process.env.MINIO_PORT}` : ''
+    return `${protocol}://${process.env.MINIO_ENDPOINT}${port}/${this.bucketName}/${objectName}`
+  }
+
+  generatePublicUrl(objectName: string): string {
+    if (process.env.MINIO_PUBLIC_URL) {
+      return `${process.env.MINIO_PUBLIC_URL}/${objectName}`
+    }
+    // Fallback vers l'ancienne méthode si pas de proxy configuré
+    return this.generateUrl(objectName)
   }
 
   extractObjectPath(url: string): string | null {

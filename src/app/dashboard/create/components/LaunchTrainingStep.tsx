@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from "react"
 import { useVideoGeneration } from "@/src/app/_shared/hooks/useVideoGeneration"
 import { useProjects } from "@/src/app/_shared/hooks/useProjects"
 import { GeneratedVideoData } from "@/src/app/_shared/types/ai"
+import { logger } from "@/src/app/_shared/utils/logger"
 
 interface GeneratedActor {
   id: string
@@ -31,7 +32,6 @@ export function LaunchTrainingStep({
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
   const [isPreparingVideo, setIsPreparingVideo] = useState(false)
   const [isConverting, setIsConverting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const { generateVideo, isGenerating, error } = useVideoGeneration()
   const { currentProject } = useProjects()
 
@@ -62,42 +62,6 @@ export function LaunchTrainingStep({
     }
   }
 
-  const handleSaveVideoAuto = async (video: any) => {
-    if (!currentProject || isSaving) return
-    
-    setIsSaving(true)
-    
-    try {
-
-      const response = await fetch('/api/ai/videos/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          videoUrl: video.url,
-          prompt: prompt,
-          avatarImageUrl: selectedImageUrl,
-          projectId: currentProject.id
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.details || 'Erreur lors de la sauvegarde')
-      }
-
-      const data = await response.json()
-      
-      // Notifier le parent avec les données sauvegardées (URL MinIO)
-      onVideoGenerated?.(data.video)
-      
-    } catch (error) {
-      alert(`Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   const handleGenerateVideo = useCallback(async () => {
     if (!selectedImageUrl || !prompt || isConverting || isGenerating) {
@@ -128,18 +92,21 @@ export function LaunchTrainingStep({
       return
     }
     
-    const video = await generateVideo(prompt, finalImageUrl)
+    // Génération d'avatar privé (génère et sauvegarde automatiquement)
+    const video = await generateVideo(prompt, finalImageUrl, 'private-avatar', currentProject?.id)
     
     if (video) {
       setGeneratedVideo(video)
-      // Sauvegarder automatiquement la vidéo
-      await handleSaveVideoAuto(video)
+      // Notifier le parent avec les données déjà sauvegardées
+      onVideoGenerated?.(video)
     }
-  }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating])
+  }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating, currentProject?.id])
 
   useEffect(() => {
     // Démarrer automatiquement la génération vidéo UNE SEULE FOIS
     if (selectedImageUrl && prompt && !hasStartedGeneration) {
+      logger.client.info(`Démarrage génération vidéo automatique`)
+      logger.video.generation.start('seedance', { prompt, imageUrl: selectedImageUrl })
       setHasStartedGeneration(true)
       setIsPreparingVideo(true)
       handleGenerateVideo()

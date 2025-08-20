@@ -203,3 +203,8 @@ video:-ms-fullscreen {
   object-fit: contain !important;
   background: black;
 }
+
+/* Utility pour les gradients radiaux */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}

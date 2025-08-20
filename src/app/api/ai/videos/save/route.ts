@@ -28,21 +28,17 @@ export async function POST(request: NextRequest) {
     const { videoUrl, prompt, avatarImageUrl, projectId } = body
     const sanitizedPrompt = sanitizeString(prompt, 500)
 
-    console.log('Starting video download and upload process...')
-
     // 1. Télécharger la vidéo depuis fal.ai avec retry
     const videoBuffer = await downloadWithRetry(videoUrl, {
       maxSize: 200 * 1024 * 1024, // 200MB max pour vidéos
       timeout: 90000, // 90 secondes
       retryOptions: { maxRetries: 3, baseDelay: 2000 }
     })
-    console.log('Video downloaded from fal.ai, size:', videoBuffer.byteLength)
 
     // 2. Upload vers MinIO
     const videoFileName = `video-${Date.now()}.mp4`
     
     minioVideoUrl = await uploadToMinIO(videoBuffer, videoFileName, userId, projectId)
-    console.log('Video uploaded to MinIO:', minioVideoUrl)
 
     // 3. Upload thumbnail vers MinIO si fourni
     if (avatarImageUrl) {
@@ -54,9 +50,7 @@ export async function POST(request: NextRequest) {
         })
         const thumbnailFileName = `thumbnail-${Date.now()}.jpg`
         minioThumbnailUrl = await uploadToMinIO(thumbnailBuffer, thumbnailFileName, userId, projectId)
-        console.log('Thumbnail uploaded to MinIO:', minioThumbnailUrl)
       } catch (thumbnailError) {
-        console.warn('Impossible de télécharger le thumbnail, continué sans:', thumbnailError)
       }
     }
 
@@ -98,7 +92,6 @@ export async function POST(request: NextRequest) {
       return { avatar, video }
     })
 
-    console.log('Video and avatar saved to database')
 
     return NextResponse.json({ 
       success: true, 
@@ -112,7 +105,6 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Erreur sauvegarde vidéo:', error)
     
     // En cas d'erreur, nettoyer les fichiers uploadés sur MinIO
     try {
@@ -125,7 +117,6 @@ export async function POST(request: NextRequest) {
         if (thumbnailPath) await minioService.deleteFile(thumbnailPath)
       }
     } catch (cleanupError) {
-      console.error('Erreur lors du nettoyage:', cleanupError)
     }
     
     return createApiError(

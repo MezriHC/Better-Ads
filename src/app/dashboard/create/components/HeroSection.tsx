@@ -2,46 +2,74 @@
 
 import { useState, useEffect } from "react"
 import { IconSparkles } from "@tabler/icons-react"
+import { VideoCardImproved } from "./VideoCardImproved"
+import { logger } from "@/src/app/_shared/utils/logger"
 
 interface HeroSectionProps {
-  currentProject: { name: string } | null
+  currentProject: { id: string; name: string } | null
   generatedVideos?: any[]
   onNewVideoAdded?: () => void
+  videoRefreshTrigger?: number
 }
 
-export function HeroSection({ currentProject, generatedVideos = [], onNewVideoAdded }: HeroSectionProps) {
+export function HeroSection({ currentProject, generatedVideos = [], onNewVideoAdded, videoRefreshTrigger }: HeroSectionProps) {
   const [persistedVideos, setPersistedVideos] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [lastFetchedProjectId, setLastFetchedProjectId] = useState<string | null>(null)
 
-  // Charger les vidéos depuis la base au montage
+  // Charger les vidéos depuis la base au montage et changement de projet
   useEffect(() => {
-    fetchUserVideos()
-  }, [])
+    if (currentProject && currentProject.id !== lastFetchedProjectId) {
+      fetchUserVideos()
+      setLastFetchedProjectId(currentProject.id)
+    }
+  }, [currentProject, lastFetchedProjectId])
 
-  // Recharger les vidéos quand une nouvelle est ajoutée
+  // Recharger les vidéos quand le trigger change (nouvelle vidéo générée)
   useEffect(() => {
-    if (onNewVideoAdded) {
+    if (currentProject && videoRefreshTrigger > 0) {
+      logger.client.info('Trigger de refresh détecté, rechargement des vidéos...')
       fetchUserVideos()
     }
-  }, [generatedVideos.length])
+  }, [videoRefreshTrigger, currentProject])
 
   const fetchUserVideos = async () => {
+    if (!currentProject) {
+      logger.client.warn('Pas de projet sélectionné pour charger les vidéos')
+      return
+    }
+    
     try {
       setIsLoading(true)
-      const response = await fetch('/api/ai/videos/user')
+      logger.client.info(`Chargement des vidéos pour le projet: ${currentProject.id}`)
+      
+      const response = await fetch(`/api/ai/videos/user?projectId=${currentProject.id}`)
       
       if (response.ok) {
         const data = await response.json()
         setPersistedVideos(data.videos || [])
+        logger.client.info(`${data.videos?.length || 0} vidéos chargées depuis la base`)
+      } else {
+        logger.client.error(`Erreur API vidéos: ${response.status}`)
       }
     } catch (error) {
+      logger.client.error('Erreur lors du chargement des vidéos', error)
     } finally {
       setIsLoading(false)
     }
   }
 
   // Combiner vidéos persistées + vidéos en mémoire temporaires
-  const allVideos = [...persistedVideos, ...generatedVideos.filter(v => v.isGenerating)]
+  // Garder les vidéos en génération même pendant les refresh
+  const allVideos = [
+    ...persistedVideos, 
+    ...generatedVideos.filter(v => v.isGenerating || v.id.startsWith('temp-'))
+  ]
+  
+  // Log pour debug
+  useEffect(() => {
+    logger.client.debug(`HeroSection - Vidéos totales: ${allVideos.length} (${persistedVideos.length} persistées + ${generatedVideos.filter(v => v.isGenerating || v.id.startsWith('temp-')).length} temporaires)`)
+  }, [allVideos.length, persistedVideos.length, generatedVideos.length])
   return (
     <div className="text-center pt-8 pb-8">
       {currentProject && (
@@ -53,38 +81,27 @@ export function HeroSection({ currentProject, generatedVideos = [], onNewVideoAd
       )}
       
       {allVideos.length > 0 ? (
-        // Afficher les vidéos générées
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-6">
-            Generated Content
-          </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        // Afficher les vidéos générées - Alignement à gauche professionnel
+        <div className="w-full max-w-7xl mx-auto px-4 space-y-6">
+          <div className="text-left">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground mb-2">
+              Generated Content
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {allVideos.length} video{allVideos.length > 1 ? 's' : ''} in your project
+            </p>
+          </div>
+          
+          {/* Grid responsive aligné à gauche */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-start">
             {allVideos.map((video, index) => (
-              <div key={index} className="relative aspect-[9/16] bg-muted rounded-lg overflow-hidden border border-border">
-                {video.isGenerating ? (
-                  // Pendant génération - juste l'image + loader
-                  <>
-                    <img
-                      src={video.thumbnailUrl}
-                      alt={video.prompt}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  </>
-                ) : (
-                  // Vidéo générée - lecteur vidéo
-                  <video
-                    src={video.url}
-                    poster={video.thumbnailUrl}
-                    controls
-                    className="w-full h-full object-cover"
-                  >
-                    Your browser does not support video.
-                  </video>
-                )}
-              </div>
+              <VideoCardImproved
+                key={index}
+                video={video}
+                onDelete={(videoId) => {
+                  // TODO: Implement delete functionality
+                }}
+              />
             ))}
           </div>
         </div>

@@ -80,4 +80,5 @@ export interface GeneratedVideoData {
   resolution: string
   prompt: string
   loading: boolean
+  type?: 'private-avatar' | 'generated-video'
 }

@@ -4,7 +4,7 @@ import { authOptions } from '@/src/app/_shared/lib/auth'
 import { prisma } from '@/src/app/_shared/database/client'
 import { getUserIdFromSession } from '@/src/app/_shared/types/api'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -13,10 +13,17 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    // Récupérer toutes les vidéos de l'utilisateur avec leurs avatars
+    const { searchParams } = new URL(request.url)
+    const projectId = searchParams.get('projectId')
+
+    if (!projectId) {
+      return NextResponse.json({ error: 'ProjectId requis' }, { status: 400 })
+    }
+
     const videos = await prisma.video.findMany({
       where: {
         userId: userId,
+        projectId: projectId,
         status: 'ready'
       },
       include: {
