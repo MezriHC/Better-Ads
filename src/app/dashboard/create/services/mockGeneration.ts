@@ -1,3 +1,4 @@
+
 // Services de génération mock ultra-minimalistes 
 // À remplacer par vraie logique plus tard
 

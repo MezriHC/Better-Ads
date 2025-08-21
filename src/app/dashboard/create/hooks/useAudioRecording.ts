@@ -1,28 +1,10 @@
-"use client"
 
-import { useState, useRef } from "react"
 
-export function useAudioRecording() {
-  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
-  const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingState, setRecordingState] = useState<"idle" | "ready" | "recording" | "completed">("idle")
-  const [recordingTime, setRecordingTime] = useState(0)
-  
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
-  }
 
-  const prepareRecording = () => {
-    setRecordingState("ready")
-  }
+
+
+
 
   const startRecording = async () => {
     try {
