@@ -50,8 +50,14 @@ export function DefineActorStep({
   // État pour stocker l'URL de l'image uploadée
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
   
+  // État pour stocker les données base64 de l'image uploadée  
+  const [uploadedImageBase64, setUploadedImageBase64] = useState<string | null>(null)
+  
   // État pour gérer le téléchargement avec feedback
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null)
+  
+  // État pour gérer l'upload en cours
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
@@ -61,14 +67,28 @@ export function DefineActorStep({
       // Remplacer l'image existante
       setUploadedImage(file)
       setUploadedImageUrl(null) // Reset l'URL pendant l'upload
+      setUploadedImageBase64(null) // Reset base64
+      setIsUploadingImage(true)
       
-      // TODO: Uploader l'image
+      // Convertir l'image en base64 pour utilisation directe avec fal.ai
       try {
-        // TODO: Réimplémenter l'upload d'image
-        const uploadResult = null
-        setUploadedImageUrl(null)
-      } catch {
-        // On garde l'image localement même si l'upload échoue
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            const base64String = event.target.result as string
+            setUploadedImageBase64(base64String)
+            setIsUploadingImage(false)
+            console.log('Image convertie en base64 avec succès')
+          }
+        }
+        reader.onerror = () => {
+          console.error('Erreur lors de la conversion en base64')
+          setIsUploadingImage(false)
+        }
+        reader.readAsDataURL(file)
+      } catch (error) {
+        console.warn('Erreur de conversion base64:', error)
+        setIsUploadingImage(false)
       }
     }
   }
@@ -76,6 +96,7 @@ export function DefineActorStep({
   const handleRemoveImage = () => {
     setUploadedImage(null)
     setUploadedImageUrl(null)
+    setUploadedImageBase64(null)
   }
 
   const createImageUrl = (file: File) => {
@@ -84,23 +105,48 @@ export function DefineActorStep({
 
   const handleSubmit = async () => {
     if (prompt.trim()) {
-      // Trouver l'image sélectionnée dans TOUS les messages (pas seulement le dernier)
+      const currentPrompt = prompt;
+      console.log('=== HANDLE SUBMIT ===');
+      console.log('Current prompt:', currentPrompt);
+      console.log('Uploaded image base64 exists:', !!uploadedImageBase64);
+      
       const selectedImage = chatMessages
         .flatMap(msg => msg.generatedImages || [])
-        .find(img => img.selected)?.url
+        .find(img => img.selected)?.url;
+        
+      console.log('Selected image URL:', selectedImage);
       
-      // Déterminer le mode : édition si une image est sélectionnée, génération sinon
-      const isEditMode = !!selectedImage
+      // Déterminer l'image de référence : uploaded image (base64 ou URL) ou selected image
+      const referenceImageData = uploadedImageBase64 || uploadedImageUrl || selectedImage;
       
-      // Sauvegarder le prompt avant de le vider
-      const currentPrompt = prompt
+      console.log('Reference image data:', referenceImageData ? 'EXISTS' : 'NULL');
       
+      // Vérifier s'il y a une image uploadée
+      const hasUploadedImage = !!uploadedImage;
+      
+      // Déterminer le mode : édition si une image de référence valide existe OU s'il y a une image uploadée
+      const isEditMode = !!referenceImageData || hasUploadedImage;
+      
+      console.log('Edit mode:', isEditMode);
+      
+      // Si image uploadée mais pas de données disponibles, afficher une erreur
+      if (hasUploadedImage && !uploadedImageBase64) {
+        alert('Image processing failed. Please try uploading again.');
+        return;
+      }
+      
+      const apiUrl = isEditMode ? '/api/image-generation/image-to-image' : '/api/image-generation/text-to-image';
+      const apiBody = isEditMode ? { prompt: currentPrompt, imageUrl: referenceImageData } : { prompt: currentPrompt };
+      
+      console.log('API URL:', apiUrl);
+      console.log('API Body:', apiBody);
+
       // Ajouter le nouveau message avec état de génération
       const newMessage: ChatMessage = {
         text: currentPrompt,
-        images: uploadedImage ? [uploadedImage] : [],
+        images: uploadedImage ? [uploadedImage] : [], // Images uploadées pour ce message
         timestamp: Date.now(),
-        selectedImage,
+        selectedImage: selectedImage, // Seulement les images générées sélectionnées
         isGenerating: true
       }
       
@@ -116,17 +162,29 @@ export function DefineActorStep({
         }
       }, 50)
       
-      // Vider les champs immédiatement
+      // Vider les champs immédiatement pour éviter les fuites de données
       setPrompt("")
       setUploadedImage(null)
       setUploadedImageUrl(null)
+      setUploadedImageBase64(null) // CRITIQUE: Vider aussi les données base64
       
       try {
-        // Génération d'images mock
-        const { mockImageGeneration } = await import('../services/mockGeneration')
-        const imageUrls = await mockImageGeneration(currentPrompt)
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(apiBody),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate image');
+        }
+
+        const result = await response.json();
+        const imageUrls = result.imageUrls; // Utiliser le tableau d'URLs de la réponse
         
-        const generatedImages: GeneratedImage[] = imageUrls.map((url, index) => ({
+        const generatedImages: GeneratedImage[] = imageUrls.map((url: string, index: number) => ({
           id: `img_${Date.now()}_${index}`,
           url,
           selected: false
@@ -151,26 +209,31 @@ export function DefineActorStep({
           }
         }, 100)
         
-      } catch {
-        // En cas d'erreur, mettre à jour le message
+                  }
+      catch (error) {
+        // En cas d'erreur, mettre à jour le message pour afficher l'échec
         setChatMessages(prev => 
           prev.map((msg, index) => 
             index === prev.length - 1 
-              ? { ...msg, isGenerating: false }
+              ? { ...msg, isGenerating: false, generatedImages: [], text: msg.text + "\n(Error: Image generation failed)" } // Ajoute un message d'erreur
               : msg
           )
         )
-        
-        // Optionnel: Afficher une notification d'erreur à l'utilisateur
       }
+
       
-      // Appeler l'API pour notifier le parent avec l'image sélectionnée ou uploadée
-      const finalImageUrl = selectedImage || uploadedImageUrl
-      onDefineActor(currentPrompt, finalImageUrl || undefined)
+      // Appeler l'API pour notifier le parent - utiliser les données au moment de la génération
+      onDefineActor(currentPrompt, referenceImageData || undefined)
     }
   }
 
   const handleImageSelect = (messageIndex: number, imageId: string) => {
+    // Si une image est uploadée, désactiver la sélection d'images générées
+    if (uploadedImageBase64) {
+      console.warn('Cannot select generated image when an uploaded image is active. Remove the uploaded image first.')
+      return
+    }
+    
     setChatMessages(prev => 
       prev.map((msg, index) => 
         msg.generatedImages
@@ -195,9 +258,7 @@ export function DefineActorStep({
     }
   }
 
-  const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference && 
-    // Si une image est uploadée, vérifier qu'elle est prête
-    (uploadedImage ? !!uploadedImageUrl : true)
+  const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference && !isUploadingImage
   
   // Vérifier s'il y a une image sélectionnée dans TOUS les messages
   const hasSelectedImage = chatMessages.some(msg => 
@@ -345,10 +406,12 @@ export function DefineActorStep({
                                 onClick={() => handleImageSelect(messageIndex, image.id)}
                                 onMouseEnter={() => setHoveredImageId(image.id)}
                                 onMouseLeave={() => setHoveredImageId(null)}
-                                className={`relative aspect-[9/16] rounded-lg overflow-hidden cursor-pointer transition-all border-2 ${
-                                  image.selected 
-                                    ? 'border-primary ring-2 ring-primary/20' 
-                                    : 'border-border hover:border-primary/50'
+                                className={`relative aspect-[9/16] rounded-lg overflow-hidden transition-all border-2 ${
+                                  uploadedImageBase64
+                                    ? 'cursor-not-allowed opacity-50 border-muted-foreground/30'
+                                    : image.selected 
+                                      ? 'cursor-pointer border-primary ring-2 ring-primary/20' 
+                                      : 'cursor-pointer border-border hover:border-primary/50'
                                 }`}
                               >
                                 <Image
@@ -395,6 +458,15 @@ export function DefineActorStep({
                                   <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
                                     <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                                       <IconCheck className="w-4 h-4 text-primary-foreground" />
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {/* Overlay d'information quand une image est uploadée */}
+                                {uploadedImageBase64 && (
+                                  <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                                    <div className="text-center p-2">
+                                      <p className="text-xs text-muted-foreground">Remove uploaded image to select</p>
                                     </div>
                                   </div>
                                 )}
@@ -463,14 +535,19 @@ export function DefineActorStep({
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Image Upload */}
-              <label className="cursor-pointer">
+              <label className="cursor-pointer" title={hasSelectedImage ? "Remove selected image to upload a new one" : "Upload reference image"}>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   className="sr-only"
+                  disabled={hasSelectedImage}
                 />
-                <div className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                  hasSelectedImage 
+                    ? 'bg-muted/50 cursor-not-allowed opacity-50' 
+                    : 'bg-muted hover:bg-accent cursor-pointer'
+                }`}>
                   <IconPhoto className="w-4 h-4 text-muted-foreground" />
                 </div>
               </label>
@@ -495,7 +572,7 @@ export function DefineActorStep({
                     <IconX className="w-2 h-2" />
                   </button>
                   {/* Upload indicator */}
-                  {isUploadingReference && (
+                  {isUploadingImage && (
                     <div className="absolute inset-0 bg-background/80 rounded-lg flex items-center justify-center">
                       <div className="w-3 h-3 border border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
@@ -520,7 +597,7 @@ export function DefineActorStep({
               fullWidth={false}
               size="md"
             >
-              {isGeneratingImages ? "Generating..." : "Generate"}
+              {isGeneratingImages ? "Generating..." : isUploadingImage ? "Uploading..." : "Generate"}
             </GradientButton>
           </div>
         </div>

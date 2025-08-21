@@ -20,6 +20,46 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'fal.media',
+      },
+      {
+        protocol: 'https',
+        hostname: 'v3.fal.media',
+      },
+      {
+        protocol: 'https',
+        hostname: 'tmpfiles.org',
+      },
+      {
+        protocol: 'http',
+        hostname: 'tmpfiles.org',
+      },
+      {
+        protocol: 'https',
+        hostname: '0x0.st',
+      },
+      {
+        protocol: 'https',
+        hostname: 'freeimage.host',
+      },
+      {
+        protocol: 'https',
+        hostname: 'iili.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'catbox.moe',
+      },
+      {
+        protocol: 'https',
+        hostname: 'files.catbox.moe',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pomf.lain.la',
+      },
     ],
     // Image configuration
     dangerouslyAllowSVG: false,
