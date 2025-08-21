@@ -43,9 +43,18 @@ interface CreateAvatarModalProps {
   onClose: () => void
   onAvatarCreated?: (avatar: CreatedAvatar) => void
   onVideoGenerated?: (video: any) => void
+  onAvatarGenerationStarted?: (avatarData: any) => void
+  onAvatarGenerationCompleted?: (avatar: any) => void
 }
 
-export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated, onVideoGenerated }: CreateAvatarModalProps) {
+export function CreateAvatarModal({ 
+  isOpen, 
+  onClose, 
+  onAvatarCreated, 
+  onVideoGenerated,
+  onAvatarGenerationStarted,
+  onAvatarGenerationCompleted 
+}: CreateAvatarModalProps) {
   const [step, setStep] = useState<AvatarStep>("get-started")
   const [method, setMethod] = useState<CreateMethod | null>(null)
   const [actorPrompt, setActorPrompt] = useState("")
@@ -191,20 +200,9 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated, onVideoGen
           {step === "select-actor" && (
             <SelectActorStep
               onNext={() => {
+                // Simplement passer à l'étape de génération
+                // Ne pas créer d'avatar ni fermer le modal ici
                 setStep("launch-training")
-                
-                // Create avatar immediately but don't close modal
-                const newAvatar = {
-                  id: Date.now().toString(),
-                  name: actorPrompt.slice(0, 30) + "...",
-                  imageUrl: selectedImageUrl || selectedActor?.imageUrl || "/ai-avatars/avatar-1.jpg",
-                  voice: null, // Pas de voix sélectionnée
-                  method,
-                  status: "training"
-                }
-                
-                onAvatarCreated?.(newAvatar)
-                // Modal stays open to show training progress
               }}
               selectedImageUrl={selectedImageUrl}
               method={method || "generate"}
@@ -223,6 +221,8 @@ export function CreateAvatarModal({ isOpen, onClose, onAvatarCreated, onVideoGen
                 // Le parent (ActorSelectorModal) se chargera de fermer la modal
                 onVideoGenerated?.(video)
               }}
+              onAvatarGenerationStarted={onAvatarGenerationStarted}
+              onAvatarGenerationCompleted={onAvatarGenerationCompleted}
             />
           )}
         </div>

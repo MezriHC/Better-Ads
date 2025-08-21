@@ -29,26 +29,8 @@ export function VideoCard({ video, onDelete }: VideoCardProps) {
     setIsLoading(true)
     
     try {
-      const response = await fetch('/api/minio/download', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          url: video.url,
-          filename: `video-${video.id}.mp4`
-        })
-      })
-
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `video-${video.id}.mp4`
-        link.click()
-        window.URL.revokeObjectURL(url)
-      }
+      // TODO: Réimplémenter le téléchargement de vidéo
+      console.log('TODO: Télécharger vidéo', video.id)
     } catch (error) {
     } finally {
       setIsLoading(false)

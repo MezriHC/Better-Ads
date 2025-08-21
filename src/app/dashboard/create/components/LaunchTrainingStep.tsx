@@ -3,9 +3,20 @@
 import Image from "next/image"
 import { IconMicrophone, IconDownload } from "@tabler/icons-react"
 import { useEffect, useState, useCallback } from "react"
-import { useVideoGeneration } from "@/src/app/_shared/hooks/useVideoGeneration"
+// TODO: Réimplémenter useAvatarGeneration
+interface Avatar {
+  id: string
+  title: string
+  videoUrl: string | null
+  posterUrl: string
+  status: 'processing' | 'ready' | 'failed'
+  userId: string
+  projectId: string
+  createdAt: string
+  updatedAt: string
+  metadata: unknown
+}
 import { useProjects } from "@/src/app/_shared/hooks/useProjects"
-import { GeneratedVideoData } from "@/src/app/_shared/types/ai"
 import { logger } from "@/src/app/_shared/utils/logger"
 
 interface GeneratedActor {
@@ -19,122 +30,68 @@ interface LaunchTrainingStepProps {
   selectedImageUrl?: string
   prompt?: string
   onVideoGenerated?: (video: any) => void
+  onAvatarGenerationStarted?: (avatarData: any) => void
+  onAvatarGenerationCompleted?: (avatar: any) => void
 }
 
 export function LaunchTrainingStep({ 
   actor, 
   selectedImageUrl,
   prompt,
-  onVideoGenerated
+  onVideoGenerated,
+  onAvatarGenerationStarted,
+  onAvatarGenerationCompleted
 }: LaunchTrainingStepProps) {
-  const [generatedVideo, setGeneratedVideo] = useState<GeneratedVideoData | null>(null)
+  const [generatedAvatar, setGeneratedAvatar] = useState<Avatar | null>(null)
   const [downloadingVideo, setDownloadingVideo] = useState(false)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
-  const [isPreparingVideo, setIsPreparingVideo] = useState(false)
-  const [isConverting, setIsConverting] = useState(false)
-  const { generateVideo, isGenerating, error } = useVideoGeneration()
+  const [currentAvatarId, setCurrentAvatarId] = useState<string | null>(null)
+  // TODO: Réimplémenter les hooks d'avatar
+  const isGenerating = false
+  const error = null
   const { currentProject } = useProjects()
 
-  const convertDataUrlToFalUrl = async (dataUrl: string): Promise<string | null> => {
-    try {
-      // Convertir Data URL en Blob
-      const response = await fetch(dataUrl)
-      const blob = await response.blob()
-      
-      // Créer un FormData pour envoyer à notre API d'upload
-      const formData = new FormData()
-      formData.append('image', blob, 'generated-image.jpg')
-      
-      // Utiliser notre API d'upload existante
-                const uploadResponse = await fetch('/api/ai/images/upload', {
-        method: 'POST',
-        body: formData
-      })
-      
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload image')
-      }
-      
-      const uploadData = await uploadResponse.json()
-      return uploadData.imageUrl
-    } catch {
-      return null
-    }
-  }
-
-
-  const handleGenerateVideo = useCallback(async () => {
-    if (!selectedImageUrl || !prompt || isConverting || isGenerating) {
+  const handleGenerateAvatar = useCallback(async () => {
+    if (!selectedImageUrl || !prompt || isGenerating || !currentProject?.id) {
       return
     }
 
-    let finalImageUrl = selectedImageUrl
+    // Déterminer la source (upload ou generate)
+    const source = selectedImageUrl.startsWith('data:') ? 'generate' : 'upload'
     
-    // Si c'est une Data URL, la convertir en URL fal.media
-    if (selectedImageUrl.startsWith('data:')) {
-      setIsConverting(true)
-      
-      try {
-        const convertedUrl = await convertDataUrlToFalUrl(selectedImageUrl)
-        
-        if (!convertedUrl) {
-          return
-        }
-        
-        finalImageUrl = convertedUrl
-      } finally {
-        setIsConverting(false)
-      }
-    }
-
-    // Vérifier que l'URL finale est valide
-    if (!finalImageUrl.includes('fal.media')) {
-      return
-    }
+    // TODO: Réimplémenter la génération d'avatar
+    const avatar = null
     
-    // Génération d'avatar privé (génère et sauvegarde automatiquement)
-    const video = await generateVideo(prompt, finalImageUrl, 'private-avatar', currentProject?.id)
-    
-    if (video) {
-      setGeneratedVideo(video)
-      // Notifier le parent avec les données déjà sauvegardées
-      onVideoGenerated?.(video)
-    }
-  }, [selectedImageUrl, prompt, generateVideo, isConverting, isGenerating, currentProject?.id])
+    // TODO: Gérer la génération d'avatar
+    console.log('TODO: Implémenter generateAvatar')
+  }, [selectedImageUrl, prompt, isGenerating, currentProject?.id, onVideoGenerated])
 
   useEffect(() => {
-    // Démarrer automatiquement la génération vidéo UNE SEULE FOIS
-    if (selectedImageUrl && prompt && !hasStartedGeneration) {
-      logger.client.info(`Démarrage génération vidéo automatique`)
-      logger.video.generation.start('seedance', { prompt, imageUrl: selectedImageUrl })
+    // Démarrer automatiquement la génération d'avatar UNE SEULE FOIS
+    if (selectedImageUrl && prompt && !hasStartedGeneration && currentProject?.id && !isGenerating) {
+      logger.client.info(`Démarrage génération avatar automatique`)
       setHasStartedGeneration(true)
-      setIsPreparingVideo(true)
-      handleGenerateVideo()
+      handleGenerateAvatar()
     }
-  }, [selectedImageUrl, prompt, hasStartedGeneration, handleGenerateVideo])
+  }, [selectedImageUrl, prompt, hasStartedGeneration, currentProject?.id, handleGenerateAvatar, isGenerating])
   
-  // Mettre à jour l'état preparing quand la génération démarre
+  // Nettoyer le polling quand le composant se démonte
   useEffect(() => {
-    if (isGenerating && isPreparingVideo) {
-      setIsPreparingVideo(false) // La vraie génération a commencé
+    return () => {
+      if (currentAvatarId) {
+        // TODO: Réimplémenter stopPolling
+      }
     }
-  }, [isGenerating, isPreparingVideo])
-  
-  // Réinitialiser l'état si une vidéo est générée
-  useEffect(() => {
-    if (generatedVideo) {
-      setIsPreparingVideo(false)
-    }
-  }, [generatedVideo])
+  }, [currentAvatarId])
 
   const handleDownloadVideo = async () => {
-    if (!generatedVideo) return
+    if (!generatedAvatar?.videoUrl) return
     
     setDownloadingVideo(true)
     
     try {
       // Récupérer la vidéo comme blob
-      const response = await fetch(generatedVideo.url)
+      const response = await fetch(generatedAvatar.videoUrl)
       const blob = await response.blob()
       
       // Créer un URL temporaire pour le blob
@@ -143,7 +100,7 @@ export function LaunchTrainingStep({
       // Créer et déclencher le téléchargement
       const link = document.createElement('a')
       link.href = url
-      link.download = `ai-avatar-video-${generatedVideo.id}.mp4`
+      link.download = `ai-avatar-video-${generatedAvatar.id}.mp4`
       link.click()
       
       // Nettoyer l'URL temporaire
@@ -152,7 +109,7 @@ export function LaunchTrainingStep({
     } catch {
       // En cas d'erreur, utiliser la méthode simple
       const link = document.createElement('a')
-      link.href = generatedVideo.url
+      link.href = generatedAvatar.videoUrl!
       link.target = '_blank'
       link.click()
     } finally {
@@ -164,13 +121,13 @@ export function LaunchTrainingStep({
 
   return (
     <div className="flex-1 p-8">
-      {generatedVideo ? (
-        /* UI une fois la vidéo générée - layout centré */
+      {generatedAvatar?.status === 'ready' && generatedAvatar.videoUrl ? (
+        /* UI une fois l'avatar généré - layout centré */
         <div className="flex flex-col items-center justify-center h-full">
           {/* Titre avec excitation ! */}
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-foreground mb-3">
-              🎉 Your video is ready!
+              🎉 Your avatar is ready!
             </h3>
             <p className="text-base text-muted-foreground">
               You can watch it below or find it in your library
@@ -181,10 +138,10 @@ export function LaunchTrainingStep({
           <div className="relative group mb-8">
             <div className="w-64 aspect-[9/16] rounded-xl overflow-hidden border-2 border-border relative">
               <video 
-                src={generatedVideo.url}
+                src={generatedAvatar.videoUrl}
                 controls
                 className="w-full h-full object-cover"
-                poster={selectedImageUrl}
+                poster={generatedAvatar.posterUrl}
               >
                 Votre navigateur ne supporte pas les vidéos.
               </video>
@@ -239,8 +196,8 @@ export function LaunchTrainingStep({
                   </div>
                 )}
                 
-                {/* Loading overlay when generating, preparing, or converting */}
-                {(isGenerating || isPreparingVideo || isConverting) && (
+                {/* Loading overlay when generating or processing */}
+                {(isGenerating || generatedAvatar?.status === 'processing') && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-sm">
                     <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
                   </div>
@@ -252,32 +209,36 @@ export function LaunchTrainingStep({
           {/* Status avec enthousiasme */}
           <div className="text-center">
             <h3 className="text-xl font-bold text-foreground mb-3">
-              {isGenerating ? "🎬 Generating..." : error ? "⚠️ Oops, an error!" : isConverting ? "🔄 Converting..." : isPreparingVideo ? "🚀 Preparing..." : "🎥 Ready to generate"}
+              {isGenerating ? "🎬 Starting generation..." : 
+               generatedAvatar?.status === 'processing' ? "🎨 Creating your avatar..." : 
+               generatedAvatar?.status === 'failed' ? "⚠️ Oops, an error!" : 
+               error ? "⚠️ Oops, an error!" : "🎥 Ready to generate"}
             </h3>
             
             <div className="text-base text-muted-foreground mb-6">
               {isGenerating ? (
-                <p>Creating your magical video! ✨</p>
+                <p>Preparing your avatar generation! ✨</p>
+              ) : generatedAvatar?.status === 'processing' ? (
+                <p>Creating your magical avatar video! This may take a few minutes...</p>
+              ) : generatedAvatar?.status === 'failed' ? (
+                <p className="text-red-500">Avatar generation failed. Please try again.</p>
               ) : error ? (
                 <p className="text-red-500">Error: {error}</p>
-              ) : isConverting ? (
-                <p>Converting your image for video generation...</p>
-              ) : isPreparingVideo ? (
-                <p>We&apos;re preparing something incredible for you...</p>
               ) : (
-                <p>Everything is ready to generate your video!</p>
+                <p>Everything is ready to generate your avatar!</p>
               )}
             </div>
 
             {/* Bouton retry si erreur */}
-            {error && (
+            {(error || generatedAvatar?.status === 'failed') && (
               <button
                 onClick={() => {
                   setHasStartedGeneration(false)
-                  setIsPreparingVideo(false)
-                  handleGenerateVideo()
+                  setGeneratedAvatar(null)
+                  setCurrentAvatarId(null)
+                  handleGenerateAvatar()
                 }}
-                disabled={isGenerating || isPreparingVideo || isConverting}
+                disabled={isGenerating || generatedAvatar?.status === 'processing'}
                 className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
               >
                 Try Again

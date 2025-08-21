@@ -36,6 +36,8 @@ interface ActorSelectorModalProps {
   onSelectExistingActor?: (actor: Avatar) => void
   selectedActorId?: string
   onVideoGenerated?: (video: any) => void
+  onAvatarGenerationStarted?: (avatarData: any) => void
+  onAvatarGenerationCompleted?: (avatar: any) => void
 }
 
 // Données simulées d'avatars
@@ -114,7 +116,16 @@ function FilterSelect({
   )
 }
 
-export function ActorSelectorModal({ isOpen, onClose, onSelectActor, onSelectExistingActor, selectedActorId, onVideoGenerated }: ActorSelectorModalProps) {
+export function ActorSelectorModal({ 
+  isOpen, 
+  onClose, 
+  onSelectActor, 
+  onSelectExistingActor, 
+  selectedActorId, 
+  onVideoGenerated,
+  onAvatarGenerationStarted,
+  onAvatarGenerationCompleted 
+}: ActorSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGender, setSelectedGender] = useState<"all" | "male" | "female">("all")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -373,8 +384,14 @@ export function ActorSelectorModal({ isOpen, onClose, onSelectActor, onSelectExi
         {/* Create Avatar Modal */}
         <CreateAvatarModal
           isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
+          onClose={() => {
+            // Fermer la modal de création d'avatar ET la modal de sélection d'acteur
+            setIsCreateModalOpen(false)
+            onClose() // Fermer aussi la modal parent
+          }}
           onAvatarCreated={handleAvatarCreated}
+          onAvatarGenerationStarted={onAvatarGenerationStarted}
+          onAvatarGenerationCompleted={onAvatarGenerationCompleted}
           onVideoGenerated={(video) => {
             // Fermer la modal de création d'avatar une fois la vidéo sauvegardée
             setIsCreateModalOpen(false)

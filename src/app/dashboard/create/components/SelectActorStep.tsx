@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
-import { useImageUpload } from "@/src/app/_shared/hooks/useImageUpload"
+// TODO: Réimplémenter useImageUpload
 import { GradientButton } from "./GradientButton"
 
 interface SelectActorStepProps {
@@ -24,15 +24,16 @@ export function SelectActorStep({
   const [prompt, setPrompt] = useState("")
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { uploadImage, isUploading, error: uploadError } = useImageUpload()
+  // TODO: Réimplémenter les hooks
+  const isUploading = false
+  const uploadError = null
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      const falUrl = await uploadImage(file)
-      if (falUrl) {
-        onImageUpload?.(falUrl)
-      }
+      // TODO: Réimplémenter l'upload
+      const uploadResult = null
+      console.log('TODO: Implémenter upload image')
     }
   }
 
@@ -42,10 +43,9 @@ export function SelectActorStep({
     
     const file = e.dataTransfer.files[0]
     if (file && file.type.startsWith('image/')) {
-      const falUrl = await uploadImage(file)
-      if (falUrl) {
-        onImageUpload?.(falUrl)
-      }
+      // TODO: Réimplémenter l'upload
+      const uploadResult = null
+      console.log('TODO: Implémenter upload image')
     }
   }
 

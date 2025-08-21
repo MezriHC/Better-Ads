@@ -52,7 +52,7 @@ export function VideoCardImproved({ video, onDelete }: VideoCardProps) {
         
         setVideoFormat({ width, height, ratio })
         logger.client.info(`Format vidéo détecté: ${width}x${height} (ratio: ${ratio})`)
-        logger.video.format.detected(video.url, width, height)
+        // TODO: Réimplémenter logger.video si nécessaire
       }
       testVideo.onerror = (error) => {
         logger.client.error(`Erreur détection format vidéo: ${video.id}`, error)
@@ -239,45 +239,50 @@ export function VideoCardImproved({ video, onDelete }: VideoCardProps) {
         </div>
       </div>
 
-      {/* Video Popup */}
+      {/* Video Popup avec z-index élevé pour passer par-dessus TOUT */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          {/* Backdrop avec z-index élevé */}
           <div 
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/90 backdrop-blur-md z-[9998]"
             onClick={() => setShowPopup(false)}
           />
           
-          {/* Modal content */}
-          <div className="relative w-full max-w-2xl mx-4">
-            <div className="p-[1px] rounded-2xl bg-gradient-to-b from-border/50 to-transparent">
-              <div className="bg-card border border-border/50 rounded-2xl overflow-hidden">
-                {/* Video player */}
-                <div className="aspect-video relative">
+          {/* Modal content avec z-index maximum */}
+          <div className="relative z-[10000] w-full max-w-4xl mx-4">
+            <div className="p-[1px] rounded-2xl bg-gradient-to-b from-primary/30 to-transparent">
+              <div className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-2xl">
+                {/* Video player avec aspect ratio dynamique */}
+                <div className={`relative ${videoFormat ? 
+                  videoFormat.width / videoFormat.height <= 0.8 ? 'aspect-[9/16] max-w-md mx-auto' :
+                  videoFormat.width / videoFormat.height >= 1.5 ? 'aspect-video' : 'aspect-[4/3]'
+                  : 'aspect-video'}`}>
                   <video
                     src={video.url}
                     controls
                     autoPlay
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-black rounded-t-2xl"
+                    style={{ maxHeight: '70vh' }}
                   >
                     Your browser does not support video.
                   </video>
                 </div>
                 
                 {/* Modal footer */}
-                <div className="p-4 border-t border-border/50">
+                <div className="p-4 border-t border-border/50 bg-card">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-foreground">{video.prompt}</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground truncate">{video.prompt}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
                         {new Date(video.createdAt).toLocaleDateString()} 
                         {video.projectName && ` • ${video.projectName}`}
+                        {videoFormat && ` • ${videoFormat.width}x${videoFormat.height}`}
                       </p>
                     </div>
                     <button
                       onClick={handleDownload}
                       disabled={isDownloading}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      className="ml-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex-shrink-0"
                     >
                       {isDownloading ? 'Downloading...' : 'Download'}
                     </button>
@@ -286,12 +291,12 @@ export function VideoCardImproved({ video, onDelete }: VideoCardProps) {
               </div>
             </div>
             
-            {/* Close button */}
+            {/* Close button avec z-index maximum */}
             <button
               onClick={() => setShowPopup(false)}
-              className="absolute -top-4 -right-4 w-10 h-10 bg-background border border-border rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+              className="absolute -top-4 -right-4 w-12 h-12 bg-background border-2 border-border rounded-full flex items-center justify-center hover:bg-muted transition-colors shadow-lg z-[10001]"
             >
-              <IconX className="w-5 h-5" />
+              <IconX className="w-6 h-6" />
             </button>
           </div>
         </div>

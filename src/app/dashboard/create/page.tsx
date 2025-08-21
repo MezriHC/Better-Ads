@@ -64,9 +64,7 @@ export default function CreatePage() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Generated content states
-  const [generatedVideos, setGeneratedVideos] = useState<any[]>([])
-  const [videoRefreshTrigger, setVideoRefreshTrigger] = useState(0)
+  // TODO: États de génération à réimplémenter
   const [isGenerating, setIsGenerating] = useState(false)
   
   // Voice generation states
@@ -227,76 +225,8 @@ export default function CreatePage() {
       return
     }
 
-    if (isGenerating) {
-      logger.client.warn('Génération déjà en cours, ignorée')
-      return
-    }
-
-    setIsGenerating(true)
-    logger.client.info('Début génération vidéo finale avec avatar + script')
-
-    // Créer une vidéo temporaire avec loader dans la liste
-    const tempVideo = {
-        id: `temp-${Date.now()}`,
-        url: selectedActor.imageUrl, // Image comme placeholder
-        thumbnailUrl: selectedActor.imageUrl,
-        prompt: script,
-        createdAt: new Date().toISOString(),
-        status: "processing" as const,
-        isGenerating: true,
-        projectName: currentProject.name
-      }
-
-    // Ajouter à la liste avec loader
-    setGeneratedVideos(prev => [tempVideo, ...prev])
-
-    try {
-      // Générer la vidéo finale (avec TTS + lip sync)
-      const response = await fetch('/api/ai/video/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: script,
-          imageUrl: selectedActor.imageUrl,
-          type: 'generated-video', // Vidéo finale, pas avatar
-          projectId: currentProject.id
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Erreur génération vidéo')
-      }
-
-      const data = await response.json()
-      
-      if (data.success) {
-        logger.client.info(`Vidéo finale générée: ${data.video.id}`)
-        
-        // Attendre un peu avant de supprimer la vidéo temporaire
-        // pour laisser le temps au refresh de se faire
-        setTimeout(() => {
-          setGeneratedVideos(prev => prev.filter(v => v.id !== tempVideo.id))
-        }, 1000)
-        
-        // Rafraîchir la liste depuis la base
-        setVideoRefreshTrigger(prev => prev + 1)
-        
-        // Reset le script
-        setScript("")
-      } else {
-        throw new Error(data.error || 'Erreur génération')
-      }
-
-    } catch (error) {
-      logger.client.error('Erreur génération vidéo finale:', error)
-      
-      // Supprimer la vidéo temporaire en cas d'erreur
-      setGeneratedVideos(prev => prev.filter(v => v.id !== tempVideo.id))
-      
-      alert(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
-    } finally {
-      setIsGenerating(false)
-    }
+    logger.client.info('TODO: Implémenter la génération vidéo')
+    alert('Génération vidéo - à implémenter')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -330,9 +260,6 @@ export default function CreatePage() {
           <div className="w-full py-8">
             <HeroSection 
             currentProject={currentProject} 
-            generatedVideos={generatedVideos}
-            onNewVideoAdded={() => setVideoRefreshTrigger(prev => prev + 1)}
-            videoRefreshTrigger={videoRefreshTrigger}
           />
           </div>
         </div>
@@ -476,27 +403,10 @@ export default function CreatePage() {
         isOpen={isActorModalOpen}
         onClose={() => setIsActorModalOpen(false)}
         onSelectActor={(actor) => {
-          // Empêcher les générations multiples
-          if (isGenerating) {
-            logger.client.warn('Génération déjà en cours, ignorée')
-            return
-          }
-          
-          setIsGenerating(true)
+          // Simplement sélectionner l'avatar sans générer de vidéo
           setSelectedActor(actor)
-          logger.client.info(`Début génération vidéo avec avatar: ${actor.id}`)
-          
-          // Ajouter une seule vidéo en cours de génération
-          const generatingVideo = {
-            id: `gen-${Date.now()}`,
-            url: null,
-            thumbnailUrl: actor.imageUrl,
-            isGenerating: true,
-            prompt: `Génération en cours...`,
-            createdAt: new Date().toISOString(),
-            avatarId: actor.id
-          }
-          setGeneratedVideos(prev => [...prev, generatingVideo])
+          setIsActorModalOpen(false)
+          logger.client.info(`Avatar sélectionné: ${actor.id}`)
         }}
         onSelectExistingActor={(actor) => {
           // Pour les avatars existants - fermer la modal
@@ -504,14 +414,45 @@ export default function CreatePage() {
           setIsActorModalOpen(false)
         }}
         selectedActorId={selectedActor?.id}
+        onAvatarGenerationStarted={(avatarData) => {
+          // Ajouter un loader d'avatar en cours de génération
+          logger.client.info(`Début génération avatar: ${avatarData.id}`)
+          const tempAvatar = {
+            id: avatarData.id,
+            title: avatarData.title || "Avatar en cours...",
+            posterUrl: avatarData.imageUrl,
+            videoUrl: null,
+            status: "processing" as const,
+            isGenerating: true,
+            createdAt: new Date().toISOString(),
+            projectName: currentProject?.name || "Unknown"
+          }
+          // TODO: Réimplémenter la gestion des avatars
+        }}
+        onAvatarGenerationCompleted={(avatar) => {
+          // Supprimer le loader et sélectionner l'avatar généré
+          logger.client.info(`Avatar généré avec succès: ${avatar.id}`)
+          // TODO: Réimplémenter la gestion des avatars
+          setSelectedActor({
+            id: avatar.id,
+            name: avatar.title,
+            category: "Generated",
+            description: "Custom generated avatar",
+            tags: ["Generated"],
+            imageUrl: avatar.posterUrl,
+            type: "video"
+          })
+          // Rafraîchir la liste des avatars du projet
+          // TODO: Réimplémenter le refresh des vidéos
+        }}
         onVideoGenerated={(video) => {
           logger.client.info(`Vidéo générée avec succès: ${video?.id}`)
           // Réinitialiser le flag de génération
           setIsGenerating(false)
           // Déclencher le refresh des vidéos depuis la base
-          setVideoRefreshTrigger(prev => prev + 1)
+          // TODO: Réimplémenter le refresh des vidéos
           // Supprimer les vidéos temporaires en cours
-          setGeneratedVideos(prev => prev.filter(v => !v.isGenerating))
+          // TODO: Réimplémenter la gestion des vidéos
           // Fermer la modal d'avatars après génération
           setIsActorModalOpen(false)
         }}

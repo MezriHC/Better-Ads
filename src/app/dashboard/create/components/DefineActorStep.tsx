@@ -3,9 +3,9 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload } from "@tabler/icons-react"
-import { useImageGeneration } from "@/src/app/_shared/hooks/useImageGeneration"
-import { useImageUpload } from "@/src/app/_shared/hooks/useImageUpload"
-import { GeneratedImageData } from "@/src/app/_shared/types/ai"
+// TODO: Réimplémenter les hooks de génération
+// import { useImageGeneration } from "@/src/app/_shared/hooks/useImageGeneration"
+// import { useImageUpload } from "@/src/app/_shared/hooks/useImageUpload"
 import { GradientButton } from "./GradientButton"
 
 interface DefineActorStepProps {
@@ -13,8 +13,13 @@ interface DefineActorStepProps {
   onNext: (imageUrl?: string) => void
 }
 
-// Utiliser le type depuis fal.ts
-type GeneratedImage = GeneratedImageData
+// TODO: Réimplémenter les types de génération
+interface GeneratedImage {
+  id: string
+  url: string
+  selected: boolean
+  loading?: boolean
+}
 
 interface ChatMessage {
   text: string
@@ -36,9 +41,11 @@ export function DefineActorStep({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   
-  // Hooks pour la génération et l'upload d'images
-  const { generateImages, isGenerating: isGeneratingImages, error: generationError } = useImageGeneration()
-  const { uploadImage, isUploading: isUploadingReference, error: uploadError } = useImageUpload()
+  // TODO: Réimplémenter les hooks de génération
+  const isGeneratingImages = false
+  const isUploadingReference = false
+  const generationError = null
+  const uploadError = null
   
   // État pour stocker l'URL de l'image uploadée
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
@@ -55,10 +62,11 @@ export function DefineActorStep({
       setUploadedImage(file)
       setUploadedImageUrl(null) // Reset l'URL pendant l'upload
       
-      // Uploader vers fal.ai en arrière-plan
+      // TODO: Uploader l'image
       try {
-        const uploadedUrl = await uploadImage(file)
-        setUploadedImageUrl(uploadedUrl)
+        // TODO: Réimplémenter l'upload d'image
+        const uploadResult = null
+        setUploadedImageUrl(null)
       } catch {
         // On garde l'image localement même si l'upload échoue
       }
@@ -114,23 +122,18 @@ export function DefineActorStep({
       setUploadedImageUrl(null)
       
       try {
-        // Logique de sélection du modèle :
-        // 1. Si image sélectionnée -> Mode édition (FLUX Kontext Editing Max)
-        // 2. Si image uploadée -> Mode édition avec image uploadée comme référence
-        // 3. Sinon -> Mode génération pure (FLUX Kontext Max)
+        // TODO: Logique de génération d'image :
+        // 1. Si image sélectionnée -> Mode édition
+        // 2. Si image uploadée -> Mode édition avec référence
+        // 3. Sinon -> Mode génération pure
         
-        let generatedImages: GeneratedImageData[] = []
+        let generatedImages: GeneratedImage[] = []
         
-        if (isEditMode && selectedImage) {
-          // Mode édition : image sélectionnée depuis les générations précédentes
-          generatedImages = await generateImages(currentPrompt, selectedImage)
-        } else if (uploadedImageUrl) {
-          // Mode édition : utiliser l'image uploadée comme référence
-          generatedImages = await generateImages(currentPrompt, uploadedImageUrl)
-        } else {
-          // Mode génération pure : aucune image de référence
-          generatedImages = await generateImages(currentPrompt)
-        }
+        // TODO: Appel à l'API de génération d'images
+        const referenceImageUrl = selectedImage || uploadedImageUrl;
+        
+        // TODO: Réimplémenter la génération d'image
+        generatedImages = []
         
         // Mettre à jour le message avec les images générées
         setChatMessages(prev => 
@@ -196,7 +199,7 @@ export function DefineActorStep({
   }
 
   const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference && 
-    // Si une image est uploadée, s'assurer qu'elle a été uploadée vers fal.ai
+    // Si une image est uploadée, vérifier qu'elle est prête
     (uploadedImage ? !!uploadedImageUrl : true)
   
   // Vérifier s'il y a une image sélectionnée dans TOUS les messages

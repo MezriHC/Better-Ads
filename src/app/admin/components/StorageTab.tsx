@@ -2,16 +2,11 @@
 
 export default function StorageTab() {
   return (
-    <div className="h-full bg-background">
-      <iframe
-        src="https://minio.trybetterads.com"
-        className="w-full h-full border-0"
-        title="Console MinIO"
-        style={{ 
-          background: 'white',
-          colorScheme: 'light'
-        }}
-      />
+    <div className="h-full bg-background flex items-center justify-center">
+      <div className="text-center">
+        <h2 className="text-xl font-semibold text-foreground mb-2">Storage</h2>
+        <p className="text-muted-foreground">TODO: Réimplémenter l'interface de stockage</p>
+      </div>
     </div>
   )
 }
