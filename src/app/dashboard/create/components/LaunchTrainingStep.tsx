@@ -56,15 +56,29 @@ export function LaunchTrainingStep({
       return
     }
 
-    // Déterminer la source (upload ou generate)
-    const source = selectedImageUrl.startsWith('data:') ? 'generate' : 'upload'
-    
-    // TODO: Réimplémenter la génération d'avatar
-    const avatar = null
-    
-    // TODO: Gérer la génération d'avatar
-    console.log('TODO: Implémenter generateAvatar')
-  }, [selectedImageUrl, prompt, isGenerating, currentProject?.id, onVideoGenerated])
+    try {
+      const { mockAvatarGeneration } = await import('../services/mockGeneration')
+      const result = await mockAvatarGeneration(prompt, selectedImageUrl)
+      
+      const avatar: Avatar = {
+        id: result.id,
+        title: result.title,
+        videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_360x240_1mb.mp4',
+        posterUrl: result.imageUrl,
+        status: 'ready',
+        userId: 'current-user',
+        projectId: currentProject.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        metadata: {}
+      }
+      
+      setGeneratedAvatar(avatar)
+      onAvatarGenerationCompleted?.(avatar)
+    } catch (error) {
+      logger.client.error('Erreur génération avatar:', error)
+    }
+  }, [selectedImageUrl, prompt, isGenerating, currentProject?.id, onAvatarGenerationCompleted])
 
   useEffect(() => {
     // Démarrer automatiquement la génération d'avatar UNE SEULE FOIS

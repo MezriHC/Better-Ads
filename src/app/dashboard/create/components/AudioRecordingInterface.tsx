@@ -41,7 +41,7 @@ export function AudioRecordingInterface({
   if (recordedBlob || audioFile) {
     // Recorded/Uploaded Audio - Compact
     return (
-      <div className="w-full h-32 flex items-center gap-4 p-4 bg-muted border border-border rounded-xl">
+      <div className="w-full h-32 flex items-center gap-4 p-4 bg-muted border border-border rounded-lg">
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
           <IconMicrophone className="w-5 h-5 text-primary" />
         </div>
@@ -85,7 +85,7 @@ export function AudioRecordingInterface({
   if (isRecording) {
     // Recording in Progress - Compact
     return (
-      <div className="w-full h-32 flex items-center gap-4 p-4 border-2 border-primary rounded-xl bg-primary/5">
+      <div className="w-full h-32 flex items-center gap-4 p-4 border-2 border-primary rounded-lg bg-primary/5">
         <div className="relative">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
             <IconMicrophone className="w-5 h-5 text-primary" />
@@ -110,7 +110,7 @@ export function AudioRecordingInterface({
   if (recordingState === "ready") {
     // Ready to Record - Compact
     return (
-      <div className="w-full h-32 flex items-center gap-4 p-4 border-2 border-primary rounded-xl bg-primary/5">
+      <div className="w-full h-32 flex items-center gap-4 p-4 border-2 border-primary rounded-lg bg-primary/5">
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
           <IconMicrophone className="w-5 h-5 text-primary" />
         </div>
@@ -140,9 +140,9 @@ export function AudioRecordingInterface({
   return (
     <button
       onClick={onPrepareRecording}
-      className="w-full h-32 p-4 bg-background border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group cursor-pointer flex flex-col items-center justify-center gap-3"
+      className="w-full h-32 p-4 bg-background border border-border rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all group cursor-pointer flex flex-col items-center justify-center gap-3"
     >
-      <div className="w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-all">
+      <div className="w-12 h-12 rounded-lg bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-all">
         <IconMicrophone className="w-6 h-6 text-primary" />
       </div>
       <div className="text-center">

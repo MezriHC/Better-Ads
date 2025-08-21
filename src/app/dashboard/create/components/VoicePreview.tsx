@@ -51,7 +51,7 @@ export function VoicePreview({
   return (
     <div>
       {/* Voice Preview - Default component */}
-      <div className="flex items-center gap-3 p-4 bg-muted border border-border rounded-xl">
+      <div className="flex items-center gap-3 p-4 bg-muted border border-border rounded-lg">
         {/* Avatar de l'acteur/voix */}
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent flex items-center justify-center">
           {selectedActor ? (

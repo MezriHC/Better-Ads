@@ -122,18 +122,15 @@ export function DefineActorStep({
       setUploadedImageUrl(null)
       
       try {
-        // TODO: Logique de génération d'image :
-        // 1. Si image sélectionnée -> Mode édition
-        // 2. Si image uploadée -> Mode édition avec référence
-        // 3. Sinon -> Mode génération pure
+        // Génération d'images mock
+        const { mockImageGeneration } = await import('../services/mockGeneration')
+        const imageUrls = await mockImageGeneration(currentPrompt)
         
-        let generatedImages: GeneratedImage[] = []
-        
-        // TODO: Appel à l'API de génération d'images
-        const referenceImageUrl = selectedImage || uploadedImageUrl;
-        
-        // TODO: Réimplémenter la génération d'image
-        generatedImages = []
+        const generatedImages: GeneratedImage[] = imageUrls.map((url, index) => ({
+          id: `img_${Date.now()}_${index}`,
+          url,
+          selected: false
+        }))
         
         // Mettre à jour le message avec les images générées
         setChatMessages(prev => 

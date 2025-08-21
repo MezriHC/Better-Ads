@@ -4,19 +4,10 @@ import { useState, useRef, useEffect } from "react"
 import { IconUsers, IconChevronDown, IconVideo, IconPhotoVideo, IconMicrophone, IconPlayerPlay, IconPlayerPause, IconRefresh, IconTrash, IconHeadphones, IconX, IconSettings, IconSparkles } from "@tabler/icons-react"
 import { ActorSelectorModal } from "./components/ActorSelectorModal"
 import { CreatePageGuard } from "./components/CreatePageGuard"
-import { CreationTypeDropdown } from "./components/CreationTypeDropdown"
-import { VoicePreview } from "./components/VoicePreview"
-import { GenerateButton } from "./components/GenerateButton"
-import { VideoFormatSelector } from "./components/VideoFormatSelector"
-import { SpeechModeSelector } from "./components/SpeechModeSelector"
-import { ActorSelection } from "./components/ActorSelection"
+import { CreationPanel } from "./components/CreationPanel"
 import { VoiceSelectionModal } from "./components/VoiceSelectionModal"
 import { AudioSettingsDrawer } from "./components/AudioSettingsDrawer"
-import { AudioRecordingInterface } from "./components/AudioRecordingInterface"
 import { HeroSection } from "./components/HeroSection"
-import { CharacterCount } from "./components/CharacterCount"
-import { ScriptInput } from "./components/ScriptInput"
-import { BottomControls } from "./components/BottomControls"
 import { useProjects } from "@/src/app/_shared/hooks/useProjects"
 import { useAudioRecording } from "./hooks/useAudioRecording"
 import { useVoiceGeneration } from "./hooks/useVoiceGeneration"
@@ -179,19 +170,19 @@ export default function CreatePage() {
 
   // Voice generation functions
   const generateVoice = async () => {
-    // Check if we have the required input based on speech mode
     if (speechMode === "text-to-speech" && !script.trim()) return
     if (speechMode === "speech-to-speech" && !audioFile) return
     
     setIsGeneratingVoice(true)
     
-    // Simulate voice generation (replace with real API call)
-    setTimeout(() => {
-      const dummyBlob = new Blob(['dummy audio'], { type: 'audio/wav' })
-      setGeneratedVoiceBlob(dummyBlob)
+    try {
+      const { mockAudioGeneration } = await import('./services/mockGeneration')
+      const blob = await mockAudioGeneration(script, selectedVoice.id)
+      setGeneratedVoiceBlob(blob)
       setIsVoiceGenerated(true)
+    } finally {
       setIsGeneratingVoice(false)
-    }, 2000)
+    }
   }
 
   const playGeneratedVoice = () => {
@@ -224,8 +215,17 @@ export default function CreatePage() {
       return
     }
 
-    logger.client.info('TODO: Implémenter la génération vidéo')
-    alert('Génération vidéo - à implémenter')
+    setIsGenerating(true)
+    try {
+      const { mockVideoGeneration } = await import('./services/mockGeneration')
+      const result = await mockVideoGeneration(script, selectedActor.id, selectedVoice.id)
+      logger.client.info('Vidéo générée:', result)
+      alert(`Vidéo générée: ${result.id}`)
+    } catch (error) {
+      logger.client.error('Erreur génération:', error)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -238,20 +238,26 @@ export default function CreatePage() {
   return (
     <CreatePageGuard>
       <div className="h-full flex flex-col relative">
-        {/* Background gradients subtils - Position absolue pour ignorer le padding */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-          {/* Gradient central diffus */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] bg-gradient-radial from-primary/3 via-primary/1 to-transparent blur-3xl" />
+        {/* Background gradients - Déborde du padding du layout */}
+        <div className="absolute -inset-8 overflow-hidden pointer-events-none z-0">
+          {/* Gradient de bas en haut principal - plus subtil et descendu */}
+          <div className="absolute bottom-0 left-0 right-0 h-[70vh] bg-gradient-to-t from-primary/12 via-primary/5 via-primary/2 to-transparent"></div>
           
-          {/* Gradient subtil en bas pour l'interface */}
-          <div className="absolute bottom-0 left-0 right-0 h-[500px] bg-gradient-to-t from-primary/2 via-primary/1 to-transparent" />
+          {/* Gradient circulaire central - plus bas et plus doux */}
+          <div 
+            className="absolute top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full blur-3xl opacity-25"
+            style={{
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.08) 0%, hsl(var(--primary) / 0.04) 40%, transparent 70%)'
+            }}
+          ></div>
           
-          {/* Gradient latéraux très subtils - pleine largeur */}
-          <div className="absolute top-0 left-0 w-[400px] h-full bg-gradient-to-r from-secondary/2 to-transparent" />
-          <div className="absolute top-0 right-0 w-[400px] h-full bg-gradient-to-l from-secondary/2 to-transparent" />
+          {/* Gradient diagonaux plus subtils */}
+          <div className="absolute top-0 right-0 w-[40vw] h-[40vh] bg-gradient-to-bl from-secondary/8 via-secondary/3 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-[35vw] h-[35vh] bg-gradient-to-tr from-accent/6 via-accent/2 to-transparent"></div>
           
-          {/* Gradient supérieur subtil */}
-          <div className="absolute top-0 left-0 right-0 h-[300px] bg-gradient-to-b from-accent/1 to-transparent" />
+          {/* Vignette douce */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background/10 via-transparent to-background/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-background/5 via-transparent to-background/15"></div>
         </div>
 
         {/* Hero Section centré avec scroll */}
@@ -277,34 +283,39 @@ export default function CreatePage() {
                 {/* Main Creation Section avec gradient border effect */}
                 <div className="p-[1px] rounded-2xl bg-gradient-to-b from-border/50 via-primary/10 to-border/30 w-full max-w-4xl transition-all duration-400 ease-in-out">
                   <div className="bg-card/95 backdrop-blur-sm border-0 rounded-2xl p-4 shadow-xl shadow-primary/5">
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                {/* Creation Type Dropdown - Compact */}
-                <CreationTypeDropdown
+                    <CreationPanel
                   selectedType={selectedType}
-                  onTypeChange={setSelectedType}
-                  creationTypes={creationTypes}
-                  isOpen={isDropdownOpen}
-                  onToggleOpen={() => setIsDropdownOpen(!isDropdownOpen)}
-                  onCloseAudioSettings={() => setIsAudioSettingsOpen(false)}
-                />
-
-                {/* Character Count - Only for text mode */}
-                {!(selectedType === "talking-actor" && speechMode === "speech-to-speech") && (
-                  <CharacterCount count={script.length} maxCount={1500} />
-                )}
-              </div>
-
-              {/* Script Input or Audio Recording - Container avec hauteur fixe */}
-              <div className="h-32">
-              {selectedType === "talking-actor" && speechMode === "speech-to-speech" ? (
-                <AudioRecordingInterface
-                  recordedBlob={recordedBlob}
+                  script={script}
+                  speechMode={speechMode}
+                  selectedVideoFormat={selectedVideoFormat}
+                  selectedActor={selectedActor}
+                  selectedVoice={selectedVoice}
+                  isDropdownOpen={isDropdownOpen}
+                  isSpeechDropdownOpen={isSpeechDropdownOpen}
+                  isVideoFormatDropdownOpen={isVideoFormatDropdownOpen}
                   audioFile={audioFile}
+                  recordedBlob={recordedBlob}
                   isRecording={isRecording}
                   isPlaying={isPlaying}
                   recordingState={recordingState}
                   recordingTime={recordingTime}
+                  isVoiceGenerated={isVoiceGenerated}
+                  isGeneratingVoice={isGeneratingVoice}
+                  isPlayingVoice={isPlayingVoice}
+                  creationTypes={creationTypes}
+                  speechModes={speechModes}
+                  videoFormats={videoFormats}
+                  onTypeChange={setSelectedType}
+                  onScriptChange={setScript}
+                  onKeyDown={handleKeyDown}
+                  onToggleDropdown={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onToggleSpeechDropdown={() => setIsSpeechDropdownOpen(!isSpeechDropdownOpen)}
+                  onToggleVideoFormatDropdown={() => setIsVideoFormatDropdownOpen(!isVideoFormatDropdownOpen)}
+                  onVideoFormatChange={setSelectedVideoFormat}
+                  onSpeechModeChange={setSpeechMode}
+                  onOpenActorModal={() => setIsActorModalOpen(true)}
+                  onSubmit={handleSubmit}
+                  onCloseAudioSettings={() => setIsAudioSettingsOpen(false)}
                   onStartRecording={startRecording}
                   onStopRecording={stopRecording}
                   onPlayRecording={playRecording}
@@ -318,56 +329,12 @@ export default function CreatePage() {
                   }}
                   onCancelRecording={() => setRecordingState("idle")}
                   formatTime={formatTime}
-                />
-              ) : (
-                /* Text Input */
-                <ScriptInput
-                  value={script}
-                  onChange={setScript}
-                  onKeyDown={handleKeyDown}
-                  placeholder={getPlaceholder()}
-                />
-              )}
-              </div>
-
-              {/* Voice Preview - Always visible for Talking Actor */}
-              {selectedType === "talking-actor" && (
-                <VoicePreview
-                  selectedVoice={selectedVoice}
-                  selectedActor={selectedActor}
-                  isVoiceGenerated={isVoiceGenerated}
-                  isGeneratingVoice={isGeneratingVoice}
-                  isPlayingVoice={isPlayingVoice}
-                  speechMode={speechMode}
-                  script={script}
-                  audioFile={audioFile}
                   onGenerateVoice={generateVoice}
-                  onPlayPause={isPlayingVoice ? pauseGeneratedVoice : playGeneratedVoice}
+                  onPlayPauseVoice={isPlayingVoice ? pauseGeneratedVoice : playGeneratedVoice}
                   onRegenerateVoice={regenerateVoice}
                   onToggleAudioSettings={() => setIsAudioSettingsOpen(!isAudioSettingsOpen)}
+                  getPlaceholder={getPlaceholder}
                 />
-              )}
-
-              {/* Bottom Controls */}
-              <BottomControls
-              selectedType={selectedType}
-              speechMode={speechMode}
-              selectedVideoFormat={selectedVideoFormat}
-              selectedActor={selectedActor}
-              script={script}
-              audioFile={audioFile}
-              speechModes={speechModes}
-              videoFormats={videoFormats}
-              isVideoFormatDropdownOpen={isVideoFormatDropdownOpen}
-              isSpeechDropdownOpen={isSpeechDropdownOpen}
-              onVideoFormatChange={setSelectedVideoFormat}
-              onSpeechModeChange={setSpeechMode}
-              onToggleVideoFormatDropdown={() => setIsVideoFormatDropdownOpen(!isVideoFormatDropdownOpen)}
-              onToggleSpeechDropdown={() => setIsSpeechDropdownOpen(!isSpeechDropdownOpen)}
-              onOpenActorModal={() => setIsActorModalOpen(true)}
-              onSubmit={handleSubmit}
-              />
-            </div>
                   </div>
                 </div>
                 
