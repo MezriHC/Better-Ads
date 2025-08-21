@@ -8,6 +8,9 @@ import { CreationPanel } from "./components/CreationPanel"
 import { VoiceSelectionModal } from "./components/VoiceSelectionModal"
 import { AudioSettingsDrawer } from "./components/AudioSettingsDrawer"
 import { HeroSection } from "./components/HeroSection"
+import { VideoShowcase } from "./components/VideoShowcase"
+import { VideoModal } from "./components/VideoModal"
+import type { VideoData } from "./components/VideoCard"
 import { useProjects } from "@/src/app/_shared/hooks/useProjects"
 import { useAudioRecording } from "./hooks/useAudioRecording"
 import { useVoiceGeneration } from "./hooks/useVoiceGeneration"
@@ -73,6 +76,9 @@ export default function CreatePage() {
     similarity: 0.75,
     styleExaggeration: 0.0
   })
+  
+  // Video modal state
+  const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null)
   
 
   const currentType = creationTypes.find(type => type.id === selectedType)
@@ -261,25 +267,32 @@ export default function CreatePage() {
         </div>
 
         {/* Hero Section centré avec scroll */}
-        <div className="flex-1 flex items-center justify-center overflow-y-auto relative z-10">
+        <div className="flex-1 overflow-y-auto relative z-10">
           <div className="w-full py-8">
-            <HeroSection 
-            currentProject={currentProject} 
-          />
+            {/* Video Showcase OU Hero Section - pas les deux */}
+            <div className="max-w-6xl mx-auto px-4">
+              <VideoShowcase 
+                projectId={currentProject?.id} 
+                onVideoPlay={setSelectedVideo}
+                heroSection={
+                  <div className="flex items-center justify-center min-h-[50vh]">
+                    <HeroSection currentProject={currentProject} />
+                  </div>
+                }
+              />
+            </div>
           </div>
         </div>
 
         {/* Creation Modal en bas - Position fixe par rapport au bas */}
-        <div className="pb-8 flex-shrink-0 relative z-10">
+        <div className="flex-shrink-0 relative z-10 pb-8 pt-8">
           <div className="w-full flex justify-center px-4">
             {/* Container centré avec largeur maximale intelligente */}
             <div className={`w-full transition-all duration-400 ease-in-out ${
               selectedType === "talking-actor" && isAudioSettingsOpen 
-                ? "max-w-[1200px] flex gap-6 items-end" 
-                : "max-w-4xl flex justify-center items-end"
-            }`} style={{
-              overflow: selectedType === "talking-actor" ? "hidden" : "visible"
-            }}>
+                ? "max-w-[1200px] flex gap-6 items-start" 
+                : "max-w-4xl flex justify-center items-start"
+            }`}>
                 {/* Main Creation Section avec gradient border effect */}
                 <div className="p-[1px] rounded-2xl bg-gradient-to-b from-border/50 via-primary/10 to-border/30 w-full max-w-4xl transition-all duration-400 ease-in-out">
                   <div className="bg-card/95 backdrop-blur-sm border-0 rounded-2xl p-4 shadow-xl shadow-primary/5">
@@ -431,6 +444,13 @@ export default function CreatePage() {
         voices={voices}
         onClose={() => setIsVoiceModalOpen(false)}
         onVoiceChange={handleVoiceChange}
+      />
+
+      {/* Video Modal - Au niveau racine pour z-index optimal */}
+      <VideoModal
+        video={selectedVideo}
+        isOpen={!!selectedVideo}
+        onClose={() => setSelectedVideo(null)}
       />
     </CreatePageGuard>
   )
