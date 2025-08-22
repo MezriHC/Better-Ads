@@ -20,11 +20,12 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.email!; // Use email as user ID
 
-    // Tenter de lire FormData en premier (image uploadée)
+    // Détecter le type sans consommer le body
+    const contentType = request.headers.get('content-type');
     let name: string, imageUrl: string, projectId: string, imageFile: File | undefined;
 
-    try {
-      // Essayer FormData en premier
+    if (contentType?.includes('multipart/form-data')) {
+      // Image uploadée - FormData avec fichier
       const formData = await request.formData();
       name = formData.get('name') as string;
       imageUrl = formData.get('imageUrl') as string;
@@ -37,8 +38,8 @@ export async function POST(request: NextRequest) {
         fileSize: imageFile?.size,
         imageUrl: imageUrl?.substring(0, 50) + '...'
       });
-    } catch {
-      // Si FormData échoue, c'est du JSON (image générée fal.ai)
+    } else {
+      // Image générée (fal.ai) - JSON classique  
       const body = await request.json();
       ({ name, imageUrl, projectId } = body);
       console.log('🎨 Image fal.ai reçue:', { name, imageUrl: imageUrl?.substring(0, 50) + '...' });
