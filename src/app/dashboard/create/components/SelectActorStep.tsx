@@ -3,8 +3,8 @@
 import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
-// TODO: Réimplémenter useImageUpload
 import { GradientButton } from "./GradientButton"
+import { uploadImageToMinio } from "../services/imageUpload"
 
 interface SelectActorStepProps {
   onNext: () => void
@@ -23,17 +23,51 @@ export function SelectActorStep({
 }: SelectActorStepProps) {
   const [prompt, setPrompt] = useState("")
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // TODO: Réimplémenter les hooks
-  const isUploading = false
-  const uploadError = null
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      // TODO: Réimplémenter l'upload
-      const uploadResult = null
-      console.log('TODO: Implémenter upload image')
+      await uploadFile(file)
+    }
+  }
+
+  const uploadFile = async (file: File) => {
+    setIsUploading(true)
+    setUploadError(null)
+
+    try {
+      // Valider le fichier
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Le fichier doit être une image')
+      }
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB max
+        throw new Error('La taille du fichier ne peut pas dépasser 10MB')
+      }
+
+      // Upload vers MinIO
+      const uploadResult = await uploadImageToMinio(file)
+      
+      if (!uploadResult) {
+        throw new Error('Échec de l\'upload de l\'image')
+      }
+
+      // Notifier le parent avec l'URL d'affichage
+      onImageUpload?.(uploadResult.displayUrl)
+      console.log('✅ Image uploadée avec succès:', {
+        display: uploadResult.displayUrl,
+        storage: uploadResult.storagePath
+      })
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue'
+      setUploadError(errorMessage)
+      console.error('❌ Erreur upload:', error)
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -43,9 +77,7 @@ export function SelectActorStep({
     
     const file = e.dataTransfer.files[0]
     if (file && file.type.startsWith('image/')) {
-      // TODO: Réimplémenter l'upload
-      const uploadResult = null
-      console.log('TODO: Implémenter upload image')
+      await uploadFile(file)
     }
   }
 
