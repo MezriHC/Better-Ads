@@ -130,9 +130,14 @@ export async function createAvatar(params: CreateAvatarParams) {
           'video/mp4'
         );
 
-        // Déplacer l'image vers son emplacement final
-        // Note: En pratique, on devrait copier depuis le chemin temporaire
-        // Pour simplifier, on assume que l'image est déjà accessible
+        // CRITICAL: Stocker aussi l'image dans MinIO selon Plan.md
+        console.log('🖼️ Stockage de l\'image dans MinIO...');
+        await minioService.uploadFromUrl(
+          seedanceImageUrl,
+          finalImagePath,
+          'image/jpeg'
+        );
+        console.log('✅ Image stockée dans MinIO:', finalImagePath);
         
         // Mettre à jour l'avatar avec le statut SUCCEEDED
         const finalAvatar = await prisma.avatar.update({

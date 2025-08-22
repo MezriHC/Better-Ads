@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { IconMicrophone, IconDownload } from "@tabler/icons-react"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 // TODO: Réimplémenter useAvatarGeneration
 interface Avatar {
   id: string
@@ -48,14 +48,16 @@ export function LaunchTrainingStep({
   const [currentAvatarId, setCurrentAvatarId] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const generationInProgress = useRef(false)
   const { currentProject } = useProjects()
 
   const handleGenerateAvatar = useCallback(async () => {
-    if (!selectedImageUrl || !prompt || isGenerating || !currentProject?.id || hasStartedGeneration) {
+    if (!selectedImageUrl || !prompt || isGenerating || !currentProject?.id || hasStartedGeneration || generationInProgress.current) {
       return
     }
 
     try {
+      generationInProgress.current = true
       setIsGenerating(true)
       setHasStartedGeneration(true)
       setError(null)
@@ -133,6 +135,7 @@ export function LaunchTrainingStep({
       setError(error instanceof Error ? error.message : 'An unexpected error occurred')
     } finally {
       setIsGenerating(false)
+      generationInProgress.current = false
     }
   }, [selectedImageUrl, prompt, currentProject?.id, onAvatarGenerationCompleted, onAvatarGenerationStarted])
 
@@ -306,6 +309,7 @@ export function LaunchTrainingStep({
                   setGeneratedAvatar(null)
                   setCurrentAvatarId(null)
                   setError(null)
+                  generationInProgress.current = false
                   handleGenerateAvatar()
                 }}
                 disabled={isGenerating || generatedAvatar?.status === 'processing'}
