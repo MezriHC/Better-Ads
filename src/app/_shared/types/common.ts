@@ -47,3 +47,28 @@ export type PaginationMeta = {
 export type PaginatedResponse<T> = ApiResponse<T> & {
   meta: PaginationMeta
 }
+
+// Types pour les avatars
+export interface AvatarStats {
+  pending: number
+  succeeded: number
+  failed: number
+  total: number
+}
+
+export interface CreateAvatarRequest {
+  name: string
+  imageUrl: string
+  projectId: string
+}
+
+export interface UploadRequest {
+  fileName: string
+  contentType: string
+}
+
+export interface UploadResponse {
+  uploadUrl: string
+  filePath: string
+  expiresIn: number
+}

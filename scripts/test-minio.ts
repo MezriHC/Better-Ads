@@ -2,7 +2,7 @@ const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/cl
 const dotenv = require('dotenv');
 const { resolve } = require('path');
 
-dotenv.config({ path: resolve(__dirname, '../.env.local') });
+dotenv.config({ path: resolve(__dirname, '../.env') });
 
 const BUCKET_NAME = process.env.MINIO_BUCKET_NAME!;
 

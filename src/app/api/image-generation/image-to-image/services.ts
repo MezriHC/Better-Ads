@@ -1,4 +1,4 @@
-import { modifyImage } from '@/src/app/_shared/lib/falAi';
+import { modifyImage } from '../../../_shared/lib/falAi';
 import { ImageToImageRequest } from './types';
 
 export async function handleImageToImageGeneration(data: ImageToImageRequest) {

@@ -1,10 +1,25 @@
+import { useState, useRef } from 'react'
 
+type RecordingState = "idle" | "recording" | "completed"
 
+export function useAudioRecording() {
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
+  const [audioFile, setAudioFile] = useState<File | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingState, setRecordingState] = useState<RecordingState>("idle")
+  const [recordingTime, setRecordingTime] = useState(0)
+  
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-
-
-
-
+  const prepareRecording = () => {
+    setRecordingState("idle")
+    setRecordedBlob(null)
+    setAudioFile(null)
+    setRecordingTime(0)
+  }
 
   const startRecording = async () => {
     try {
@@ -31,7 +46,7 @@
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (error) {
-
+      console.error('Erreur lors du démarrage de l\'enregistrement:', error)
       setRecordingState("idle")
     }
   }
@@ -86,6 +101,12 @@
 
   const cancelRecording = () => {
     setRecordingState("idle")
+  }
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   return {

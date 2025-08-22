@@ -46,9 +46,8 @@ export function LaunchTrainingStep({
   const [downloadingVideo, setDownloadingVideo] = useState(false)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
   const [currentAvatarId, setCurrentAvatarId] = useState<string | null>(null)
-  // TODO: Réimplémenter les hooks d'avatar
-  const isGenerating = false
-  const error = null
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const { currentProject } = useProjects()
 
   const handleGenerateAvatar = useCallback(async () => {
@@ -57,28 +56,84 @@ export function LaunchTrainingStep({
     }
 
     try {
-      const { mockAvatarGeneration } = await import('../services/mockGeneration')
-      const result = await mockAvatarGeneration(prompt, selectedImageUrl)
+      setIsGenerating(true)
+      setError(null)
+      logger.client.info('🚀 Démarrage génération avatar avec vraies APIs...')
+      
+      // Importer le vrai service de génération
+      const { generateAvatar, waitForAvatarCompletion } = await import('../services/avatarGeneration')
+      
+      // Générer un nom d'avatar basé sur le prompt
+      const avatarName = `Avatar - ${prompt.slice(0, 30)}...`
+      
+      // Démarrer la génération (étapes 1 et 2 du Plan.md)
+      const avatarResult = await generateAvatar(avatarName, selectedImageUrl, currentProject.id)
+      
+      logger.client.info(`✅ Avatar créé en base: ${avatarResult.id}`)
+      
+      // Notifier que la génération a commencé
+      onAvatarGenerationStarted?.({
+        id: avatarResult.id,
+        title: avatarResult.title,
+        imageUrl: selectedImageUrl,
+        status: 'processing'
+      })
+      
+      // Avatar en cours de traitement - polling pour attendre la fin
+      setCurrentAvatarId(avatarResult.id)
       
       const avatar: Avatar = {
-        id: result.id,
-        title: result.title,
-        videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_360x240_1mb.mp4',
-        posterUrl: result.imageUrl,
-        status: 'ready',
+        id: avatarResult.id,
+        title: avatarResult.title,
+        videoUrl: null, // Sera rempli après génération
+        posterUrl: selectedImageUrl,
+        status: 'processing',
         userId: 'current-user',
         projectId: currentProject.id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: avatarResult.createdAt,
+        updatedAt: avatarResult.createdAt,
         metadata: {}
       }
       
       setGeneratedAvatar(avatar)
-      onAvatarGenerationCompleted?.(avatar)
+      
+      // Attendre la fin de génération via polling (étapes 3 et 4 du Plan.md)
+      logger.client.info('⏳ Attente de la génération vidéo...')
+      
+      const finalAvatar = await waitForAvatarCompletion(
+        avatarResult.id,
+        (status) => {
+          logger.client.info(`📊 Statut avatar: ${status}`)
+          setGeneratedAvatar(prev => prev ? { ...prev, status: status as any } : null)
+        }
+      )
+      
+      if (finalAvatar && finalAvatar.status === 'ready') {
+        const completedAvatar: Avatar = {
+          ...avatar,
+          status: 'ready',
+          videoUrl: `/api/media/${finalAvatar.videoStoragePath || finalAvatar.imageUrl}`, // URL via notre proxy
+          updatedAt: new Date().toISOString()
+        }
+        
+        setGeneratedAvatar(completedAvatar)
+        onAvatarGenerationCompleted?.(completedAvatar)
+        logger.client.info('🎉 Avatar généré avec succès !')
+      } else {
+        // Échec de génération
+        setGeneratedAvatar(prev => prev ? { ...prev, status: 'failed' } : null)
+        setError('Avatar generation failed. Please try again.')
+        logger.client.error('❌ Échec de la génération d\'avatar')
+      }
+      
     } catch (error) {
-      logger.client.error('Erreur génération avatar:', error)
+      logger.client.error('❌ Erreur génération avatar:', error)
+      setGeneratedAvatar(prev => prev ? { ...prev, status: 'failed' } : null)
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred')
+    } finally {
+      setIsGenerating(false)
     }
-  }, [selectedImageUrl, prompt, isGenerating, currentProject?.id, onAvatarGenerationCompleted])
+  }, [selectedImageUrl, prompt, isGenerating, currentProject?.id, onAvatarGenerationCompleted, onAvatarGenerationStarted])
 
   useEffect(() => {
     // Démarrer automatiquement la génération d'avatar UNE SEULE FOIS
@@ -87,7 +142,7 @@ export function LaunchTrainingStep({
       setHasStartedGeneration(true)
       handleGenerateAvatar()
     }
-  }, [selectedImageUrl, prompt, hasStartedGeneration, currentProject?.id, handleGenerateAvatar, isGenerating])
+  }, [selectedImageUrl, prompt, hasStartedGeneration, currentProject?.id, isGenerating])
   
   // Nettoyer le polling quand le composant se démonte
   useEffect(() => {
@@ -250,6 +305,7 @@ export function LaunchTrainingStep({
                   setHasStartedGeneration(false)
                   setGeneratedAvatar(null)
                   setCurrentAvatarId(null)
+                  setError(null)
                   handleGenerateAvatar()
                 }}
                 disabled={isGenerating || generatedAvatar?.status === 'processing'}
