@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import Image from "next/image"
 import { IconPhoto } from "@tabler/icons-react"
 import { GradientButton } from "./GradientButton"
-import { uploadImageToMinio } from "../services/imageUpload"
+import { prepareImageForAvatar } from "../services/imageUpload"
 
 interface SelectActorStepProps {
   onNext: () => void
@@ -48,18 +48,18 @@ export function SelectActorStep({
         throw new Error('La taille du fichier ne peut pas dépasser 10MB')
       }
 
-      // Upload vers MinIO
-      const uploadResult = await uploadImageToMinio(file)
+      // Préparer l'image (pas d'upload vers MinIO encore)
+      const preparedImage = await prepareImageForAvatar(file)
       
-      if (!uploadResult) {
-        throw new Error('Échec de l\'upload de l\'image')
+      if (!preparedImage) {
+        throw new Error('Échec de la préparation de l\'image')
       }
 
-      // Notifier le parent avec l'URL d'affichage
-      onImageUpload?.(uploadResult.displayUrl)
-      console.log('✅ Image uploadée avec succès:', {
-        display: uploadResult.displayUrl,
-        storage: uploadResult.storagePath
+      // Notifier le parent avec l'URL temporaire d'affichage
+      onImageUpload?.(preparedImage.displayUrl)
+      console.log('✅ Image préparée avec succès:', {
+        displayUrl: preparedImage.displayUrl,
+        fileName: file.name
       })
 
     } catch (error) {

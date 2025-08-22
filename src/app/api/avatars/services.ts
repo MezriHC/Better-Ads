@@ -5,16 +5,17 @@ import { minioService } from '../../_shared/lib/minio';
 
 export interface CreateAvatarParams {
   name: string;
-  imageUrl: string; // Chemin temporaire dans MinIO
+  imageUrl: string; // URL fal.ai (générée) ou blob URL (uploadée)
   projectId: string;
   userId: string;
+  imageFile?: File; // Fichier original si image uploadée
 }
 
 /**
  * Crée un nouvel avatar et lance la génération vidéo
  */
 export async function createAvatar(params: CreateAvatarParams) {
-  const { name, imageUrl, projectId, userId } = params;
+  const { name, imageUrl, projectId, userId, imageFile } = params;
 
   try {
     console.log('🚀 Début de la création d\'avatar:', { name, imageUrl, projectId, userId });
@@ -71,17 +72,21 @@ export async function createAvatar(params: CreateAvatarParams) {
       'jpg'
     );
 
-    // Utiliser directement l'URL de l'image pour Seedance
-    // Si c'est une URL fal.ai (image générée), l'utiliser directement
-    // Sinon, générer l'URL publique MinIO
+    // Préparer l'URL image pour Seedance selon le type
     let seedanceImageUrl: string;
-    if (imageUrl.startsWith('https://fal.media/') || imageUrl.startsWith('http')) {
-      seedanceImageUrl = imageUrl; // URL directe
+    
+    if (imageFile) {
+      // Image uploadée : convertir File en Blob URL temporaire pour Seedance
+      seedanceImageUrl = URL.createObjectURL(imageFile);
+      console.log('🖼️ Image uploadée convertie en blob pour Seedance');
+    } else if (imageUrl.startsWith('https://fal.media/') || imageUrl.startsWith('http')) {
+      // Image générée fal.ai : utiliser directement
+      seedanceImageUrl = imageUrl;
+      console.log('🖼️ Image fal.ai pour Seedance:', seedanceImageUrl);
     } else {
-      seedanceImageUrl = minioService.getPublicUrl(imageUrl); // URL MinIO
+      // Fallback (ne devrait pas arriver)
+      throw new Error('Type d\'image non supporté pour Seedance');
     }
-
-    console.log('🖼️ URL image pour Seedance:', seedanceImageUrl);
 
     // 4. Lancer la génération vidéo avec Seedance
     console.log('🎬 Lancement de la génération vidéo...');
@@ -132,12 +137,20 @@ export async function createAvatar(params: CreateAvatarParams) {
 
         // CRITICAL: Stocker aussi l'image dans MinIO selon Plan.md
         console.log('🖼️ Stockage de l\'image dans MinIO...');
-        await minioService.uploadFromUrl(
-          seedanceImageUrl,
-          finalImagePath,
-          'image/jpeg'
-        );
-        console.log('✅ Image stockée dans MinIO:', finalImagePath);
+        
+        if (imageFile) {
+          // Image uploadée : uploader directement le fichier
+          await minioService.uploadFile(imageFile, finalImagePath);
+          console.log('✅ Image uploadée stockée dans MinIO:', finalImagePath);
+        } else {
+          // Image générée fal.ai : télécharger depuis l'URL
+          await minioService.uploadFromUrl(
+            seedanceImageUrl,
+            finalImagePath,
+            'image/jpeg'
+          );
+          console.log('✅ Image fal.ai stockée dans MinIO:', finalImagePath);
+        }
         
         // Mettre à jour l'avatar avec le statut SUCCEEDED
         const finalAvatar = await prisma.avatar.update({
@@ -149,6 +162,13 @@ export async function createAvatar(params: CreateAvatarParams) {
         });
 
         console.log(`✅ Avatar finalisé avec succès: ${finalAvatar.id}`);
+        
+        // Nettoyer l'URL blob temporaire si c'était une image uploadée
+        if (imageFile && seedanceImageUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(seedanceImageUrl);
+          console.log('🧹 URL blob temporaire nettoyée');
+        }
+        
         return finalAvatar;
 
       } catch (storageError) {

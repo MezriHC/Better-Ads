@@ -1,78 +1,56 @@
 /**
- * Service d'upload d'images vers MinIO
- * Workflow complet : demande URL signée → upload direct → retour chemin
+ * Service d'upload d'images TEMPORAIRE
+ * Workflow CORRECT : Image reste en mémoire jusqu'à génération réussie
+ * Ensuite image + vidéo uploadées ENSEMBLE dans MinIO
  */
 
-export interface UploadRequest {
-  fileName: string;
-  contentType: string;
-}
-
-export interface UploadResponse {
-  uploadUrl: string;
-  filePath: string;
-  expiresIn: number;
-}
-
 export interface ImageUploadResult {
-  displayUrl: string; // URL pour affichage frontend via proxy
-  storagePath: string; // Chemin MinIO pour le backend
+  displayUrl: string; // URL temporaire pour affichage frontend (blob ou base64)
+  originalFile: File; // Fichier original à utiliser pour génération + stockage final
 }
 
 /**
- * Upload une image vers MinIO via URL signée
- * @param file - Fichier image à uploader
- * @returns Résultat avec URL d'affichage et chemin stockage ou null en cas d'erreur
+ * Prépare une image pour l'affichage et la génération d'avatar
+ * L'image n'est PAS uploadée vers MinIO immédiatement
+ * @param file - Fichier image sélectionné
+ * @returns Résultat avec URL temporaire et fichier original
  */
-export async function uploadImageToMinio(file: File): Promise<ImageUploadResult | null> {
+export async function prepareImageForAvatar(file: File): Promise<ImageUploadResult | null> {
   try {
-    console.log('📤 Début upload image:', file.name, file.type);
+    console.log('🖼️ Préparation image pour avatar:', file.name, file.type);
 
-    // 1. Demander une URL d'upload signée
-    const uploadRequest: UploadRequest = {
-      fileName: file.name,
-      contentType: file.type
-    };
-
-    const uploadResponse = await fetch('/api/uploads', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(uploadRequest),
-    });
-
-    if (!uploadResponse.ok) {
-      const errorData = await uploadResponse.json();
-      throw new Error(errorData.error || 'Échec de la demande d\'upload');
+    // Validation du fichier
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Le fichier doit être une image');
     }
 
-    const uploadData: UploadResponse = await uploadResponse.json();
-    console.log('✅ URL signée obtenue:', uploadData.filePath);
-
-    // 2. Upload direct vers MinIO avec l'URL signée
-    const minioUploadResponse = await fetch(uploadData.uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-
-    if (!minioUploadResponse.ok) {
-      throw new Error(`Échec upload MinIO: ${minioUploadResponse.status}`);
+    if (file.size > 10 * 1024 * 1024) { // 10MB max
+      throw new Error('La taille du fichier ne peut pas dépasser 10MB');
     }
 
-    console.log('✅ Image uploadée vers MinIO:', uploadData.filePath);
+    // Créer une URL temporaire pour l'affichage (Object URL)
+    const displayUrl = URL.createObjectURL(file);
+    
+    console.log('✅ Image préparée pour génération d\'avatar');
 
-    // 3. Retourner les deux URLs nécessaires
     return {
-      displayUrl: `/api/media/${uploadData.filePath}`, // Pour affichage frontend
-      storagePath: uploadData.filePath // Pour backend (avatar service)
+      displayUrl, // URL blob temporaire pour affichage
+      originalFile: file // Fichier original pour génération + stockage final
     };
 
   } catch (error) {
-    console.error('❌ Erreur upload image:', error);
+    console.error('❌ Erreur préparation image:', error);
     return null;
+  }
+}
+
+/**
+ * Nettoie l'URL temporaire quand elle n'est plus nécessaire
+ * @param displayUrl - URL blob à nettoyer
+ */
+export function cleanupImageUrl(displayUrl: string) {
+  if (displayUrl.startsWith('blob:')) {
+    URL.revokeObjectURL(displayUrl);
+    console.log('🧹 URL temporaire nettoyée');
   }
 }

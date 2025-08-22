@@ -139,6 +139,35 @@ export class MinioService {
   }
 
   /**
+   * Upload un fichier File directement vers MinIO
+   * @param file - Fichier à uploader
+   * @param destinationKey - Chemin de destination dans le bucket
+   */
+  async uploadFile(file: File, destinationKey: string): Promise<void> {
+    try {
+      console.log(`📤 Upload fichier direct: ${file.name} vers ${destinationKey}`);
+      
+      // Convertir File en Buffer
+      const fileBuffer = await file.arrayBuffer();
+      
+      // Uploader vers MinIO
+      const command = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: destinationKey,
+        Body: new Uint8Array(fileBuffer),
+        ContentType: file.type,
+        ContentLength: file.size
+      });
+
+      await this.s3Client.send(command);
+      console.log(`✅ Fichier uploadé vers: ${destinationKey}`);
+    } catch (error) {
+      console.error(`❌ Erreur upload fichier: ${error}`);
+      throw new Error(`Impossible d'uploader le fichier: ${error}`);
+    }
+  }
+
+  /**
    * Génère un chemin unique pour un fichier d'avatar
    * @param userId - ID de l'utilisateur
    * @param avatarId - ID de l'avatar

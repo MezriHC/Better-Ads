@@ -29,70 +29,49 @@ export async function generateAvatar(
   let imageUrl: string;
 
   try {
-    // Étape 1: Upload de l'image si nécessaire
+    // Étape 1: Préparer l'image selon son type
     if (typeof imageFile === 'string') {
       // L'image est déjà une URL (image générée par fal.ai)
       imageUrl = imageFile;
     } else {
-      // Upload de l'image vers MinIO
-      console.log('📤 Upload de l\'image vers MinIO...');
-      
-      // Demander une URL d'upload signée
-      const uploadRequest: UploadRequest = {
-        fileName: imageFile.name,
-        contentType: imageFile.type
-      };
-
-      const uploadResponse = await fetch('/api/uploads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(uploadRequest),
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Échec de la demande d\'upload');
-      }
-
-      const uploadData: UploadResponse = await uploadResponse.json();
-
-      // Upload direct vers MinIO avec l'URL signée
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', imageFile);
-
-      const minioUploadResponse = await fetch(uploadData.uploadUrl, {
-        method: 'PUT',
-        body: imageFile,
-        headers: {
-          'Content-Type': imageFile.type,
-        },
-      });
-
-      if (!minioUploadResponse.ok) {
-        throw new Error('Échec de l\'upload vers MinIO');
-      }
-
-      imageUrl = uploadData.filePath;
-      console.log('✅ Image uploadée vers MinIO:', imageUrl);
+      // Image uploadée : utiliser blob URL temporaire et garder le fichier
+      imageUrl = URL.createObjectURL(imageFile);
+      console.log('🖼️ Image uploadée préparée pour génération avatar');
     }
 
     // Étape 2: Créer l'avatar et lancer la génération vidéo
     console.log('🎬 Création de l\'avatar et lancement de la génération...');
     
-    const avatarRequest: CreateAvatarRequest = {
-      name,
-      imageUrl,
-      projectId
-    };
+    let avatarResponse: Response;
 
-    const avatarResponse = await fetch('/api/avatars', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(avatarRequest),
-    });
+    if (typeof imageFile === 'string') {
+      // Image générée : envoyer en JSON
+      const avatarRequest: CreateAvatarRequest = {
+        name,
+        imageUrl,
+        projectId
+      };
+
+      avatarResponse = await fetch('/api/avatars', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(avatarRequest),
+      });
+    } else {
+      // Image uploadée : envoyer en FormData avec le fichier
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('imageUrl', imageUrl); // Blob URL pour validation côté client
+      formData.append('projectId', projectId);
+      formData.append('imageFile', imageFile); // Fichier original
+
+      avatarResponse = await fetch('/api/avatars', {
+        method: 'POST',
+        body: formData, // Pas de Content-Type header avec FormData
+      });
+    }
 
     if (!avatarResponse.ok) {
       const errorData = await avatarResponse.json();

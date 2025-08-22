@@ -58,8 +58,9 @@ export interface AvatarStats {
 
 export interface CreateAvatarRequest {
   name: string
-  imageUrl: string
+  imageUrl: string // URL fal.ai (générée) ou blob URL (uploadée)
   projectId: string
+  imageFile?: File // Fichier original si image uploadée (sera sérialisé)
 }
 
 export interface UploadRequest {

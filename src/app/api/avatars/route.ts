@@ -18,8 +18,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { name, imageUrl, projectId } = body;
+    const userId = session.user.email!; // Use email as user ID
+
+    // Détecter le type de contenu (JSON ou FormData)
+    const contentType = request.headers.get('content-type');
+    let name: string, imageUrl: string, projectId: string, imageFile: File | undefined;
+
+    if (contentType?.includes('application/json')) {
+      // Image générée (fal.ai) - JSON classique
+      const body = await request.json();
+      ({ name, imageUrl, projectId } = body);
+    } else {
+      // Image uploadée - FormData avec fichier
+      const formData = await request.formData();
+      name = formData.get('name') as string;
+      imageUrl = formData.get('imageUrl') as string;
+      projectId = formData.get('projectId') as string;
+      imageFile = formData.get('imageFile') as File;
+
+      console.log('📎 Image uploadée reçue:', {
+        name,
+        fileName: imageFile?.name,
+        fileSize: imageFile?.size
+      });
+    }
 
     if (!name || !imageUrl || !projectId) {
       return NextResponse.json(
@@ -28,14 +50,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userId = session.user.email!; // Use email as user ID
-
     // Créer l'avatar et lancer la génération
     const avatar = await createAvatar({
       name,
       imageUrl,
       projectId,
-      userId
+      userId,
+      imageFile // Passer le fichier s'il existe
     });
 
     console.log(`✅ Avatar créé avec succès: ${avatar.id}`);
