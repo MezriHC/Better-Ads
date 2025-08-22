@@ -51,12 +51,13 @@ export function LaunchTrainingStep({
   const { currentProject } = useProjects()
 
   const handleGenerateAvatar = useCallback(async () => {
-    if (!selectedImageUrl || !prompt || isGenerating || !currentProject?.id) {
+    if (!selectedImageUrl || !prompt || isGenerating || !currentProject?.id || hasStartedGeneration) {
       return
     }
 
     try {
       setIsGenerating(true)
+      setHasStartedGeneration(true)
       setError(null)
       logger.client.info('🚀 Démarrage génération avatar avec vraies APIs...')
       
@@ -139,7 +140,6 @@ export function LaunchTrainingStep({
     // Démarrer automatiquement la génération d'avatar UNE SEULE FOIS
     if (selectedImageUrl && prompt && !hasStartedGeneration && currentProject?.id && !isGenerating) {
       logger.client.info(`Démarrage génération avatar automatique`)
-      setHasStartedGeneration(true)
       handleGenerateAvatar()
     }
   }, [selectedImageUrl, prompt, hasStartedGeneration, currentProject?.id, isGenerating])

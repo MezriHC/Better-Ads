@@ -71,14 +71,23 @@ export async function createAvatar(params: CreateAvatarParams) {
       'jpg'
     );
 
-    // Générer l'URL publique de l'image temporaire pour Seedance
-    const tempImageUrl = minioService.getPublicUrl(imageUrl);
+    // Utiliser directement l'URL de l'image pour Seedance
+    // Si c'est une URL fal.ai (image générée), l'utiliser directement
+    // Sinon, générer l'URL publique MinIO
+    let seedanceImageUrl: string;
+    if (imageUrl.startsWith('https://fal.media/') || imageUrl.startsWith('http')) {
+      seedanceImageUrl = imageUrl; // URL directe
+    } else {
+      seedanceImageUrl = minioService.getPublicUrl(imageUrl); // URL MinIO
+    }
+
+    console.log('🖼️ URL image pour Seedance:', seedanceImageUrl);
 
     // 4. Lancer la génération vidéo avec Seedance
     console.log('🎬 Lancement de la génération vidéo...');
     const videoResult = await generateVideoFromImage(
       `This person is speaking naturally as an avatar named ${name}. Show them talking with natural facial expressions and mouth movements.`,
-      tempImageUrl
+      seedanceImageUrl
     );
 
     if (!videoResult) {

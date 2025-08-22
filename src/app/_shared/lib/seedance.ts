@@ -69,10 +69,10 @@ export async function generateVideoFromImage(prompt: string, imageUrl: string): 
     // Utiliser le vrai modèle image-to-video avec l'image en entrée
     const result = await fal.subscribe('fal-ai/bytedance/seedance/v1/pro/image-to-video', {
       input: {
-        prompt: `${prompt}. Create a talking avatar video from this person. The person should be speaking naturally with facial expressions and mouth movements. Professional lighting, high quality.`,
+        prompt: `${prompt}. Create a talking avatar video from this person. The person should be speaking naturally with facial expressions and mouth movements.`,
         image_url: imageUrl,
-        resolution: "720p", // Balance qualité/vitesse
-        duration: "5", // 5 secondes pour l'avatar parlant
+        resolution: "480p", // Qualité la plus basse pour économiser
+        duration: "3", // Durée la plus courte pour économiser
         camera_fixed: true, // Caméra fixe pour l'avatar
         enable_safety_checker: true
       },
@@ -92,6 +92,8 @@ export async function generateVideoFromImage(prompt: string, imageUrl: string): 
     return null;
   } catch (error) {
     console.error('❌ Erreur Seedance image-to-video:', error);
+    console.error('❌ Error body:', (error as any)?.body);
+    console.error('❌ Error status:', (error as any)?.status);
     return null;
   }
 }
