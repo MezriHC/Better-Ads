@@ -77,7 +77,7 @@ export async function createAvatar(params: CreateAvatarParams) {
     // 4. Lancer la génération vidéo avec Seedance
     console.log('🎬 Lancement de la génération vidéo...');
     const videoResult = await generateVideoFromImage(
-      `Create a talking avatar video from this person: ${name}`,
+      `This person is speaking naturally as an avatar named ${name}. Show them talking with natural facial expressions and mouth movements.`,
       tempImageUrl
     );
 

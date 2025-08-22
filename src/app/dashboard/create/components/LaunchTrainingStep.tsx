@@ -133,7 +133,7 @@ export function LaunchTrainingStep({
     } finally {
       setIsGenerating(false)
     }
-  }, [selectedImageUrl, prompt, isGenerating, currentProject?.id, onAvatarGenerationCompleted, onAvatarGenerationStarted])
+  }, [selectedImageUrl, prompt, currentProject?.id, onAvatarGenerationCompleted, onAvatarGenerationStarted])
 
   useEffect(() => {
     // Démarrer automatiquement la génération d'avatar UNE SEULE FOIS

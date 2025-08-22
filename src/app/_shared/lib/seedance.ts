@@ -54,27 +54,44 @@ export async function generateVideoFromText(prompt: string): Promise<{ videoUrl:
 }
 
 /**
- * Génère une vidéo à partir d'une image de référence + prompt
- * Note: Seedance text-to-video ne prend pas d'image en entrée
- * Cette fonction combine le prompt avec une description de l'image
- * @param prompt - Prompt de description pour la vidéo
- * @param imageUrl - URL de l'image de référence (utilisée pour enrichir le prompt)
+ * Génère une vidéo à partir d'une image de référence + prompt  
+ * Utilise le VRAI modèle image-to-video de Seedance
+ * @param prompt - Prompt de description pour l'avatar parlant
+ * @param imageUrl - URL de l'image de référence pour créer l'avatar
  * @returns URL de la vidéo générée ou null en cas d'erreur
  */
 export async function generateVideoFromImage(prompt: string, imageUrl: string): Promise<{ videoUrl: string; requestId: string } | null> {
   try {
-    console.log('=== SEEDANCE IMAGE-TO-VIDEO (VIA TEXT) ===');
-    console.log('Original prompt:', prompt);
+    console.log('=== SEEDANCE IMAGE-TO-VIDEO (VRAI MODÈLE) ===');
+    console.log('Prompt:', prompt);
     console.log('Image URL:', imageUrl);
     
-    // Pour Seedance text-to-video, on améliore le prompt avec une description basée sur l'image
-    const enhancedPrompt = `${prompt}. High quality portrait video, cinematic lighting, professional look, 9:16 aspect ratio.`;
+    // Utiliser le vrai modèle image-to-video avec l'image en entrée
+    const result = await fal.subscribe('fal-ai/bytedance/seedance/v1/pro/image-to-video', {
+      input: {
+        prompt: `${prompt}. Create a talking avatar video from this person. The person should be speaking naturally with facial expressions and mouth movements. Professional lighting, high quality.`,
+        image_url: imageUrl,
+        resolution: "720p", // Balance qualité/vitesse
+        duration: "5", // 5 secondes pour l'avatar parlant
+        camera_fixed: true, // Caméra fixe pour l'avatar
+        enable_safety_checker: true
+      },
+    }) as SeedanceVideoResult;
+
+    console.log('Seedance IMAGE-TO-VIDEO result:', result);
+
+    if (result && result.data && result.data.video && result.data.video.url) {
+      console.log('✅ Avatar parlant généré avec succès:', result.data.video.url);
+      return {
+        videoUrl: result.data.video.url,
+        requestId: result.request_id || `seedance-i2v-${Date.now()}`
+      };
+    }
     
-    console.log('Enhanced prompt:', enhancedPrompt);
-    
-    return await generateVideoFromText(enhancedPrompt);
+    console.warn('⚠️ Pas de vidéo dans la réponse Seedance image-to-video');
+    return null;
   } catch (error) {
-    console.error('❌ Erreur dans generateVideoFromImage:', error);
+    console.error('❌ Erreur Seedance image-to-video:', error);
     return null;
   }
 }
