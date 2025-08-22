@@ -8,6 +8,17 @@ import { minioService } from '../../_shared/lib/minio';
  * Génère une URL signée pour l'upload d'un fichier vers MinIO
  */
 export async function POST(request: NextRequest) {
+  // DEPRECATED: Cette route ne devrait plus être utilisée
+  // Le nouveau workflow utilise directement les fichiers via FormData dans /api/avatars
+  console.warn('⚠️ Route /api/uploads obsolète appelée - utiliser FormData dans /api/avatars');
+  
+  return NextResponse.json(
+    { error: 'Route obsolète - utiliser le nouveau workflow avec FormData' },
+    { status: 410 } // Gone
+  );
+
+  // Ancien code commenté
+  /*
   try {
     // Vérifier l'authentification
     const session = await getServerSession(authOptions);

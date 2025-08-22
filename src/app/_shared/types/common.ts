@@ -63,13 +63,14 @@ export interface CreateAvatarRequest {
   imageFile?: File // Fichier original si image uploadée (sera sérialisé)
 }
 
-export interface UploadRequest {
-  fileName: string
-  contentType: string
-}
+// DEPRECATED: Ces types ne sont plus utilisés avec le nouveau workflow
+// export interface UploadRequest {
+//   fileName: string
+//   contentType: string
+// }
 
-export interface UploadResponse {
-  uploadUrl: string
-  filePath: string
-  expiresIn: number
-}
+// export interface UploadResponse {
+//   uploadUrl: string
+//   filePath: string
+//   expiresIn: number
+// }

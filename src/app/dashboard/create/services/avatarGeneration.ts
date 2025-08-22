@@ -3,7 +3,7 @@
  * Remplace mockGeneration.ts avec de vraies APIs
  */
 
-import { CreateAvatarRequest, UploadRequest, UploadResponse } from '../../../_shared/types/common';
+import { CreateAvatarRequest } from '../../../_shared/types/common';
 
 export interface AvatarGenerationResult {
   id: string;
