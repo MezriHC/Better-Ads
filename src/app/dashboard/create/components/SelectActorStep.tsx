@@ -10,7 +10,7 @@ interface SelectActorStepProps {
   onNext: () => void
   selectedImageUrl?: string
   method?: "generate" | "upload"
-  onImageUpload?: (imageUrl: string) => void
+  onImageUpload?: (imageUrl: string, imageFile?: File) => void
   onPromptChange?: (prompt: string) => void
 }
 
@@ -55,8 +55,8 @@ export function SelectActorStep({
         throw new Error('Échec de la préparation de l\'image')
       }
 
-      // Notifier le parent avec l'URL temporaire d'affichage
-      onImageUpload?.(preparedImage.displayUrl)
+      // Notifier le parent avec l'URL temporaire d'affichage ET le fichier original
+      onImageUpload?.(preparedImage.displayUrl, preparedImage.originalFile)
       console.log('✅ Image préparée avec succès:', {
         displayUrl: preparedImage.displayUrl,
         fileName: file.name

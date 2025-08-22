@@ -59,3 +59,60 @@ export async function modifyImage(prompt: string, imageUrl: string): Promise<str
     return null;
   }
 }
+
+/**
+ * Génère une vidéo à partir d'une image (image-to-video)
+ */
+async function generateVideoFromImage({ imageUrl, prompt }: { imageUrl: string, prompt: string }) {
+  try {
+    console.log('=== FAL.AI SEEDANCE IMAGE-TO-VIDEO ===');
+    console.log('Prompt:', prompt);
+    console.log('Image URL:', imageUrl);
+
+    const result = await fal.subscribe('fal-ai/bytedance/seedance/v1/pro/image-to-video', {
+      input: {
+        prompt: prompt,
+        image_url: imageUrl,
+      },
+      logs: true,
+      onQueueUpdate: (update) => {
+        console.log('Queue update:', update);
+      }
+    });
+
+    console.log('✅ Résultat fal.ai image-to-video:', result);
+    return result;
+  } catch (error: any) {
+    console.error('❌ Erreur fal.ai image-to-video:', error);
+    if (error && typeof error === 'object' && 'body' in error) {
+      console.error('❌ Corps de l\'erreur fal.ai:', JSON.stringify(error.body, null, 2));
+    }
+    throw error;
+  }
+}
+
+/**
+ * Récupère le résultat d'une génération vidéo en cours
+ */
+async function getResult(requestId: string) {
+  try {
+    console.log('🔍 Récupération du résultat fal.ai pour request_id:', requestId);
+    
+    const result = await fal.queue.result('fal-ai/stable-video', {
+      requestId
+    });
+
+    console.log('✅ Résultat récupéré:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération du résultat:', error);
+    throw error;
+  }
+}
+
+export const falAiService = {
+  generateImageFromText,
+  modifyImage,
+  generateVideoFromImage,
+  getResult
+};

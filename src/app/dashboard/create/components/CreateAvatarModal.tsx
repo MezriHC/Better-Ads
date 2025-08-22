@@ -61,6 +61,7 @@ export function CreateAvatarModal({
   const [selectedActor, setSelectedActor] = useState<GeneratedActor | null>(null)
 
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>()
+  const [selectedImageFile, setSelectedImageFile] = useState<File>()
 
   // Hauteur adaptative selon l'étape
   const getModalHeight = () => {
@@ -206,7 +207,10 @@ export function CreateAvatarModal({
               }}
               selectedImageUrl={selectedImageUrl}
               method={method || "generate"}
-              onImageUpload={(imageUrl) => setSelectedImageUrl(imageUrl)}
+              onImageUpload={(imageUrl, imageFile) => {
+                setSelectedImageUrl(imageUrl)
+                setSelectedImageFile(imageFile)
+              }}
               onPromptChange={(prompt) => setActorPrompt(prompt)}
             />
           )}
@@ -215,6 +219,7 @@ export function CreateAvatarModal({
             <LaunchTrainingStep
               actor={selectedActor}
               selectedImageUrl={selectedImageUrl}
+              selectedImageFile={selectedImageFile}
               prompt={actorPrompt}
               onVideoGenerated={(video) => {
                 // Notifier le parent de la vidéo générée

@@ -18,6 +18,7 @@ interface Avatar {
 }
 import { useProjects } from "@/src/app/_shared/hooks/useProjects"
 import { logger } from "@/src/app/_shared/utils/logger"
+import { generateAvatar, waitForAvatarCompletion } from '../services/avatarGeneration'
 
 interface GeneratedActor {
   id: string
@@ -28,6 +29,7 @@ interface GeneratedActor {
 interface LaunchTrainingStepProps {
   actor?: GeneratedActor | null
   selectedImageUrl?: string
+  selectedImageFile?: File // Fichier original si image uploadée
   prompt?: string
   onVideoGenerated?: (video: any) => void
   onAvatarGenerationStarted?: (avatarData: any) => void
@@ -37,6 +39,7 @@ interface LaunchTrainingStepProps {
 export function LaunchTrainingStep({ 
   actor, 
   selectedImageUrl,
+  selectedImageFile,
   prompt,
   onVideoGenerated,
   onAvatarGenerationStarted,
@@ -63,14 +66,13 @@ export function LaunchTrainingStep({
       setError(null)
       logger.client.info('🚀 Démarrage génération avatar avec vraies APIs...')
       
-      // Importer le vrai service de génération
-      const { generateAvatar, waitForAvatarCompletion } = await import('../services/avatarGeneration')
-      
       // Générer un nom d'avatar basé sur le prompt
       const avatarName = `Avatar - ${prompt.slice(0, 30)}...`
       
       // Démarrer la génération (étapes 1 et 2 du Plan.md)
-      const avatarResult = await generateAvatar(avatarName, selectedImageUrl, currentProject.id)
+      // Utiliser le fichier original si disponible, sinon l'URL (fal.ai)
+      const imageSource = selectedImageFile || selectedImageUrl;
+      const avatarResult = await generateAvatar(avatarName, imageSource, currentProject.id)
       
       logger.client.info(`✅ Avatar créé en base: ${avatarResult.id}`)
       

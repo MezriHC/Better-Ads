@@ -1,7 +1,8 @@
 import { AvatarType, AvatarStatus } from '@prisma/client';
 import { prisma } from '../../_shared/database/client';
-import { generateVideoFromImage } from '../../_shared/lib/seedance';
+import { falAiService } from '../../_shared/lib/falAi';
 import { minioService } from '../../_shared/lib/minio';
+import { logger } from '../../_shared/utils/logger';
 
 export interface CreateAvatarParams {
   name: string;
@@ -72,120 +73,74 @@ export async function createAvatar(params: CreateAvatarParams) {
       'jpg'
     );
 
-    // Préparer l'URL image pour Seedance selon le type
-    let seedanceImageUrl: string;
-    
-    if (imageFile) {
-      // Image uploadée : convertir File en Blob URL temporaire pour Seedance
-      seedanceImageUrl = URL.createObjectURL(imageFile);
-      console.log('🖼️ Image uploadée convertie en blob pour Seedance');
-    } else if (imageUrl.startsWith('https://fal.media/') || imageUrl.startsWith('http')) {
-      // Image générée fal.ai : utiliser directement
-      seedanceImageUrl = imageUrl;
-      console.log('🖼️ Image fal.ai pour Seedance:', seedanceImageUrl);
-    } else {
-      // Fallback (ne devrait pas arriver)
-      throw new Error('Type d\'image non supporté pour Seedance');
+    // 4. Vérifier que l'image est accessible pour fal.ai
+    let finalImageUrl = imageUrl;
+    if (imageUrl.startsWith('https://fal.media')) {
+      logger.server.info('📥 URL fal.media détectée. Rapatriement vers MinIO...');
+      const tempKey = minioService.generateTempUploadPath(resolvedUserId, 'jpg');
+      
+      await minioService.uploadFromUrl(imageUrl, tempKey, 'image/jpeg');
+      
+      const useSSL = process.env.MINIO_USE_SSL === 'true';
+      const protocol = useSSL ? 'https' : 'http';
+      finalImageUrl = `${protocol}://${process.env.MINIO_ENDPOINT}/${process.env.MINIO_BUCKET_NAME}/${tempKey}`;
+
+      logger.server.info(`✅ Image rapatriée et nouvelle URL publique : ${finalImageUrl}`);
     }
 
-    // 4. Lancer la génération vidéo avec Seedance
-    console.log('🎬 Lancement de la génération vidéo...');
-    const videoResult = await generateVideoFromImage(
-      `This person is speaking naturally as an avatar named ${name}. Show them talking with natural facial expressions and mouth movements.`,
-      seedanceImageUrl
-    );
+    if (finalImageUrl.startsWith('blob:') || finalImageUrl.startsWith('http://localhost')) {
+      logger.server.error('❌ URL blob ou localhost détectée - non accessible par fal.ai');
+      await prisma.avatar.update({
+        where: { id: avatar.id },
+        data: { status: AvatarStatus.FAILED }
+      });
+      throw new Error('URL d\'image non accessible par fal.ai. L\'image doit être uploadée sur MinIO d\'abord.');
+    }
+    
+    logger.server.info('✅ URL d\'image valide pour fal.ai:', finalImageUrl);
 
-    if (!videoResult) {
-      // Échec de la génération, mettre à jour le statut
+    // 5. Lancer la génération vidéo avec fal.ai
+    logger.server.info('🎬 Lancement de la génération vidéo...');
+    
+    try {
+      const falResult = await falAiService.generateVideoFromImage({
+        imageUrl: finalImageUrl,
+        prompt: `This person is speaking naturally as an avatar named ${name}. Show them talking with natural facial expressions and mouth movements.`,
+      });
+
+      if (!falResult?.requestId) {
+        logger.server.error('❌ Pas de requestId retourné par fal.ai');
+        await prisma.avatar.update({
+          where: { id: avatar.id },
+          data: { status: AvatarStatus.FAILED }
+        });
+        throw new Error('Échec du lancement de la génération vidéo');
+      }
+
+      // 6. Mettre à jour l'avatar avec le requestId pour le suivi
+      const updatedAvatar = await prisma.avatar.update({
+        where: { id: avatar.id },
+        data: { 
+          falRequestId: falResult.requestId,
+          status: AvatarStatus.PENDING,
+          imageStoragePath: finalImagePath
+        }
+      });
+
+      logger.server.info('✅ Avatar mis à jour avec requestId fal.ai:', falResult.requestId);
+      return updatedAvatar;
+
+    } catch (error: any) {
+      logger.server.error('❌ Erreur fal.ai:', error);
+      if (error && typeof error === 'object' && 'body' in error) {
+        logger.server.error('❌ Corps de l\'erreur fal.ai:', JSON.stringify(error.body, null, 2));
+      }
       await prisma.avatar.update({
         where: { id: avatar.id },
         data: { status: AvatarStatus.FAILED }
       });
       throw new Error('Échec du lancement de la génération vidéo');
     }
-
-    // 5. Mettre à jour l'avatar avec le requestId pour le suivi
-    const updatedAvatar = await prisma.avatar.update({
-      where: { id: avatar.id },
-      data: {
-        falRequestId: videoResult.requestId,
-        imageStoragePath: finalImagePath
-      }
-    });
-
-    console.log(`✅ Avatar mis à jour avec requestId: ${videoResult.requestId}`);
-
-    // 6. Si la génération est immédiate (Seedance synchrone), traiter le résultat
-    if (videoResult.videoUrl) {
-      console.log('📹 Vidéo générée immédiatement, téléchargement...');
-      
-      try {
-        // Générer le chemin final pour la vidéo
-        const finalVideoPath = minioService.generateAvatarPath(
-          userId,
-          avatar.id,
-          'video',
-          'mp4'
-        );
-
-        // Télécharger et stocker la vidéo
-        await minioService.uploadFromUrl(
-          videoResult.videoUrl,
-          finalVideoPath,
-          'video/mp4'
-        );
-
-        // CRITICAL: Stocker aussi l'image dans MinIO selon Plan.md
-        console.log('🖼️ Stockage de l\'image dans MinIO...');
-        
-        if (imageFile) {
-          // Image uploadée : uploader directement le fichier
-          await minioService.uploadFile(imageFile, finalImagePath);
-          console.log('✅ Image uploadée stockée dans MinIO:', finalImagePath);
-        } else {
-          // Image générée fal.ai : télécharger depuis l'URL
-          await minioService.uploadFromUrl(
-            seedanceImageUrl,
-            finalImagePath,
-            'image/jpeg'
-          );
-          console.log('✅ Image fal.ai stockée dans MinIO:', finalImagePath);
-        }
-        
-        // Mettre à jour l'avatar avec le statut SUCCEEDED
-        const finalAvatar = await prisma.avatar.update({
-          where: { id: avatar.id },
-          data: {
-            status: AvatarStatus.SUCCEEDED,
-            videoStoragePath: finalVideoPath
-          }
-        });
-
-        console.log(`✅ Avatar finalisé avec succès: ${finalAvatar.id}`);
-        
-        // Nettoyer l'URL blob temporaire si c'était une image uploadée
-        if (imageFile && seedanceImageUrl.startsWith('blob:')) {
-          URL.revokeObjectURL(seedanceImageUrl);
-          console.log('🧹 URL blob temporaire nettoyée');
-        }
-        
-        return finalAvatar;
-
-      } catch (storageError) {
-        console.error('❌ Erreur lors du stockage:', storageError);
-        
-        // Marquer comme échoué
-        await prisma.avatar.update({
-          where: { id: avatar.id },
-          data: { status: AvatarStatus.FAILED }
-        });
-        
-        throw new Error('Erreur lors du stockage de la vidéo');
-      }
-    }
-
-    // Si génération asynchrone, retourner l'avatar en attente
-    return updatedAvatar;
 
   } catch (error) {
     console.error('❌ Erreur lors de la création de l\'avatar:', error);

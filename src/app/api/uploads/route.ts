@@ -8,77 +8,47 @@ import { minioService } from '../../_shared/lib/minio';
  * Génère une URL signée pour l'upload d'un fichier vers MinIO
  */
 export async function POST(request: NextRequest) {
-  // DEPRECATED: Cette route ne devrait plus être utilisée
-  // Le nouveau workflow utilise directement les fichiers via FormData dans /api/avatars
-  console.warn('⚠️ Route /api/uploads obsolète appelée - utiliser FormData dans /api/avatars');
-  
-  return NextResponse.json(
-    { error: 'Route obsolète - utiliser le nouveau workflow avec FormData' },
-    { status: 410 } // Gone
-  );
-
-  // Ancien code commenté
-  /*
   try {
-    // Vérifier l'authentification
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { fileName, contentType } = body;
-
-    if (!fileName || !contentType) {
+    const { fileName, fileType, fileSize } = await request.json();
+    
+    if (!fileName || !fileType || !fileSize) {
       return NextResponse.json(
-        { error: 'fileName et contentType sont requis' },
+        { error: 'fileName, fileType et fileSize sont requis' },
         { status: 400 }
       );
     }
-
-    // Valider le type de fichier (images seulement)
-    if (!contentType.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'Seules les images sont autorisées' },
-        { status: 400 }
-      );
-    }
-
-    // Extraire l'extension du fichier
-    const extension = fileName.split('.').pop()?.toLowerCase();
-    if (!extension || !['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
-      return NextResponse.json(
-        { error: 'Format d\'image non supporté. Utilisez JPG, PNG ou WebP' },
-        { status: 400 }
-      );
-    }
-
-    // Générer un chemin temporaire unique pour l'upload
-    const userId = session.user.email!; // Use email as user ID
-    const tempPath = minioService.generateTempUploadPath(userId, extension);
-
-    // Générer l'URL signée (valide 1 heure)
+    
+    const bucketName = 'better-ads';
+    const timestamp = Date.now();
+    const safeName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const objectName = `temp/${timestamp}-${safeName}`;
+    
+    console.log(`📤 Génération URL signée pour: ${objectName}`);
+    
     const uploadUrl = await minioService.generateUploadUrl(
-      tempPath,
-      contentType,
-      3600 // 1 heure
+      objectName,
+      fileType,
+      60 * 5 // 5 minutes
     );
 
-    console.log(`✅ URL d'upload générée pour l'utilisateur ${userId}: ${tempPath}`);
-
-    return NextResponse.json({
+    const useSSL = process.env.MINIO_USE_SSL === 'true';
+    const protocol = useSSL ? 'https' : 'http';
+    const publicUrl = `${protocol}://${process.env.MINIO_ENDPOINT}/${bucketName}/${objectName}`;
+    
+    return NextResponse.json({ 
       uploadUrl,
-      filePath: tempPath,
-      expiresIn: 3600
+      publicUrl
     });
 
   } catch (error) {
-    console.error('❌ Erreur lors de la génération de l\'URL d\'upload:', error);
+    console.error('❌ Erreur génération URL signée:', error);
     return NextResponse.json(
-      { error: 'Erreur interne du serveur' },
+      { error: 'Erreur lors de la génération de l\'URL d\'upload' },
       { status: 500 }
     );
   }
