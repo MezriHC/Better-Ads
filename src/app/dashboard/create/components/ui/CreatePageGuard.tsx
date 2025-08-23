@@ -29,6 +29,9 @@ export function CreatePageGuard({ children }: CreatePageGuardProps) {
       setProjectName("")
       setIsCreating(false)
     } else {
+      setShouldShowNewProjectModal(false)
+      setProjectName("")
+      setIsCreating(false)
       router.push('/dashboard')
     }
   }
@@ -75,7 +78,7 @@ export function CreatePageGuard({ children }: CreatePageGuardProps) {
 
   return (
     <>
-      {(currentProject || shouldShowNewProjectModal) && children}
+      {currentProject && children}
       
       {shouldShowNewProjectModal && (
         <div 
