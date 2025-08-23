@@ -1,15 +1,14 @@
+/**
+ * @purpose: Composant grille vidéos avec logique métier cross-features
+ * @domain: video
+ * @scope: global
+ * @created: 2024-08-23
+ */
+
 "use client"
 
-import { VideoCard, VideoData } from "./VideoCard"
-
-interface VideoGridProps {
-  videos: VideoData[]
-  onPlay?: (video: VideoData) => void
-  onDownload?: (video: VideoData) => void
-  onDelete?: (video: VideoData) => void
-  onRename?: (video: VideoData) => void
-  emptyMessage?: string
-}
+import { VideoGridProps } from '../config/video-types'
+import { VideoCard } from './video-card.component'
 
 export function VideoGrid({ 
   videos, 
@@ -21,8 +20,8 @@ export function VideoGrid({
 }: VideoGridProps) {
   if (videos.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="text-center py-16 flex flex-col items-center gap-4">
+        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center">
           <svg 
             className="w-10 h-10 text-muted-foreground" 
             fill="none" 
@@ -37,10 +36,12 @@ export function VideoGrid({
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">No videos yet</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          {emptyMessage}
-        </p>
+        <div className="flex flex-col gap-2">
+          <h3 className="text-lg font-medium text-foreground">No videos yet</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {emptyMessage}
+          </p>
+        </div>
       </div>
     )
   }

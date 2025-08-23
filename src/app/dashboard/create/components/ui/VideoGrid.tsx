@@ -1,62 +1,10 @@
-"use client"
+/**
+ * @purpose: Re-export VideoGrid depuis _shared (évite duplication)
+ * @domain: video
+ * @scope: local
+ * @different-from: _shared/business/video-grid.component.tsx
+ * @why-different: Simple re-export pour compatibilité imports Create
+ * @created: 2024-08-23
+ */
 
-import { VideoCard, VideoData } from "./VideoCard"
-
-interface VideoGridProps {
-  videos: VideoData[]
-  onPlay?: (video: VideoData) => void
-  onDownload?: (video: VideoData) => void
-  onDelete?: (video: VideoData) => void
-  onRename?: (video: VideoData) => void
-  emptyMessage?: string
-}
-
-export function VideoGrid({ 
-  videos, 
-  onPlay, 
-  onDownload, 
-  onDelete, 
-  onRename,
-  emptyMessage = "No videos yet. Create your first video to get started!" 
-}: VideoGridProps) {
-  if (videos.length === 0) {
-    return (
-      <div className="text-center py-16">
-        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg 
-            className="w-10 h-10 text-muted-foreground" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={1.5} 
-              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" 
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">No videos yet</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          {emptyMessage}
-        </p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {videos.map((video) => (
-        <VideoCard
-          key={video.id}
-          video={video}
-          onPlay={onPlay}
-          onDownload={onDownload}
-          onDelete={onDelete}
-          onRename={onRename}
-        />
-      ))}
-    </div>
-  )
-}
+export { VideoGrid } from '@/_shared'

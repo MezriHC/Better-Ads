@@ -3,7 +3,7 @@
 import React from "react"
 import Image from "next/image"
 
-interface Avatar {
+export interface Avatar {
   id: string
   name: string
   category: string
@@ -14,49 +14,16 @@ interface Avatar {
   gender?: "male" | "female"
 }
 
-// Échantillon d'avatars pour la demo (premiers noms de chaque genre)
-const sampleMaleNames = ["Aaron", "Abraham", "Adam", "Adrian", "Alan", "Albert", "Alexander", "Andre", "Andrew", "Angelo"];
-const sampleFemaleNames = ["Adrienne", "Alice", "Allison", "Amanda", "Amber", "Amy", "Anna", "April", "Arlene", "Audrey"];
-const sampleTags = ["Professional", "Creative", "Business", "Modern", "Friendly", "Expert", "Trendy", "Reliable"];
-const sampleCategories = ["Business", "Tech", "Creative", "Healthcare", "Education", "Social", "Marketing", "Finance"];
+interface AvatarSliderProps {
+  avatars: Avatar[]
+}
 
-export function AvatarSlider() {
-  // Générer un échantillon d'avatars pour l'affichage avec des images libres de droit
-  const displayedAvatars: Avatar[] = [
-    // 10 avatars masculins
-    ...sampleMaleNames.map((name, index) => ({
-      id: `male-demo-${index + 1}`,
-      name,
-      category: sampleCategories[index % sampleCategories.length],
-      description: `Professional ${name} specializing in various fields`,
-      tags: [
-        sampleTags[index % sampleTags.length],
-        sampleTags[(index + 1) % sampleTags.length]
-      ],
-      imageUrl: `https://picsum.photos/400/600?random=${400 + index}`,
-      type: "image" as const,
-      gender: "male" as const
-    })),
-    // 10 avatars féminins
-    ...sampleFemaleNames.map((name, index) => ({
-      id: `female-demo-${index + 1}`,
-      name,
-      category: sampleCategories[index % sampleCategories.length],
-      description: `Professional ${name} specializing in various fields`,
-      tags: [
-        sampleTags[index % sampleTags.length],
-        sampleTags[(index + 1) % sampleTags.length]
-      ],
-      imageUrl: `https://picsum.photos/400/600?random=${500 + index}`,
-      type: "image" as const,
-      gender: "female" as const
-    }))
-  ]
+export function AvatarSlider({ avatars }: AvatarSliderProps) {
 
   return (
     <div className="overflow-x-auto">
       <div className="flex gap-4" style={{ width: 'max-content' }}>
-        {displayedAvatars.map((avatar) => (
+        {avatars.map((avatar) => (
           <div 
             key={avatar.id}
             className="bg-card border border-border rounded-2xl overflow-hidden group"

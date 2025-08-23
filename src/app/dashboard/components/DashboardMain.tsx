@@ -6,8 +6,26 @@ import {
   SectionHeader,
   UGCShowcase
 } from './'
+import type { Avatar } from './AvatarSlider'
+import type { UGCVideo } from './UGCShowcase'
 
-export function DashboardMain() {
+interface DashboardMainProps {
+  avatars: Avatar[]
+  ugcVideos: UGCVideo[]
+  featuredImages?: {
+    talkingAvatars: string
+    scenesAndBrolls: string
+  }
+}
+
+export function DashboardMain({ 
+  avatars, 
+  ugcVideos, 
+  featuredImages = {
+    talkingAvatars: "/api/placeholder/400/300?type=avatars",
+    scenesAndBrolls: "/api/placeholder/400/300?type=scenes"
+  }
+}: DashboardMainProps) {
   return (
     <div className="flex flex-col gap-8">
       
@@ -17,13 +35,13 @@ export function DashboardMain() {
             title="Talking Avatars"
             description="Create videos with AI avatars presenting your products or messages with natural speech."
             href="/dashboard/create"
-            imageUrl="https://picsum.photos/400/300?random=1"
+            imageUrl={featuredImages.talkingAvatars}
           />
           <FeatureCard 
             title="Scenes & B-Rolls"
             description="Generate cinematic scenes and professional b-roll footage for your video projects."
             href="/dashboard/create"
-            imageUrl="https://picsum.photos/400/300?random=2"
+            imageUrl={featuredImages.scenesAndBrolls}
           />
         </div>
       </section>
@@ -33,7 +51,7 @@ export function DashboardMain() {
           title="Discover our AI Avatars"
           description="Browse our collection of AI avatars and find the perfect one for your next video."
         />
-        <AvatarSlider />
+        <AvatarSlider avatars={avatars} />
       </section>
 
       <section className="flex flex-col gap-4">
@@ -41,7 +59,7 @@ export function DashboardMain() {
           title="Trending UGC created with our tool"
           description="Discover inspiring videos created by our community using our AI avatars and tools."
         />
-        <UGCShowcase />
+        <UGCShowcase videos={ugcVideos} />
       </section>
       
     </div>

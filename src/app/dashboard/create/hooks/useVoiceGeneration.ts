@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import type { Voice } from "../types"
+import type { Voice } from '@/_shared'
 
 export function useVoiceGeneration(initialVoice: Voice) {
   const [selectedVoice, setSelectedVoice] = useState<Voice>(initialVoice)

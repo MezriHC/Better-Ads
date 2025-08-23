@@ -20,6 +20,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
+      "@/_shared": ["./src/app/_shared"],
       "@/src/app/_shared/*": ["./src/app/_shared/*"],
       "@/components/*": ["./src/app/_shared/components/*"],
       "@/lib/*": ["./src/app/_shared/lib/*"],

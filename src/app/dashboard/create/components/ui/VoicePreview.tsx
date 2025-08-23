@@ -1,21 +1,7 @@
 "use client"
 
 import { IconPlayerPlay, IconPlayerPause, IconHeadphones, IconSettings, IconRefresh } from "@tabler/icons-react"
-
-interface Avatar {
-  id: string
-  name: string
-  imageUrl: string
-}
-
-interface Voice {
-  id: string
-  name: string
-  gender: "male" | "female"
-  language: string
-  country: string
-  flag: string
-}
+import type { Avatar, Voice } from '@/_shared'
 
 interface VoicePreviewProps {
   selectedVoice: Voice
@@ -51,7 +37,7 @@ export function VoicePreview({
   return (
     <div>
       {/* Voice Preview - Default component */}
-      <div className="flex items-center gap-3 p-4 bg-muted border border-border rounded-lg">
+      <div className="flex items-center gap-3 p-3 bg-muted border border-border rounded-lg">
         {/* Avatar de l'acteur/voix */}
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent flex items-center justify-center">
           {selectedActor ? (
@@ -68,8 +54,8 @@ export function VoicePreview({
         </div>
         
         {/* Info voix */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="flex-1 flex flex-col gap-1">
+          <div className="flex items-center gap-2">
             <span className="font-medium text-foreground">{selectedVoice.name}</span>
             <span className="text-xs text-muted-foreground">0:00</span>
           </div>
@@ -81,7 +67,7 @@ export function VoicePreview({
         </div>
         
         {/* Contrôles */}
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
             onClick={isVoiceGenerated ? onPlayPause : onGenerateVoice}
             disabled={isDisabled}

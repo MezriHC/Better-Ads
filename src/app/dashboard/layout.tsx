@@ -40,17 +40,13 @@ export default function DashboardLayout({
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="flex flex-1 flex-col min-w-0">
-        <header className="border-b border-border bg-card px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* Titre de la page */}
+        <header className="border-b border-border bg-card px-8 h-16 flex items-center">
+          <div className="flex items-center justify-between w-full">
             <h1 className="text-xl font-semibold text-foreground">{pageTitle}</h1>
             
-            {/* Actions du header */}
             <div className="flex items-center gap-4">
-              {/* Bouton Dark Mode */}
               <ThemeToggle />
               
-              {/* Menu utilisateur */}
               <div className="relative">
                 <button
                   onClick={(e) => {
@@ -74,10 +70,8 @@ export default function DashboardLayout({
                   )}
                 </button>
                 
-                {/* Menu déroulant */}
                 {isUserMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
-                    {/* Informations utilisateur */}
                     <div className="px-3 py-3 border-b border-border">
                       <div className="flex items-center gap-3">
                         {user?.image ? (
@@ -100,7 +94,6 @@ export default function DashboardLayout({
                       </div>
                     </div>
                     
-                    {/* Actions */}
                     <div className="p-2">
                       <button
                         onClick={() => {

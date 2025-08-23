@@ -106,7 +106,7 @@ export function CreationPanel({
   getPlaceholder
 }: CreationPanelProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 transition-all duration-400 ease-in-out">
       <div className="flex items-center justify-between">
         <CreationTypeDropdown
           selectedType={selectedType}
@@ -151,7 +151,9 @@ export function CreationPanel({
         )}
       </div>
 
-      {selectedType === "talking-actor" && (
+      <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
+        selectedType === "talking-actor" ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
+      }`}>
         <VoicePreview
           selectedVoice={selectedVoice}
           selectedActor={selectedActor}
@@ -166,7 +168,7 @@ export function CreationPanel({
           onRegenerateVoice={onRegenerateVoice}
           onToggleAudioSettings={onToggleAudioSettings}
         />
-      )}
+      </div>
 
       <BottomControls
         selectedType={selectedType}

@@ -16,7 +16,7 @@ export interface Avatar {
 export interface Voice {
   id: string
   name: string
-  gender: "male" | "female"
+  gender: "male" | "female" | "neutral"
   language: string
   country: string
   flag: string

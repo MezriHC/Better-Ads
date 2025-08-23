@@ -41,7 +41,7 @@ export function AudioRecordingInterface({
   if (recordedBlob || audioFile) {
     // Recorded/Uploaded Audio - Compact
     return (
-      <div className="w-full h-32 flex items-center gap-4 p-4 bg-muted border border-border rounded-lg">
+      <div className="w-full h-32 flex items-center gap-4 p-3 bg-muted border border-border rounded-lg">
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
           <IconMicrophone className="w-5 h-5 text-primary" />
         </div>

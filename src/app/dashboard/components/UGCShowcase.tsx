@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import Image from "next/image"
 import { IconPlayerPlay } from "@tabler/icons-react"
 
-interface UGCVideo {
+export interface UGCVideo {
   id: string
   title: string
   creator: string
@@ -13,92 +13,14 @@ interface UGCVideo {
   category: "Product" | "Avatar"
 }
 
-const ugcVideos: UGCVideo[] = [
-  {
-    id: "1",
-    title: "iPhone 15 Pro Unboxing",
-    creator: "TechReview",
-    thumbnail: "https://picsum.photos/400/600?random=50",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    category: "Product"
-  },
-  {
-    id: "2", 
-    title: "Fashion Haul Review",
-    creator: "StyleGuru",
-    thumbnail: "https://picsum.photos/400/600?random=51",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    category: "Product"
-  },
-  {
-    id: "3",
-    title: "CEO Welcome Message",
-    creator: "Business Leader",
-    thumbnail: "https://picsum.photos/400/600?random=52", 
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    category: "Avatar"
-  },
-  {
-    id: "4",
-    title: "Skincare Tutorial", 
-    creator: "BeautyExpert",
-    thumbnail: "https://picsum.photos/400/600?random=53",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    category: "Product"
-  },
-  {
-    id: "5",
-    title: "Team Introduction",
-    creator: "HR Manager",
-    thumbnail: "https://picsum.photos/400/600?random=54",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4", 
-    category: "Avatar"
-  },
-  {
-    id: "6",
-    title: "Fitness Gear Review",
-    creator: "FitInfluencer",
-    thumbnail: "https://picsum.photos/400/600?random=55",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-    category: "Product"
-  },
-  {
-    id: "7",
-    title: "Course Introduction", 
-    creator: "EduTeacher",
-    thumbnail: "https://picsum.photos/400/600?random=56",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-    category: "Avatar"
-  },
-  {
-    id: "8",
-    title: "Coffee Machine Demo",
-    creator: "CoffeeLover",
-    thumbnail: "https://picsum.photos/400/600?random=57",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-    category: "Product"
-  },
-  {
-    id: "9",
-    title: "Property Showcase",
-    creator: "RealEstate Pro",
-    thumbnail: "https://picsum.photos/400/600?random=58",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-    category: "Avatar"
-  },
-  {
-    id: "10",
-    title: "Gaming Setup Tour",
-    creator: "GamerPro", 
-    thumbnail: "https://picsum.photos/400/600?random=59",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-    category: "Product"
-  }
-]
+interface UGCShowcaseProps {
+  videos: UGCVideo[]
+  maxDisplayed?: number
+}
 
-export function UGCShowcase() {
+export function UGCShowcase({ videos, maxDisplayed = 12 }: UGCShowcaseProps) {
   const [selectedVideo, setSelectedVideo] = useState<UGCVideo | null>(null)
-  const displayedVideos = ugcVideos.slice(0, 12)
+  const displayedVideos = videos.slice(0, maxDisplayed)
 
   const openVideo = (video: UGCVideo) => {
     setSelectedVideo(video)

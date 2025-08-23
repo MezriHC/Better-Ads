@@ -3,51 +3,22 @@
 import React, { useState, useMemo } from "react"
 import Image from "next/image"
 import { IconSearch, IconChevronDown, IconPlus, IconX } from "@tabler/icons-react"
-
-interface Avatar {
-  id: string
-  name: string
-  category: string
-  description: string
-  tags: string[]
-  imageUrl: string
-  type: "image" | "video"
-  gender?: "male" | "female"
-  age?: "young" | "adult"
-  theme?: string
-}
+import { Avatar, mockAvatars } from '@/_shared'
 
 interface ActorSelectorModalProps {
   isOpen: boolean
   onClose: () => void
   onSelectActor: (actor: Avatar) => void
   selectedActorId?: string
+  onCreateAvatar?: () => void
 }
 
-// Données simulées d'avatars
-const avatarNames = [
-  "Alex", "Jordan", "Taylor", "Morgan", "Casey", "Riley", "Avery", "Quinn",
-  "Blake", "Cameron", "Dakota", "Drew", "Emery", "Finley", "Hayden", "Jamie"
-]
-
-const allCategories = ["Professional", "Casual", "Creative", "Corporate", "Lifestyle"]
-const allThemes = ["business", "casual", "creative", "professional", "modern", "classic"]
-const allTags = ["Friendly", "Professional", "Energetic", "Calm", "Confident", "Approachable"]
-
-const enrichedAvatars: Avatar[] = avatarNames.map((name, index) => ({
-  id: `avatar-${index + 1}`,
-  name,
-  category: allCategories[index % allCategories.length],
-  description: `Professional AI avatar perfect for ${allCategories[index % allCategories.length].toLowerCase()} content`,
-  tags: [
-    allTags[index % allTags.length],
-    allTags[(index + 1) % allTags.length],
-  ].slice(0, 2),
-  imageUrl: `https://picsum.photos/400/600?random=${200 + index}`,
-  type: "image",
+// Ajouter propriétés gender/age aux mock avatars
+const enrichedAvatars: (Avatar & { gender?: "male" | "female"; age?: "young" | "adult"; theme?: string })[] = mockAvatars.map((avatar, index) => ({
+  ...avatar,
   gender: index % 3 === 0 ? "female" : index % 3 === 1 ? "male" : undefined,
-  age: index % 2 === 0 ? "adult" : "young",
-  theme: allThemes[index % allThemes.length]
+  age: index % 2 === 0 ? "adult" : "young", 
+  theme: ["business", "casual", "creative", "professional", "modern", "classic"][index % 6]
 }))
 
 // Composant de filtre custom
@@ -102,7 +73,8 @@ export function ActorSelectorModal({
   isOpen, 
   onClose, 
   onSelectActor,
-  selectedActorId
+  selectedActorId,
+  onCreateAvatar
 }: ActorSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedGender, setSelectedGender] = useState<"all" | "male" | "female">("all")
@@ -217,7 +189,7 @@ export function ActorSelectorModal({
             
             {/* Carte "Create avatar" */}
             <div
-              onClick={() => console.log('Create avatar clicked')}
+              onClick={() => onCreateAvatar?.()}
               className="bg-card rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 border border-dashed border-border hover:border-primary/50 hover:bg-accent/20"
             >
               <div className="relative h-72 flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 gap-4">

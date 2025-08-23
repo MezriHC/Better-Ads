@@ -2,15 +2,7 @@
 
 import { useState } from "react"
 import { IconX, IconChevronDown, IconPlayerPlay } from "@tabler/icons-react"
-
-interface Voice {
-  id: string
-  name: string
-  gender: "male" | "female"
-  language: string
-  country: string
-  flag: string
-}
+import type { Voice } from '@/_shared'
 
 interface VoiceSelectionModalProps {
   isOpen: boolean

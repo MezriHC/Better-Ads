@@ -21,7 +21,6 @@ export function GradientButton({
   fullWidth = true,
   size = "md"
 }: GradientButtonProps) {
-  // Configuration des tailles
   const sizeConfig = {
     sm: {
       padding: "px-4 py-2",

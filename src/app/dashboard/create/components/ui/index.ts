@@ -1,8 +1,7 @@
-// UI Components exports - populated with GitHub imports
+// UI Components exports
 export { VideoCard, type VideoData } from './VideoCard'
 export { VideoGrid } from './VideoGrid'
 export { VideoModal } from './VideoModal'
-export { VideoShowcase } from './VideoShowcase'
 
 // Create components
 export { HeroSection } from './HeroSection'
@@ -13,10 +12,7 @@ export { CreationTypeDropdown } from './CreationTypeDropdown'
 export { VideoFormatSelector } from './VideoFormatSelector'
 export { ActorSelection } from './ActorSelection'
 
-// Dashboard components
-export { AvatarSlider } from './AvatarSlider'
-export { FeatureCard } from './FeatureCard'
-export { SectionHeader } from './SectionHeader'
+// UI components
 export { GradientButton } from './GradientButton'
 
 // Advanced components
@@ -26,7 +22,6 @@ export { VoicePreview } from './VoicePreview'
 export { VoiceSelectionModal } from './VoiceSelectionModal'
 export { ActorSelectorModal } from './ActorSelectorModal'
 export { BottomControls } from './BottomControls'
-export { UGCShowcase } from './UGCShowcase'
 
 // Avatar creation workflow components
 export { GetStartedStep } from './GetStartedStep'

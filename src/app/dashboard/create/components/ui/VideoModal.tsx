@@ -30,14 +30,12 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
     }
   }, [isOpen, onClose])
 
-  // Auto-play quand la modal s'ouvre
   useEffect(() => {
     if (isOpen && video?.videoUrl && videoRef.current) {
-      videoRef.current.play().catch(console.error)
+      videoRef.current.play().catch(() => {})
     }
   }, [isOpen, video])
 
-  // Déterminer la taille de la modal selon le format
   const getModalSize = () => {
     if (!video?.format) return "max-w-4xl" // Défaut
     

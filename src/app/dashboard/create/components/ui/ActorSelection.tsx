@@ -1,4 +1,3 @@
-"use client"
 
 import { IconUsers } from "@tabler/icons-react"
 

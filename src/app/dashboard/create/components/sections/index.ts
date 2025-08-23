@@ -1,1 +1,2 @@
-// Section Components exports - will be populated with GitHub imports
+export { MainCreationSection } from './MainCreationSection'
+export { HeroSectionWrapper } from './HeroSection'

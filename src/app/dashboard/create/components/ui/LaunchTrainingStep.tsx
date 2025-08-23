@@ -76,14 +76,12 @@ export function LaunchTrainingStep({
       onAvatarGenerationCompleted?.(avatar)
       setIsGenerating(false)
     } catch (error) {
-      console.error('Erreur génération avatar:', error)
       setError('Generation failed')
       setIsGenerating(false)
     }
   }, [selectedImageUrl, prompt, isGenerating, onAvatarGenerationCompleted])
 
   useEffect(() => {
-    // Démarrer automatiquement la génération d'avatar
     if (selectedImageUrl && prompt && !hasStartedGeneration && !isGenerating) {
       setHasStartedGeneration(true)
       onAvatarGenerationStarted?.({ prompt, imageUrl: selectedImageUrl })
@@ -103,7 +101,6 @@ export function LaunchTrainingStep({
       link.target = '_blank'
       link.click()
     } catch {
-      console.error('Download failed')
     } finally {
       setTimeout(() => {
         setDownloadingVideo(false)

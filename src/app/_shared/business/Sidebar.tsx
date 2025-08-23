@@ -130,7 +130,6 @@ export function Sidebar() {
   return (
     <aside className={`${isCollapsed ? 'w-20' : 'w-72'} bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out flex flex-col h-full`}>
       
-      {/* Header */}
       <div className="h-16 border-b border-sidebar-border flex items-center px-4 shrink-0">
         <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : ''}`}>
           <div className="relative w-8 h-8 shrink-0 group cursor-pointer">
@@ -154,10 +153,8 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="flex-grow p-4 flex flex-col gap-4 overflow-y-auto">
         
-        {/* Bouton New Project */}
         <button 
           onClick={handleNewProject}
           className="w-full cursor-pointer"
@@ -176,7 +173,6 @@ export function Sidebar() {
           </div>
         </button>
 
-        {/* Menu Items */}
         <div className="flex flex-col gap-2">
           {menuItems.map((item) => {
             const isActive = pathname === item.href && item.href !== "#"
@@ -202,10 +198,9 @@ export function Sidebar() {
           })}
         </div>
 
-        {/* Projects Section */}
         {!isCollapsed && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between px-3 mb-3">
+          <div className="mt-6 flex flex-col gap-3">
+            <div className="flex items-center justify-between px-3">
               <h3 className="text-sm font-semibold text-sidebar-foreground">
                 Projects
               </h3>
@@ -286,7 +281,6 @@ export function Sidebar() {
                       )}
                     </div>
 
-                    {/* Menu trois points */}
                     {!isEditing && (
                       <div className="relative">
                         <button
@@ -299,7 +293,6 @@ export function Sidebar() {
                           <IconDots className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
                         </button>
 
-                        {/* Dropdown menu */}
                         {openMenuId === project.id && (
                           <div className="absolute top-full right-0 mt-2 w-36 bg-card border border-border rounded-lg shadow-xl z-50 overflow-hidden">
                             <div className="py-1">
@@ -344,7 +337,6 @@ export function Sidebar() {
         )}
       </div>
       
-      {/* Footer - Bouton Collapse */}
       <div className={`p-4 shrink-0 flex ${isCollapsed ? 'justify-center' : 'justify-end'} mt-auto`}>
         <button 
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -363,7 +355,6 @@ export function Sidebar() {
               </button>
       </div>
 
-      {/* Modale de suppression */}
       {projectToDelete && (
         <div 
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -388,7 +379,6 @@ export function Sidebar() {
             </div>
             
             <div className="flex items-center gap-3">
-              {/* Bouton Annuler */}
               <button
                 onClick={cancelDeleteProject}
                 disabled={isDeleting}
@@ -397,7 +387,6 @@ export function Sidebar() {
                 Annuler
               </button>
               
-              {/* Bouton Supprimer */}
               <div className="flex-1 p-[2px] rounded-[12px] bg-gradient-to-b from-red-600/20 to-transparent dark:from-red-400/20">
                 <button
                   onClick={confirmDeleteProject}
