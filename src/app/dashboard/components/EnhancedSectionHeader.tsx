@@ -1,10 +1,3 @@
-/**
- * @purpose: En-tête de section avec action optionnelle
- * @domain: dashboard
- * @scope: feature-dashboard
- * @created: 2025-08-22
- */
-
 "use client"
 
 import Link from 'next/link'

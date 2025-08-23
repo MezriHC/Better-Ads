@@ -1,10 +1,3 @@
-/**
- * @purpose: Section héro avec logique de projet et showcase vidéos
- * @domain: create
- * @scope: feature-create  
- * @created: 2025-08-22
- */
-
 "use client"
 
 import { useState } from 'react'

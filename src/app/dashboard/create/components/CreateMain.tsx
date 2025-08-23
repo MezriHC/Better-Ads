@@ -1,10 +1,3 @@
-/**
- * @purpose: Assemblage page complète Create avec sections et hooks selon CLAUDE.md
- * @domain: create
- * @scope: feature-create
- * @created: 2025-08-22
- */
-
 "use client"
 
 import { useState } from "react"

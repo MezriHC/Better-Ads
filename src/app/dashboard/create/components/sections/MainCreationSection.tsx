@@ -1,10 +1,3 @@
-/**
- * @purpose: Section principale de création avec logique métier et assemblage composants  
- * @domain: create
- * @scope: feature-create
- * @created: 2025-08-22
- */
-
 "use client"
 
 import { useState } from 'react'

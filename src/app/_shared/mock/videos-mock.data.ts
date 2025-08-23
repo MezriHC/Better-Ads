@@ -1,10 +1,3 @@
-/**
- * @purpose: Mock data vidéos pour validation UI cross-features
- * @domain: video
- * @scope: global
- * @created: 2024-08-23
- */
-
 import { VideoData } from '../config/video-types'
 
 export const mockVideos: VideoData[] = [

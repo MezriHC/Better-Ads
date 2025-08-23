@@ -1,10 +1,3 @@
-/**
- * @purpose: Gestionnaire audio avec logique métier d'enregistrement et lecture
- * @domain: audio
- * @scope: feature-create
- * @created: 2025-08-22
- */
-
 "use client"
 
 import { useState, useRef } from 'react'

@@ -1,10 +1,3 @@
-/**
- * @purpose: Container atomique pur sans données métier
- * @domain: ui
- * @scope: global
- * @created: 2025-08-22
- */
-
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
 }

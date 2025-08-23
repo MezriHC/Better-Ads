@@ -1,10 +1,3 @@
-/**
- * @purpose: Constantes invariables globales du projet
- * @domain: config
- * @scope: global
- * @created: 2025-08-22
- */
-
 export const API_ENDPOINTS = {
   AUTH: '/api/auth',
   PROJECTS: '/api/projects',

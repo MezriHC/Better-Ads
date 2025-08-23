@@ -1,10 +1,3 @@
-/**
- * @purpose: Input atomique pur sans validation métier
- * @domain: ui
- * @scope: global
- * @created: 2025-08-22
- */
-
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'default' | 'error'
 }

@@ -1,10 +1,3 @@
-/**
- * @purpose: Bouton atomique pur pour lecture audio sans logique métier
- * @domain: voice
- * @scope: feature-create
- * @created: 2025-08-22
- */
-
 import { IconPlayerPlay, IconPlayerPause } from "@tabler/icons-react"
 
 interface PlayButtonProps {

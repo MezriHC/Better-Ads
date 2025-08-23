@@ -1,10 +1,3 @@
-/**
- * @purpose: Bouton atomique pur pour l'enregistrement audio sans logique métier
- * @domain: audio
- * @scope: feature-create
- * @created: 2025-08-22
- */
-
 import { IconMicrophone, IconPlayerPause } from "@tabler/icons-react"
 
 interface RecordButtonProps {

@@ -1,12 +1,3 @@
-/**
- * @purpose: Composant vidéo showcase avec logique métier complète cross-features
- * @domain: video
- * @scope: global
- * @different-from: dashboard/components/VideoShowcase.tsx
- * @why-different: Version complète avec formats multiples et logique avancée (remplace la version basique)
- * @created: 2024-08-23
- */
-
 "use client"
 
 import { useState } from "react"

@@ -1,10 +1,3 @@
-/**
- * @purpose: Bouton atomique pur sans logique métier
- * @domain: ui
- * @scope: global
- * @created: 2025-08-22
- */
-
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'secondary' | 'destructive'
   size?: 'sm' | 'md' | 'lg'

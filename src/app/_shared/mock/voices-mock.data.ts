@@ -1,10 +1,3 @@
-/**
- * @purpose: Mock data voix pour validation UI cross-features
- * @domain: voice
- * @scope: global
- * @created: 2024-08-23
- */
-
 export interface Voice {
   id: string
   name: string

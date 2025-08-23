@@ -1,10 +1,3 @@
-/**
- * @purpose: Client HTTP global avec gestion d'erreurs et retry automatique
- * @domain: api
- * @scope: global
- * @created: 2025-08-22
- */
-
 class ApiGlobalService {
   private baseUrl: string
 

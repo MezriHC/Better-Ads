@@ -1,10 +1,3 @@
-/**
- * @purpose: Composant card vidéo avec logique métier complète cross-features
- * @domain: video
- * @scope: global
- * @created: 2024-08-23
- */
-
 "use client"
 
 import { useState } from "react"

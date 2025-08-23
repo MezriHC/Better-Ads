@@ -1,10 +1,3 @@
-/**
- * @purpose: Service CRUD global pour toutes les entités avec gestion des permissions
- * @domain: entity
- * @scope: global
- * @created: 2025-08-22
- */
-
 import { prisma } from './database-client'
 import { apiGlobalService } from './api-global.service'
 

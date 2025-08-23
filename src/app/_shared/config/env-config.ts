@@ -1,10 +1,3 @@
-/**
- * @purpose: Variables d'environnement typées et validées
- * @domain: config  
- * @scope: global
- * @created: 2025-08-22
- */
-
 export const ENV_CONFIG = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || '',

@@ -1,10 +1,3 @@
-/**
- * @purpose: Types globaux pour le système vidéo cross-features
- * @domain: video
- * @scope: global
- * @created: 2024-08-23
- */
-
 export interface VideoData {
   id: string
   title: string

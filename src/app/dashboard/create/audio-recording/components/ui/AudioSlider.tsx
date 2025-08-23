@@ -1,10 +1,3 @@
-/**
- * @purpose: Slider atomique pur pour réglages audio sans validation métier
- * @domain: audio  
- * @scope: feature-create
- * @created: 2025-08-22
- */
-
 interface AudioSliderProps {
   label: string
   value: number

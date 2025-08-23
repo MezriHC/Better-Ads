@@ -430,18 +430,6 @@ grep "[nomLogique]" src/_shared/index.ts
 - "J'ai exécuté grep '[pattern]' et trouvé : [résultats]"
 - "J'ai vérifié _shared/index.ts et [trouvé/pas trouvé] [logique]"
 
-### 📋 Header OBLIGATOIRE
-
-```typescript
-/**
- * @purpose: [Description précise] 
- * @domain: [user|auth|form|api]
- * @scope: [global|feature-main|feature-admin|local]
- * @different-from: [Fichier similaire] (si applicable)
- * @why-different: [Justification] (si applicable)
- * @created: [Date YYYY-MM-DD]
- */
-```
 
 ### 🎯 Limites _shared/
 

@@ -1,10 +1,3 @@
-/**
- * @purpose: Card atomique pure pour afficher une voix sans logique métier
- * @domain: voice
- * @scope: feature-create  
- * @created: 2025-08-22
- */
-
 interface VoiceCardProps {
   id: string
   name: string

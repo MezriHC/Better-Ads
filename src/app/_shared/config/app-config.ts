@@ -1,10 +1,3 @@
-/**
- * @purpose: Configuration runtime de l'application
- * @domain: config
- * @scope: global  
- * @created: 2025-08-22
- */
-
 import type { ApiResponse } from './types-global'
 
 export type SessionUser = {

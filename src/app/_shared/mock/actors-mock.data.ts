@@ -1,10 +1,3 @@
-/**
- * @purpose: Mock data acteurs pour validation UI cross-features
- * @domain: actor
- * @scope: global
- * @created: 2024-08-23
- */
-
 export interface Avatar {
   id: string
   name: string

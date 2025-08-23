@@ -1,10 +1,3 @@
-/**
- * @purpose: Composant grille vidéos avec logique métier cross-features
- * @domain: video
- * @scope: global
- * @created: 2024-08-23
- */
-
 "use client"
 
 import { VideoGridProps } from '../config/video-types'
