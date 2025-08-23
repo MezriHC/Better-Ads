@@ -62,10 +62,14 @@ export function BottomControls({
   onSubmit
 }: BottomControlsProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between h-12">
+      <div className="flex items-center gap-3 relative">
         {/* Video Format Dropdown - Only for Scenes and B-Rolls */}
-        {(selectedType === "scenes" || selectedType === "b-rolls") && (
+        <div className={`transition-all duration-500 ease-in-out absolute ${
+          (selectedType === "scenes" || selectedType === "b-rolls")
+            ? "opacity-100 transform translate-x-0" 
+            : "opacity-0 transform -translate-x-4 pointer-events-none"
+        }`}>
           <VideoFormatSelector
             selectedVideoFormat={selectedVideoFormat}
             onFormatChange={onVideoFormatChange}
@@ -73,10 +77,14 @@ export function BottomControls({
             isOpen={isVideoFormatDropdownOpen}
             onToggleOpen={onToggleVideoFormatDropdown}
           />
-        )}
+        </div>
 
-        {/* Speech Mode Dropdown - Only for Talking Actor */}
-        {selectedType === "talking-actor" && (
+        {/* Speech Mode + Actor Selection - Only for Talking Actor */}
+        <div className={`transition-all duration-500 ease-in-out flex items-center gap-3 ${
+          selectedType === "talking-actor"
+            ? "opacity-100 transform translate-x-0" 
+            : "opacity-0 transform translate-x-4 pointer-events-none"
+        }`}>
           <SpeechModeSelector
             speechMode={speechMode}
             onModeChange={onSpeechModeChange}
@@ -84,15 +92,11 @@ export function BottomControls({
             isOpen={isSpeechDropdownOpen}
             onToggleOpen={onToggleSpeechDropdown}
           />
-        )}
-
-        {/* Actor Selection - Only for Talking Actor */}
-        {selectedType === "talking-actor" && (
           <ActorSelection
             selectedActor={selectedActor}
             onOpenModal={onOpenActorModal}
           />
-        )}
+        </div>
       </div>
 
       {/* Generate Button */}

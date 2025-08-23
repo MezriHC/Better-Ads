@@ -151,24 +151,24 @@ export function CreationPanel({
         )}
       </div>
 
-      <div className={`transition-all duration-500 ease-in-out overflow-hidden ${
-        selectedType === "talking-actor" ? "max-h-32 opacity-100" : "max-h-0 opacity-0"
-      }`}>
-        <VoicePreview
-          selectedVoice={selectedVoice}
-          selectedActor={selectedActor}
-          isVoiceGenerated={isVoiceGenerated}
-          isGeneratingVoice={isGeneratingVoice}
-          isPlayingVoice={isPlayingVoice}
-          speechMode={speechMode}
-          script={script}
-          audioFile={audioFile}
-          onGenerateVoice={onGenerateVoice}
-          onPlayPause={onPlayPauseVoice}
-          onRegenerateVoice={onRegenerateVoice}
-          onToggleAudioSettings={onToggleAudioSettings}
-        />
-      </div>
+      {selectedType === "talking-actor" && (
+        <div className="flex flex-col gap-3">
+          <VoicePreview
+            selectedVoice={selectedVoice}
+            selectedActor={selectedActor}
+            isVoiceGenerated={isVoiceGenerated}
+            isGeneratingVoice={isGeneratingVoice}
+            isPlayingVoice={isPlayingVoice}
+            speechMode={speechMode}
+            script={script}
+            audioFile={audioFile}
+            onGenerateVoice={onGenerateVoice}
+            onPlayPause={onPlayPauseVoice}
+            onRegenerateVoice={onRegenerateVoice}
+            onToggleAudioSettings={onToggleAudioSettings}
+          />
+        </div>
+      )}
 
       <BottomControls
         selectedType={selectedType}
