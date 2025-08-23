@@ -7,14 +7,14 @@ import { CreatePageGuard } from './ui/CreatePageGuard'
 import { VoiceSelectionModal } from './ui/VoiceSelectionModal'
 import { AudioSettingsDrawer } from './ui/AudioSettingsDrawer'
 import { CreateAvatarModal } from './ui/CreateAvatarModal'
-import { useProjects, mockVoices, mockAvatars, type Voice } from "@/src/app/_shared"
+import { useProjectContext, mockVoices, mockAvatars, type Voice } from "@/src/app/_shared"
 import { useAudioRecording } from "../hooks/useAudioRecording"
 import { useVoiceGeneration } from "../hooks/useVoiceGeneration"
 import type { CreationType, Avatar, AudioSettings } from "../types"
 import { creationTypes, speechModes, videoFormats } from "../constants"
 
 export function CreateMain() {
-  const { currentProject } = useProjects()
+  const { currentProject } = useProjectContext()
   
   const [script, setScript] = useState("")
   const [selectedType, setSelectedType] = useState<CreationType>("talking-actor")

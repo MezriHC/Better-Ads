@@ -16,6 +16,7 @@ export * from './business/ThemeProvider'
 export * from './business/ThemeToggle'
 
 export * from './business/ProjectContext'
+export { useProjectContext } from './business/ProjectContext'
 export * from './business/AuthGuard'
 export * from './business/Sidebar'
 export * from './business/hooks/useAuth'

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { IconX, IconSparkles } from "@tabler/icons-react"
+import { useProjectContext } from '@/_shared'
 
 interface CreatePageGuardProps {
   children: React.ReactNode
@@ -10,18 +11,21 @@ interface CreatePageGuardProps {
 
 export function CreatePageGuard({ children }: CreatePageGuardProps) {
   const router = useRouter()
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [projectName, setProjectName] = useState("")
   const [isCreating, setIsCreating] = useState(false)
 
-  // Mock project context
-  const currentProject = { id: "demo-project", name: "Demo Project" }
-  const projects = [currentProject]
-  const isLoading = false
+  const { 
+    projects, 
+    currentProject, 
+    isLoading, 
+    createProject,
+    shouldShowNewProjectModal,
+    setShouldShowNewProjectModal
+  } = useProjectContext()
 
   const handleCloseModal = () => {
     if (projects.length > 0) {
-      setIsModalOpen(false)
+      setShouldShowNewProjectModal(false)
       setProjectName("")
       setIsCreating(false)
     } else {
@@ -34,13 +38,21 @@ export function CreatePageGuard({ children }: CreatePageGuardProps) {
     
     setIsCreating(true)
     
-    // Mock project creation
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const newProject = await createProject(projectName)
     
-    setIsModalOpen(false)
-    setProjectName("")
+    if (newProject) {
+      setShouldShowNewProjectModal(false)
+      setProjectName("")
+    }
+    
     setIsCreating(false)
   }
+
+  useEffect(() => {
+    if (!currentProject && projects.length === 0 && !isLoading) {
+      setShouldShowNewProjectModal(true)
+    }
+  }, [currentProject, projects.length, isLoading, setShouldShowNewProjectModal])
 
   if (isLoading) {
     return (
@@ -50,7 +62,7 @@ export function CreatePageGuard({ children }: CreatePageGuardProps) {
     )
   }
 
-  if (!currentProject && !isModalOpen) {
+  if (!currentProject && !shouldShowNewProjectModal) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
@@ -63,9 +75,9 @@ export function CreatePageGuard({ children }: CreatePageGuardProps) {
 
   return (
     <>
-      {(currentProject || isModalOpen) && children}
+      {(currentProject || shouldShowNewProjectModal) && children}
       
-      {isModalOpen && (
+      {shouldShowNewProjectModal && (
         <div 
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={(e) => {
