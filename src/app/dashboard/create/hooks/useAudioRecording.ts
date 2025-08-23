@@ -46,7 +46,6 @@ export function useAudioRecording() {
         setRecordingTime(prev => prev + 1)
       }, 1000)
     } catch (error) {
-      console.error('Erreur lors du démarrage de l\'enregistrement:', error)
       setRecordingState("idle")
     }
   }
@@ -110,7 +109,6 @@ export function useAudioRecording() {
   }
 
   return {
-    // State
     recordedBlob,
     audioFile,
     isPlaying,
@@ -118,7 +116,6 @@ export function useAudioRecording() {
     recordingState,
     recordingTime,
     
-    // Actions
     prepareRecording,
     startRecording,
     stopRecording,
@@ -129,7 +126,6 @@ export function useAudioRecording() {
     cancelRecording,
     setAudioFile,
     
-    // Utils
     formatTime
   }
 }

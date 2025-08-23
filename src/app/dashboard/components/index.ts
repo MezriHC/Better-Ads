@@ -1,0 +1,11 @@
+// Dashboard components exports
+export { AvatarSlider } from './AvatarSlider'
+export { CreateButton } from './CreateButton'
+export { FeatureCard } from './FeatureCard'
+export { SectionHeader } from './SectionHeader'
+export { EnhancedSectionHeader } from './EnhancedSectionHeader'
+export { UGCShowcase } from './UGCShowcase'
+export { VideoCard, type VideoData } from './VideoCard'
+export { VideoGrid } from './VideoGrid'
+export { VideoModal } from './VideoModal'
+export { VideoShowcase } from './VideoShowcase'

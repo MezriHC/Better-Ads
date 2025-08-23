@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 import "./globals.css";
-import { ThemeProvider } from "./_shared/components/ThemeProvider";
+import { ThemeProvider } from "./_shared";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
-import { SessionProvider } from "./_shared/components/SessionProvider";
-import { AuthGuard } from "./_shared/components/AuthGuard";
-import { ProjectProvider } from "./_shared/contexts/ProjectContext";
+import { SessionProvider } from "./_shared";
+import { AuthGuard } from "./_shared";
+import { ProjectProvider } from "./_shared";
 
 export const metadata: Metadata = {
   title: "Better Ads",

@@ -137,9 +137,6 @@ export function UGCShowcase() {
                     <IconPlayerPlay className="w-6 h-6 text-white" fill="currentColor" />
                   </div>
                 </div>
-                
-                
-
               </div>
               
               <div className="p-3 flex flex-col gap-1">

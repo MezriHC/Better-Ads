@@ -3,9 +3,9 @@
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Sidebar } from "@/src/app/_shared/components/Sidebar"
-import { ThemeToggle } from "@/src/app/_shared/components/ThemeToggle"
-import { useAuth } from "@/src/app/_shared/hooks/useAuth"
+import { Sidebar } from "@/src/app/_shared"
+import { ThemeToggle } from "@/src/app/_shared"
+import { useAuth } from "@/src/app/_shared"
 import { IconChevronDown, IconLogout, IconUser } from "@tabler/icons-react"
 
 const menuItems = [
@@ -25,7 +25,6 @@ export default function DashboardLayout({
   const currentPage = menuItems.find((item) => item.href === pathname)
   const pageTitle = currentPage ? currentPage.title : "Dashboard"
 
-  // Fermer le menu utilisateur quand on clique ailleurs
   useEffect(() => {
     const handleClickOutside = () => {
       setIsUserMenuOpen(false)

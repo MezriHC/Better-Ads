@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../../../_shared/lib/auth'
-import { projectQueries } from '../../../_shared/database/queries/project'
+import { authOptions } from '../../../_shared'
+import { projectQueries } from '../../../_shared'
 import { z } from 'zod'
 
-// Schéma de validation pour mettre à jour un projet
 const updateProjectSchema = z.object({
   name: z.string().min(1, 'Le nom du projet est requis').max(100, 'Le nom du projet ne peut pas dépasser 100 caractères').optional(),
 })
 
-// GET /api/projects/[id] - Récupérer un projet par ID
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -34,7 +32,6 @@ export async function GET(
       )
     }
 
-    // Vérifier que l'utilisateur est propriétaire du projet
     if (project.userId !== (session!.user as any).id) {
       return NextResponse.json(
         { error: 'Accès refusé' },
@@ -51,7 +48,6 @@ export async function GET(
   }
 }
 
-// PATCH /api/projects/[id] - Mettre à jour un projet
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -67,7 +63,6 @@ export async function PATCH(
       )
     }
 
-    // Vérifier que le projet existe et appartient à l'utilisateur
     const existingProject = await projectQueries.findById(id)
 
     if (!existingProject) {
@@ -105,7 +100,6 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/projects/[id] - Supprimer un projet
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -121,7 +115,6 @@ export async function DELETE(
       )
     }
 
-    // Vérifier que le projet existe et appartient à l'utilisateur
     const existingProject = await projectQueries.findById(id)
 
     if (!existingProject) {

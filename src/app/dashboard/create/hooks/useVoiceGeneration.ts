@@ -15,12 +15,10 @@ export function useVoiceGeneration(initialVoice: Voice) {
   const generateVoice = async () => {
     setIsGeneratingVoice(true)
     
-    // Simuler la génération de voix
     setTimeout(() => {
       setIsVoiceGenerated(true)
       setIsGeneratingVoice(false)
       
-      // Créer un blob de test (silence)
       const blob = new Blob([new ArrayBuffer(0)], { type: 'audio/wav' })
       setGeneratedVoiceBlob(blob)
     }, 2000)
@@ -61,14 +59,12 @@ export function useVoiceGeneration(initialVoice: Voice) {
   }
 
   return {
-    // State
     selectedVoice,
     isVoiceGenerated,
     isGeneratingVoice,
     generatedVoiceBlob,
     isPlayingVoice,
     
-    // Actions
     generateVoice,
     playGeneratedVoice,
     pauseGeneratedVoice,

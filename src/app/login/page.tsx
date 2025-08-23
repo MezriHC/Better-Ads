@@ -4,7 +4,6 @@ import { useState, useCallback } from "react"
 import { signIn } from "next-auth/react"
 import { IconMail, IconLock } from "@tabler/icons-react"
 
-// Official Google Logo Component
 function GoogleLogo({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24">
@@ -22,13 +21,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
 
   const handleGoogleSignIn = useCallback(async () => {
-    // NextAuth Google sign in
     try {
       await signIn("google", {
         callbackUrl: "/dashboard",
       })
     } catch {
-      // Gestion silencieuse des erreurs
     }
   }, [])
 

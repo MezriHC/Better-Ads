@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
     // Ignorer ESLint pendant le build pour le déploiement
     ignoreDuringBuilds: true,
   },
-  env: {
-    NEXT_PUBLIC_MINIO_ENDPOINT: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
-  },
   images: {
     remotePatterns: [
       {
@@ -22,14 +19,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'fal.media',
-      },
-      {
-        protocol: 'https',
-        hostname: 'v3.fal.media',
       },
       {
         protocol: 'https',

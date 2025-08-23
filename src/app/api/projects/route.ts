@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../../_shared/lib/auth'
-import { projectQueries } from '../../_shared/database/queries/project'
+import { authOptions } from '../../_shared'
+import { projectQueries } from '../../_shared'
 import { z } from 'zod'
 
-// Schéma de validation pour créer un projet
 const createProjectSchema = z.object({
   name: z.string().min(1, 'Le nom du projet est requis').max(100, 'Le nom du projet ne peut pas dépasser 100 caractères'),
 })
 
-// GET /api/projects - Récupérer tous les projets de l'utilisateur connecté
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -32,7 +30,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/projects - Créer un nouveau projet
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)

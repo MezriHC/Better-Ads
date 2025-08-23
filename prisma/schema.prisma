@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth.js required models
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -44,7 +43,6 @@ model User {
   accounts      Account[]
   sessions      Session[]
   projects      Project[]
-  avatars       Avatar[]
 }
 
 model Project {
@@ -55,70 +53,11 @@ model Project {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  avatars Avatar[]
 
   @@index([userId])
   @@index([createdAt])
 }
 
-// Enums pour les avatars
-enum AvatarType { 
-  PUBLIC 
-  PRIVATE 
-}
-
-enum AvatarStatus { 
-  PENDING 
-  SUCCEEDED 
-  FAILED 
-}
-
-enum TagCategory { 
-  SEXE 
-  AGE 
-  INDUSTRIE 
-}
-
-// Modèle Avatar selon Plan.md
-model Avatar {
-  id        String   @id @default(cuid())
-  name      String
-  type      AvatarType
-  status    AvatarStatus
-
-  // ID du job chez le fournisseur IA, pour le suivi via webhook
-  falRequestId String? @unique
-
-  // Chemins finaux dans notre bucket MinIO
-  videoStoragePath String?
-  imageStoragePath String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String?  // null pour les avatars publics
-
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String?  // null pour les avatars publics
-
-  tags      Tag[]    // Uniquement pour les avatars publics
-
-  @@index([userId])
-  @@index([projectId])
-  @@index([type])
-  @@index([status])
-}
-
-model Tag {
-  id        String      @id @default(cuid())
-  name      String
-  category  TagCategory
-  avatars   Avatar[]
-  
-  @@unique([name, category])
-}
 
 model VerificationToken {
   identifier String
