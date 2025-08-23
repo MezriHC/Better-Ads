@@ -15,6 +15,7 @@ interface CreationPanelProps {
   selectedVideoFormat: string
   selectedActor: Avatar | null
   selectedVoice: Voice
+  selectedBRollImage: File | null
   isDropdownOpen: boolean
   isSpeechDropdownOpen: boolean
   isVideoFormatDropdownOpen: boolean
@@ -37,6 +38,7 @@ interface CreationPanelProps {
   onToggleSpeechDropdown: () => void
   onToggleVideoFormatDropdown: () => void
   onVideoFormatChange: (format: string) => void
+  onBRollImageChange: (image: File | null) => void
   onSpeechModeChange: (mode: "text-to-speech" | "speech-to-speech") => void
   onOpenActorModal: () => void
   onSubmit: () => void
@@ -64,6 +66,7 @@ export function CreationPanel({
   selectedVideoFormat,
   selectedActor,
   selectedVoice,
+  selectedBRollImage,
   isDropdownOpen,
   isSpeechDropdownOpen,
   isVideoFormatDropdownOpen,
@@ -86,6 +89,7 @@ export function CreationPanel({
   onToggleSpeechDropdown,
   onToggleVideoFormatDropdown,
   onVideoFormatChange,
+  onBRollImageChange,
   onSpeechModeChange,
   onOpenActorModal,
   onSubmit,
@@ -175,6 +179,7 @@ export function CreationPanel({
         speechMode={speechMode}
         selectedVideoFormat={selectedVideoFormat}
         selectedActor={selectedActor}
+        selectedBRollImage={selectedBRollImage}
         script={script}
         audioFile={audioFile}
         speechModes={speechModes}
@@ -182,6 +187,7 @@ export function CreationPanel({
         isVideoFormatDropdownOpen={isVideoFormatDropdownOpen}
         isSpeechDropdownOpen={isSpeechDropdownOpen}
         onVideoFormatChange={onVideoFormatChange}
+        onBRollImageChange={onBRollImageChange}
         onSpeechModeChange={onSpeechModeChange}
         onToggleVideoFormatDropdown={onToggleVideoFormatDropdown}
         onToggleSpeechDropdown={onToggleSpeechDropdown}

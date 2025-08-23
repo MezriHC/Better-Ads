@@ -52,7 +52,7 @@ export function SpeechModeSelector({
       <button 
         ref={buttonRef}
         onClick={handleToggleOpen}
-        className="flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg hover:bg-accent transition-all cursor-pointer h-[44px]"
+        className="flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg hover:bg-accent transition-all cursor-pointer h-[44px] min-w-[140px] whitespace-nowrap"
       >
         <span className="text-sm font-medium text-foreground">{currentSpeechMode?.label}</span>
         <IconChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />

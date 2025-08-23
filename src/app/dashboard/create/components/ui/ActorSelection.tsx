@@ -19,7 +19,7 @@ export function ActorSelection({
   return (
     <button
       onClick={onOpenModal}
-      className="flex items-center gap-3 px-4 py-2 bg-muted border border-border rounded-lg hover:bg-accent transition-all cursor-pointer h-[44px]"
+      className="flex items-center gap-3 px-4 py-2 bg-muted border border-border rounded-lg hover:bg-accent transition-all cursor-pointer h-[44px] min-w-[130px] whitespace-nowrap"
     >
       {selectedActor ? (
         <div className="w-6 h-6 rounded-lg overflow-hidden">

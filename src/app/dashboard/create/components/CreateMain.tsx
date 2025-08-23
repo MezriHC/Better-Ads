@@ -21,6 +21,7 @@ export function CreateMain() {
   const [speechMode, setSpeechMode] = useState<"text-to-speech" | "speech-to-speech">("text-to-speech")
   const [selectedActor, setSelectedActor] = useState<Avatar | null>(null)
   const [selectedVideoFormat, setSelectedVideoFormat] = useState("16:9")
+  const [selectedBRollImage, setSelectedBRollImage] = useState<File | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   
   const [isActorModalOpen, setIsActorModalOpen] = useState(false)
@@ -41,8 +42,6 @@ export function CreateMain() {
     switch (selectedType) {
       case "talking-actor":
         return "Avatar script: write what the avatar should say..."
-      case "scenes":
-        return "Scene description: describe the atmosphere and desired action..."
       case "b-rolls":
         return "B-Roll description: product, environment, visual style..."
       default:
@@ -103,6 +102,7 @@ export function CreateMain() {
               selectedVideoFormat={selectedVideoFormat}
               selectedActor={selectedActor}
               selectedVoice={voiceGeneration.selectedVoice}
+              selectedBRollImage={selectedBRollImage}
               audioFile={audioRecording.audioFile}
               recordedBlob={audioRecording.recordedBlob}
               isRecording={audioRecording.isRecording}
@@ -125,6 +125,7 @@ export function CreateMain() {
               onScriptChange={setScript}
               onSpeechModeChange={setSpeechMode}
               onVideoFormatChange={setSelectedVideoFormat}
+              onBRollImageChange={setSelectedBRollImage}
               onOpenActorModal={() => setIsActorModalOpen(true)}
               onSubmit={handleSubmit}
               onStartRecording={audioRecording.startRecording}

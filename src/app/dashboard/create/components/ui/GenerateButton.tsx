@@ -2,7 +2,7 @@
 
 import { IconSparkles } from "@tabler/icons-react"
 
-type CreationType = "talking-actor" | "scenes" | "b-rolls"
+type CreationType = "talking-actor" | "b-rolls"
 
 interface GenerateButtonProps {
   selectedType: CreationType

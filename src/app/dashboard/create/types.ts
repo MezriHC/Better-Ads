@@ -1,4 +1,4 @@
-export type CreationType = "talking-actor" | "scenes" | "b-rolls"
+export type CreationType = "talking-actor" | "b-rolls"
 
 export interface Avatar {
   id: string

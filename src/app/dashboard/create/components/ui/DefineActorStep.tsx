@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import Image from "next/image"
-import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload } from "@tabler/icons-react"
+import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload, IconUpload } from "@tabler/icons-react"
 import { GradientButton } from "./GradientButton"
 
 interface DefineActorStepProps {
@@ -37,6 +37,7 @@ export function DefineActorStep({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null)
+  const [isDragOverGlobal, setIsDragOverGlobal] = useState(false)
   
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
   
@@ -61,6 +62,35 @@ export function DefineActorStep({
 
   const createImageUrl = (file: File) => {
     return URL.createObjectURL(file)
+  }
+
+  // Gestion du drag & drop global pour avatar creation
+  const handleGlobalDragOver = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragOverGlobal(true)
+  }
+
+  const handleGlobalDragLeave = (event: React.DragEvent) => {
+    event.preventDefault()
+    // Vérifier si on sort vraiment du container (et pas juste d'un enfant)
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX
+    const y = event.clientY
+    
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setIsDragOverGlobal(false)
+    }
+  }
+
+  const handleGlobalDrop = (event: React.DragEvent) => {
+    event.preventDefault()
+    setIsDragOverGlobal(false)
+    
+    const file = event.dataTransfer.files[0]
+    if (file && file.type.startsWith('image/')) {
+      setUploadedImage(file)
+      setUploadedImageUrl(null)
+    }
   }
 
   const handleSubmit = async () => {
@@ -173,7 +203,12 @@ export function DefineActorStep({
   )
 
   return (
-    <div className="relative h-full">
+    <div 
+      className="relative h-full"
+      onDragOver={handleGlobalDragOver}
+      onDragLeave={handleGlobalDragLeave}
+      onDrop={handleGlobalDrop}
+    >
       <div 
         ref={scrollAreaRef}
         className="absolute inset-0 overflow-y-auto p-8 z-0"
@@ -405,19 +440,19 @@ export function DefineActorStep({
           
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <label className="cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="sr-only"
-                />
-                <div className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors">
-                  <IconPhoto className="w-4 h-4 text-muted-foreground" />
-                </div>
-              </label>
-
-              {uploadedImage && (
+              {!uploadedImage ? (
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="sr-only"
+                  />
+                  <div className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors">
+                    <IconPhoto className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </label>
+              ) : (
                 <div className="relative group">
                   <div className="w-8 h-8 rounded-lg overflow-hidden border border-border">
                     <Image
@@ -479,6 +514,23 @@ export function DefineActorStep({
             </GradientButton>
           </div>
         )}
+
+      {/* Overlay global de drop pour Avatar creation */}
+      {isDragOverGlobal && (
+        <div className="absolute inset-0 bg-background rounded-2xl flex items-center justify-center z-50 border-2 border-primary/40 border-dashed">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary/15 rounded-lg flex items-center justify-center">
+              <IconUpload className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-base font-medium text-foreground">Drop your image here</p>
+              <p className="text-sm text-muted-foreground">
+                {uploadedImage ? 'Replace reference image' : 'Add reference image for avatar'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   )

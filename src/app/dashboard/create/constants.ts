@@ -3,7 +3,6 @@ import type { CreationTypeOption, SpeechMode, VideoFormat, Voice } from "./types
 
 export const creationTypes: CreationTypeOption[] = [
   { id: "talking-actor", label: "Talking Actor", icon: IconUsers },
-  { id: "scenes", label: "Scenes", icon: IconVideo },
   { id: "b-rolls", label: "B-Rolls", icon: IconPhotoVideo },
 ]
 

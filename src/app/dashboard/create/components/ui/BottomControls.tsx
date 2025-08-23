@@ -4,8 +4,9 @@ import { VideoFormatSelector } from "./VideoFormatSelector"
 import { SpeechModeSelector } from "./SpeechModeSelector"
 import { ActorSelection } from "./ActorSelection"
 import { GenerateButton } from "./GenerateButton"
+import { ImageUpload } from "./ImageUpload"
 
-type CreationType = "talking-actor" | "scenes" | "b-rolls"
+type CreationType = "talking-actor" | "b-rolls"
 
 interface Avatar {
   id: string
@@ -29,6 +30,7 @@ interface BottomControlsProps {
   speechMode: "text-to-speech" | "speech-to-speech"
   selectedVideoFormat: string
   selectedActor: Avatar | null
+  selectedBRollImage: File | null
   script: string
   audioFile: File | null
   speechModes: SpeechMode[]
@@ -36,6 +38,7 @@ interface BottomControlsProps {
   isVideoFormatDropdownOpen: boolean
   isSpeechDropdownOpen: boolean
   onVideoFormatChange: (formatId: string) => void
+  onBRollImageChange: (image: File | null) => void
   onSpeechModeChange: (mode: "text-to-speech" | "speech-to-speech") => void
   onToggleVideoFormatDropdown: () => void
   onToggleSpeechDropdown: () => void
@@ -48,6 +51,7 @@ export function BottomControls({
   speechMode,
   selectedVideoFormat,
   selectedActor,
+  selectedBRollImage,
   script,
   audioFile,
   speechModes,
@@ -55,6 +59,7 @@ export function BottomControls({
   isVideoFormatDropdownOpen,
   isSpeechDropdownOpen,
   onVideoFormatChange,
+  onBRollImageChange,
   onSpeechModeChange,
   onToggleVideoFormatDropdown,
   onToggleSpeechDropdown,
@@ -64,9 +69,9 @@ export function BottomControls({
   return (
     <div className="flex items-center justify-between h-12">
       <div className="flex items-center gap-3 relative">
-        {/* Video Format Dropdown - Only for Scenes and B-Rolls */}
-        <div className={`transition-all duration-500 ease-in-out absolute ${
-          (selectedType === "scenes" || selectedType === "b-rolls")
+        {/* Video Format Dropdown & Image Upload - Only for B-Rolls */}
+        <div className={`transition-all duration-500 ease-in-out flex items-center gap-3 ${
+          selectedType === "b-rolls"
             ? "opacity-100 transform translate-x-0" 
             : "opacity-0 transform -translate-x-4 pointer-events-none"
         }`}>
@@ -77,10 +82,14 @@ export function BottomControls({
             isOpen={isVideoFormatDropdownOpen}
             onToggleOpen={onToggleVideoFormatDropdown}
           />
+          <ImageUpload
+            selectedImage={selectedBRollImage}
+            onImageSelect={onBRollImageChange}
+          />
         </div>
 
         {/* Speech Mode + Actor Selection - Only for Talking Actor */}
-        <div className={`transition-all duration-500 ease-in-out flex items-center gap-3 ${
+        <div className={`transition-all duration-500 ease-in-out absolute flex items-center gap-3 ${
           selectedType === "talking-actor"
             ? "opacity-100 transform translate-x-0" 
             : "opacity-0 transform translate-x-4 pointer-events-none"
