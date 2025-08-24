@@ -87,7 +87,10 @@ export function LaunchTrainingStep({
         projectId: 'demo-project',
         createdAt: generatedVideo.createdAt,
         updatedAt: generatedVideo.createdAt,
-        metadata: generatedVideo.metadata || {}
+        metadata: {
+          ...generatedVideo.metadata || {},
+          stored: generatedVideo.stored || null
+        }
       }
       
       setGeneratedAvatar(avatar)

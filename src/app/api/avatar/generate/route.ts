@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { videoGenerationService } from '../../../_shared/core/video-generation-global.service';
+import { avatarStorageService } from '../../../_shared/core/avatar-storage-global.service';
 import { avatarGenerationSchema } from './schemas';
 import { authOptions } from '../../../_shared/core/auth-global.service';
 
@@ -8,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -40,10 +41,39 @@ export async function POST(request: NextRequest) {
       enableSafetyChecker,
     });
 
-    return NextResponse.json({
-      success: true,
-      data: avatar,
-    });
+    try {
+      const userId = session.user.email;
+      const filename = avatarStorageService.generateAvatarId();
+      
+      const storedAvatar = await avatarStorageService.uploadAvatarFromUrl({
+        userId,
+        videoUrl: avatar.url,
+        filename,
+        isPublic: false,
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          ...avatar,
+          stored: {
+            path: storedAvatar.path,
+            minioUrl: storedAvatar.url,
+            size: storedAvatar.size,
+            uploadedAt: storedAvatar.uploadedAt,
+          }
+        },
+      });
+      
+    } catch (storageError) {
+      console.warn('Avatar generated but storage failed:', storageError);
+      
+      return NextResponse.json({
+        success: true,
+        data: avatar,
+        warning: 'Avatar generated successfully but storage failed'
+      });
+    }
 
   } catch (error) {
     console.error('Avatar generation error:', error);
