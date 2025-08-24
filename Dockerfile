@@ -1,29 +1,23 @@
-FROM node:20-alpine AS base
+FROM node:20-alpine
 
-# Installer les dépendances système
-RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
-# Copier package.json et package-lock.json
-COPY package*.json ./
+# Installer dépendances système minimum
+RUN apk add --no-cache libc6-compat
 
-# Copier le schéma Prisma AVANT npm ci (pour éviter l'erreur postinstall)
+# Copier package.json
+COPY package*.json ./
 COPY prisma ./prisma/
 
-# Installer les dépendances avec rebuild des modules natifs
-RUN npm ci && npm rebuild lightningcss
+# Installer SANS rebuild (laisser npm gérer)
+RUN npm ci
 
-# Copier le code source
+# Copier code
 COPY . .
 
-# Build de l'application Next.js
+# Build
 RUN npm run build
 
-# Exposer le port 3000
 EXPOSE 3000
 
-# Variables d'environnement
-ENV NODE_ENV=production
-
-# Script de démarrage avec migration automatique
 CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
