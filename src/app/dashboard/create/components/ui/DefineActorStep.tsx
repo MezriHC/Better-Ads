@@ -52,6 +52,17 @@ export function DefineActorStep({
       const file = files[0]
       setUploadedImage(file)
       setUploadedImageUrl(null)
+      
+      // Clear toutes les sélections d'images existantes (mutuelle exclusive)
+      setChatMessages(prev => 
+        prev.map(msg => ({
+          ...msg,
+          generatedImages: msg.generatedImages?.map(img => ({
+            ...img,
+            selected: false
+          }))
+        }))
+      )
     }
   }
 
@@ -99,6 +110,16 @@ export function DefineActorStep({
         .flatMap(msg => msg.generatedImages || [])
         .find(img => img.selected)?.url
       
+      // Validation des règles métier
+      const hasUploadedImage = !!uploadedImage
+      const hasSelectedImage = !!selectedImage
+      
+      if (hasUploadedImage && hasSelectedImage) {
+        console.error("ERREUR : Upload et sélection simultanés interdits")
+        alert("Erreur : Vous ne pouvez pas avoir à la fois une image uploadée et une image sélectionnée. Choisissez une seule source.")
+        return
+      }
+      
       const currentPrompt = prompt
       
       const newMessage: ChatMessage = {
@@ -124,27 +145,55 @@ export function DefineActorStep({
       setUploadedImage(null)
       setUploadedImageUrl(null)
       
+      let uploadedImageUrl: string | undefined;
+      
+      if (uploadedImage) {
+        try {
+          const response = await fetch('/api/images/upload', {
+            method: 'POST',
+            body: (() => {
+              const formData = new FormData();
+              formData.append('file', uploadedImage);
+              return formData;
+            })(),
+          });
+          
+          const uploadResult = await response.json();
+          if (uploadResult.success) {
+            uploadedImageUrl = uploadResult.data.url;
+          }
+        } catch (error) {
+          console.error('Upload error:', error);
+        }
+      }
+      
       try {
-        // Mock image generation
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        const response = await fetch('/api/images/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: currentPrompt,
+            imageUrl: uploadedImageUrl || selectedImage,
+            aspectRatio: '9:16',
+            guidanceScale: 3.5,
+          }),
+        });
         
-        const imageUrls = Array.from({ length: 4 }, (_, i) => 
-          `https://picsum.photos/270/480?random=${Date.now() + i}`
-        )
+        const result = await response.json();
         
-        const generatedImages: GeneratedImage[] = imageUrls.map((url, index) => ({
-          id: `img_${Date.now()}_${index}`,
-          url,
-          selected: false
-        }))
-        
-        setChatMessages(prev => 
-          prev.map((msg, index) => 
-            index === prev.length - 1 
-              ? { ...msg, generatedImages, isGenerating: false }
-              : msg
-          )
-        )
+        if (result.success) {
+          setChatMessages(prev => 
+            prev.map((msg, index) => 
+              index === prev.length - 1 
+                ? { ...msg, generatedImages: result.data, isGenerating: false }
+                : msg
+            )
+          );
+        } else {
+          throw new Error(result.message || 'Generation failed');
+        }
         
         setTimeout(() => {
           if (scrollAreaRef.current) {
@@ -155,7 +204,8 @@ export function DefineActorStep({
           }
         }, 100)
         
-      } catch {
+      } catch (error) {
+        console.error('Generation error:', error);
         setChatMessages(prev => 
           prev.map((msg, index) => 
             index === prev.length - 1 
@@ -171,6 +221,10 @@ export function DefineActorStep({
   }
 
   const handleImageSelect = (messageIndex: number, imageId: string) => {
+    // Clear upload existant (mutuelle exclusive)
+    setUploadedImage(null)
+    setUploadedImageUrl(null)
+    
     setChatMessages(prev => 
       prev.map((msg, index) => 
         msg.generatedImages
@@ -195,8 +249,7 @@ export function DefineActorStep({
     }
   }
 
-  const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference && 
-    (uploadedImage ? !!uploadedImageUrl : true)
+  const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference
   
   const hasSelectedImage = chatMessages.some(msg => 
     msg.generatedImages?.some(img => img.selected)
@@ -448,8 +501,8 @@ export function DefineActorStep({
                     onChange={handleImageUpload}
                     className="sr-only"
                   />
-                  <div className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-colors">
-                    <IconPhoto className="w-4 h-4 text-muted-foreground" />
+                  <div className="w-8 h-8 bg-muted hover:bg-accent rounded-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer">
+                    <IconPhoto className="w-4 h-4 text-muted-foreground transition-transform" />
                   </div>
                 </label>
               ) : (
@@ -519,8 +572,8 @@ export function DefineActorStep({
       {isDragOverGlobal && (
         <div className="absolute inset-0 bg-background rounded-2xl flex items-center justify-center z-50 border-2 border-primary/40 border-dashed">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/15 rounded-lg flex items-center justify-center">
-              <IconUpload className="w-6 h-6 text-primary" />
+            <div className="w-12 h-12 bg-primary/15 rounded-lg flex items-center justify-center transition-all hover:scale-110 animate-pulse">
+              <IconUpload className="w-6 h-6 text-primary transition-transform" />
             </div>
             <div>
               <p className="text-base font-medium text-foreground">Drop your image here</p>

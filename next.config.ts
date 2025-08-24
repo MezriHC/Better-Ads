@@ -52,6 +52,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'pomf.lain.la',
       },
+      {
+        protocol: 'https',
+        hostname: 'fal.media',
+      },
     ],
     // Image configuration
     dangerouslyAllowSVG: false,
