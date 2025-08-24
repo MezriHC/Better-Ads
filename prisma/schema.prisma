@@ -13,15 +13,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -35,14 +34,20 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  projects      Project[]
+  id               String             @id @default(cuid())
+  name             String?
+  email            String?            @unique
+  emailVerified    DateTime?
+  image            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  accounts         Account[]
+  avatars          Avatar[]
+  AvatarGeneration AvatarGeneration[]
+  BRoll            BRoll[]
+  GeneratedImage   GeneratedImage[]
+  projects         Project[]
+  sessions         Session[]
 }
 
 model Project {
@@ -51,13 +56,44 @@ model Project {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatars   Avatar[]
+  BRoll     BRoll[]
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
 }
 
+model Avatar {
+  id               String             @id @default(cuid())
+  name             String
+  imageUrl         String
+  videoUrl         String?
+  visibility       String
+  status           String
+  userId           String?
+  projectId        String?
+  falImageJobId    String?
+  falVideoJobId    String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  description      String?
+  duration         String?
+  format           String?
+  minioImagePath   String?
+  minioVideoPath   String?
+  prompt           String?
+  resolution       String?
+  project          Project?           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  AvatarGeneration AvatarGeneration[]
+  GeneratedImage   GeneratedImage[]
+  Tag              Tag[]              @relation("AvatarTags")
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([visibility, status])
+}
 
 model VerificationToken {
   identifier String
@@ -67,3 +103,95 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model AvatarGeneration {
+  id             String         @id
+  userId         String
+  sourceImageId  String
+  originalPrompt String
+  videoPrompt    String?
+  sessionId      String
+  avatarName     String?
+  falVideoJobId  String?
+  falStatus      String?
+  falProgress    Int?
+  avatarId       String?
+  minioVideoPath String?
+  status         String
+  errorMessage   String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  Avatar         Avatar?        @relation(fields: [avatarId], references: [id])
+  GeneratedImage GeneratedImage @relation(fields: [sourceImageId], references: [id])
+  User           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([status])
+  @@index([userId])
+}
+
+model BRoll {
+  id           String   @id
+  name         String
+  prompt       String
+  imageUrl     String?
+  videoUrl     String?
+  thumbnailUrl String?
+  status       String
+  type         String
+  userId       String
+  projectId    String
+  falJobId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  Project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([type, status])
+  @@index([userId])
+}
+
+model GeneratedImage {
+  id               String             @id
+  prompt           String
+  minioPath        String
+  sessionId        String
+  userId           String
+  seed             BigInt?
+  aspectRatio      String
+  falJobId         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  avatarId         String?
+  AvatarGeneration AvatarGeneration[]
+  Avatar           Avatar?            @relation(fields: [avatarId], references: [id])
+  User             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([avatarId])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([userId])
+}
+
+model Tag {
+  id          String      @id
+  name        String
+  slug        String      @unique
+  categoryId  String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  TagCategory TagCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  Avatar      Avatar[]    @relation("AvatarTags")
+
+  @@unique([categoryId, slug])
+}
+
+model TagCategory {
+  id        String   @id
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Tag       Tag[]
+}

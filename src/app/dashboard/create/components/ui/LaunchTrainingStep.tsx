@@ -27,6 +27,7 @@ interface LaunchTrainingStepProps {
   actor?: GeneratedActor | null
   selectedImageUrl?: string
   prompt?: string
+  projectId?: string
   onAvatarGenerationStarted?: (avatarData: any) => void
   onAvatarGenerationCompleted?: (avatar: any) => void
 }
@@ -35,6 +36,7 @@ export function LaunchTrainingStep({
   actor, 
   selectedImageUrl,
   prompt,
+  projectId,
   onAvatarGenerationStarted,
   onAvatarGenerationCompleted
 }: LaunchTrainingStepProps) {
@@ -77,6 +79,7 @@ export function LaunchTrainingStep({
         body: JSON.stringify({
           prompt: prompt,
           imageUrl: selectedImageUrl,
+          projectId: projectId,
           resolution: '480p',
           duration: '3'
         })
@@ -96,8 +99,8 @@ export function LaunchTrainingStep({
         videoUrl: generatedVideo.url,
         posterUrl: generatedVideo.posterUrl || selectedImageUrl,
         status: 'ready',
-        userId: 'current-user',
-        projectId: 'demo-project',
+        userId: 'current-user', // Cette valeur locale n'affecte pas la DB
+        projectId: projectId || 'unknown', // Cette valeur locale n'affecte pas la DB
         createdAt: generatedVideo.createdAt,
         updatedAt: generatedVideo.createdAt,
         metadata: {

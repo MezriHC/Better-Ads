@@ -195,6 +195,7 @@ export function CreateMain() {
       <CreateAvatarModal
         isOpen={isCreateAvatarModalOpen}
         onClose={() => setIsCreateAvatarModalOpen(false)}
+        projectId={currentProject?.id}
         onAvatarCreated={(avatar) => {
           setIsCreateAvatarModalOpen(false)
         }}

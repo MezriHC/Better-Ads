@@ -4,6 +4,9 @@ import { videoGenerationService } from '../../../_shared/core/video-generation-g
 import { avatarStorageService } from '../../../_shared/core/avatar-storage-global.service';
 import { avatarGenerationSchema } from './schemas';
 import { authOptions } from '../../../_shared/core/auth-global.service';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, imageUrl, resolution, duration, cameraFixed, seed, enableSafetyChecker } = validationResult.data;
+    const { prompt, imageUrl, projectId, resolution, duration, cameraFixed, seed, enableSafetyChecker } = validationResult.data;
 
     const avatar = await videoGenerationService.generateImageToVideo({
       prompt,
@@ -42,7 +45,7 @@ export async function POST(request: NextRequest) {
     });
 
     try {
-      const userId = session.user.email;
+      const userId = session.user.id || session.user.email;
       const filename = avatarStorageService.generateAvatarId();
       
       const storedAvatar = await avatarStorageService.uploadAvatarFromUrl({
@@ -52,15 +55,39 @@ export async function POST(request: NextRequest) {
         isPublic: false,
       });
 
+      // Sauvegarder en base de données
+      const savedAvatar = await prisma.avatar.create({
+        data: {
+          id: filename,
+          name: `Avatar ${new Date().toLocaleDateString()}`,
+          imageUrl: imageUrl, // Image de preview
+          videoUrl: storedAvatar.url, // URL MinIO
+          visibility: 'private',
+          status: 'ready',
+          userId: userId,
+          projectId: projectId || null,
+          duration: `0:0${duration}`,
+          format: resolution === '480p' ? '16:9' : '16:9',
+          minioVideoPath: storedAvatar.path,
+          prompt: prompt,
+          resolution: resolution,
+        }
+      });
+
       return NextResponse.json({
         success: true,
         data: {
-          ...avatar,
-          stored: {
-            path: storedAvatar.path,
-            minioUrl: storedAvatar.url,
-            size: storedAvatar.size,
-            uploadedAt: storedAvatar.uploadedAt,
+          id: savedAvatar.id,
+          url: savedAvatar.videoUrl,
+          posterUrl: savedAvatar.imageUrl,
+          createdAt: savedAvatar.createdAt.toISOString(),
+          metadata: {
+            stored: {
+              path: storedAvatar.path,
+              minioUrl: storedAvatar.url,
+              size: storedAvatar.size,
+              uploadedAt: storedAvatar.uploadedAt,
+            }
           }
         },
       });

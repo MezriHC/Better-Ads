@@ -8,6 +8,9 @@ export const avatarGenerationSchema = z.object({
   imageUrl: z.string()
     .url('Invalid image URL'),
   
+  projectId: z.string()
+    .optional(),
+  
   resolution: z.enum(['480p', '720p', '1080p'])
     .default('1080p'),
   

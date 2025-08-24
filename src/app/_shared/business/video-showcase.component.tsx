@@ -1,16 +1,45 @@
 "use client"
 
-import { useState } from "react"
-import { IconEye, IconEyeOff } from "@tabler/icons-react"
+import { useState, useEffect } from "react"
 import { VideoData, VideoShowcaseProps } from '../config/video-types'
-import { mockVideos } from '../mock/videos-mock.data'
 import { VideoGrid } from './video-grid.component'
 
 export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShowcaseProps) {
-  const [showVideoSection, setShowVideoSection] = useState(false)
+  const [videos, setVideos] = useState<VideoData[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const hasGeneratedVideos = false
-  const videos = mockVideos
+  const hasGeneratedVideos = videos.length > 0
+
+  // Charger les avatars du projet
+  useEffect(() => {
+    if (projectId) {
+      loadProjectAvatars()
+    }
+  }, [projectId])
+
+  const loadProjectAvatars = async () => {
+    if (!projectId) return
+    
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch(`/api/projects/${projectId}/avatars`)
+      if (!response.ok) {
+        throw new Error('Failed to load avatars')
+      }
+      
+      const data = await response.json()
+      setVideos(data.avatars || [])
+    } catch (err) {
+      console.error('[VideoShowcase] Error loading avatars:', err)
+      setError('Failed to load avatars')
+      setVideos([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handlePlay = (video: VideoData) => {
     onVideoPlay?.(video)
@@ -46,50 +75,55 @@ export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShow
     }
   }
 
-  if (showVideoSection) {
+  // Si on a des avatars, afficher la section avatars
+  if (hasGeneratedVideos || loading || error) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
-            <h2 className="text-xl font-semibold text-foreground">Generated Videos</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              Generated Avatars {hasGeneratedVideos && `(${videos.length})`}
+            </h2>
             <p className="text-muted-foreground text-sm">
-              Videos being generated or ready to view
+              {loading ? 'Loading avatars...' : 
+               error ? 'Error loading avatars' :
+               hasGeneratedVideos ? 'Avatars ready to view and download' : 
+               'No avatars generated yet for this project'}
             </p>
           </div>
-          
-          <button
-            onClick={() => setShowVideoSection(false)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-primary text-primary-foreground"
-          >
-            <IconEyeOff className="w-4 h-4" />
-            Hide Videos
-          </button>
         </div>
 
-        <VideoGrid
-          videos={videos}
-          onPlay={handlePlay}
-          onDownload={handleDownload}
-          onDelete={handleDelete}
-          onRename={handleRename}
-          emptyMessage="No videos generated yet. Start creating below!"
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button 
+              onClick={loadProjectAvatars}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <VideoGrid
+            videos={videos}
+            onPlay={handlePlay}
+            onDownload={handleDownload}
+            onDelete={handleDelete}
+            onRename={handleRename}
+            emptyMessage="No avatars generated yet for this project. Start creating below!"
+          />
+        )}
       </div>
     )
   }
 
+  // Si pas d'avatars, afficher le contenu de base (heroSection)
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowVideoSection(true)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer bg-muted text-muted-foreground hover:text-foreground"
-        >
-          <IconEye className="w-4 h-4" />
-          Preview Videos
-        </button>
-      </div>
-
       {heroSection}
     </div>
   )
