@@ -55,50 +55,31 @@ export function LaunchTrainingStep({
       setIsGenerating(true)
       setError(null)
       
-      // Appel API vidéo réelle - génération image to video
-      const response = await fetch('/api/videos/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          imageUrl: selectedImageUrl,
-          resolution: '1080p',
-          duration: '5',
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        const avatarId = `avatar_${Date.now()}`
-        const avatar: Avatar = {
-          id: avatarId,
-          title: 'Generated Avatar',
-          videoUrl: result.data.url, // ✅ Utilise vraie API vidéo
-          posterUrl: selectedImageUrl,
-          status: 'ready',
-          userId: 'current-user',
-          projectId: 'demo-project',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          metadata: { seedUsed: result.data.seedUsed }
-        }
-        
-        setGeneratedAvatar(avatar)
-        onAvatarGenerationCompleted?.(avatar)
-        onVideoGenerated?.(result.data) // ✅ Notifie parent
-        setIsGenerating(false)
-      } else {
-        throw new Error(result.message || 'Video generation failed')
+      // Mock avatar generation
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      
+      const avatarId = `avatar_${Date.now()}`
+      const avatar: Avatar = {
+        id: avatarId,
+        title: 'Generated Avatar',
+        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        posterUrl: selectedImageUrl,
+        status: 'ready',
+        userId: 'current-user',
+        projectId: 'demo-project',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        metadata: {}
       }
+      
+      setGeneratedAvatar(avatar)
+      onAvatarGenerationCompleted?.(avatar)
+      setIsGenerating(false)
     } catch (error) {
-      console.error('Avatar video generation error:', error)
-      setError(error instanceof Error ? error.message : 'Generation failed')
+      setError('Generation failed')
       setIsGenerating(false)
     }
-  }, [selectedImageUrl, prompt, isGenerating, onAvatarGenerationCompleted, onVideoGenerated])
+  }, [selectedImageUrl, prompt, isGenerating, onAvatarGenerationCompleted])
 
   useEffect(() => {
     if (selectedImageUrl && prompt && !hasStartedGeneration && !isGenerating) {

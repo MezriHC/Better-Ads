@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import Image from "next/image"
-import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload, IconUpload, IconVideo } from "@tabler/icons-react"
+import { IconCheck, IconPhoto, IconSparkles, IconX, IconDownload, IconUpload } from "@tabler/icons-react"
 import { GradientButton } from "./GradientButton"
 
 interface DefineActorStepProps {
@@ -17,13 +17,6 @@ interface GeneratedImage {
   loading?: boolean
 }
 
-interface GeneratedVideo {
-  id: string
-  url: string
-  seedUsed?: number
-  loading?: boolean
-}
-
 interface ChatMessage {
   text: string
   images: File[]
@@ -31,8 +24,6 @@ interface ChatMessage {
   selectedImage?: string
   generatedImages?: GeneratedImage[]
   isGenerating?: boolean
-  generatedVideo?: GeneratedVideo
-  isGeneratingVideo?: boolean
 }
 
 export function DefineActorStep({ 
@@ -49,10 +40,6 @@ export function DefineActorStep({
   const [isDragOverGlobal, setIsDragOverGlobal] = useState(false)
   
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null)
-  const [videoPrompt, setVideoPrompt] = useState("")
-  const [uploadVideoPrompt, setUploadVideoPrompt] = useState("")
-  const [isGeneratingVideoFromUpload, setIsGeneratingVideoFromUpload] = useState(false)
-  const [generatedVideoFromUpload, setGeneratedVideoFromUpload] = useState<GeneratedVideo | null>(null)
   
   const isGeneratingImages = false
   const isUploadingReference = false
@@ -262,131 +249,6 @@ export function DefineActorStep({
     }
   }
 
-  const handleGenerateVideo = async () => {
-    const selectedImage = chatMessages
-      .flatMap(msg => msg.generatedImages || [])
-      .find(img => img.selected)
-    
-    if (!selectedImage || !videoPrompt.trim()) {
-      alert("Please select an image and enter a video prompt")
-      return
-    }
-
-    const messageIndex = chatMessages.findIndex(msg => 
-      msg.generatedImages?.some(img => img.id === selectedImage.id)
-    )
-    
-    if (messageIndex === -1) return
-
-    setChatMessages(prev => 
-      prev.map((msg, index) => 
-        index === messageIndex 
-          ? { ...msg, isGeneratingVideo: true }
-          : msg
-      )
-    )
-
-    try {
-      const response = await fetch('/api/videos/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: videoPrompt,
-          imageUrl: selectedImage.url,
-          resolution: '1080p',
-          duration: '5',
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        setChatMessages(prev => 
-          prev.map((msg, index) => 
-            index === messageIndex 
-              ? { ...msg, generatedVideo: result.data, isGeneratingVideo: false }
-              : msg
-          )
-        )
-        setVideoPrompt("")
-      } else {
-        throw new Error(result.message || 'Video generation failed')
-      }
-    } catch (error) {
-      console.error('Video generation error:', error)
-      alert(`Error generating video: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      
-      setChatMessages(prev => 
-        prev.map((msg, index) => 
-          index === messageIndex 
-            ? { ...msg, isGeneratingVideo: false }
-            : msg
-        )
-      )
-    }
-  }
-
-  const handleGenerateVideoFromUpload = async () => {
-    if (!uploadedImage || !uploadVideoPrompt.trim()) {
-      alert("Please upload an image and enter a video prompt")
-      return
-    }
-
-    setIsGeneratingVideoFromUpload(true)
-    
-    try {
-      let imageUrl = uploadedImageUrl
-      
-      if (!imageUrl) {
-        const response = await fetch('/api/images/upload', {
-          method: 'POST',
-          body: (() => {
-            const formData = new FormData();
-            formData.append('file', uploadedImage);
-            return formData;
-          })(),
-        });
-        
-        const uploadResult = await response.json();
-        if (uploadResult.success) {
-          imageUrl = uploadResult.data.url;
-          setUploadedImageUrl(imageUrl);
-        } else {
-          throw new Error('Failed to upload image');
-        }
-      }
-
-      const response = await fetch('/api/videos/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: uploadVideoPrompt,
-          imageUrl: imageUrl,
-          resolution: '1080p',
-          duration: '5',
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        setGeneratedVideoFromUpload(result.data)
-        setUploadVideoPrompt("")
-      } else {
-        throw new Error(result.message || 'Video generation failed')
-      }
-    } catch (error) {
-      console.error('Video generation error:', error)
-      alert(`Error generating video: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsGeneratingVideoFromUpload(false)
-    }
-  }
-
   const canSubmit = prompt.trim().length > 0 && !isGeneratingImages && !isUploadingReference
   
   const hasSelectedImage = chatMessages.some(msg => 
@@ -576,68 +438,6 @@ export function DefineActorStep({
                             </div>
                           ))}
                         </div>
-
-                        {message.generatedImages?.some(img => img.selected) && !message.generatedVideo && (
-                          <div className="mt-4 border-t border-border pt-4">
-                            <p className="text-sm text-muted-foreground mb-3">Generate video from selected image:</p>
-                            <div className="flex gap-3">
-                              <input
-                                type="text"
-                                value={videoPrompt}
-                                onChange={(e) => setVideoPrompt(e.target.value)}
-                                placeholder="Describe the video animation..."
-                                className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                              />
-                              <GradientButton
-                                onClick={handleGenerateVideo}
-                                disabled={!videoPrompt.trim() || message.isGeneratingVideo}
-                                icon={<IconVideo />}
-                                fullWidth={false}
-                                size="md"
-                              >
-                                {message.isGeneratingVideo ? "Generating..." : "Generate Video"}
-                              </GradientButton>
-                            </div>
-                          </div>
-                        )}
-
-                        {message.isGeneratingVideo && (
-                          <div className="mt-4 border-t border-border pt-4">
-                            <p className="text-sm text-muted-foreground mb-3">Generating video...</p>
-                            <div className="flex items-center gap-3">
-                              <div className="w-6 h-6 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
-                              <span className="text-sm text-muted-foreground">Video generation typically takes 2-3 minutes...</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {message.generatedVideo && (
-                          <div className="mt-4 border-t border-border pt-4">
-                            <p className="text-sm text-muted-foreground mb-3">Generated video:</p>
-                            <div className="relative aspect-[9/16] max-w-xs rounded-lg overflow-hidden border border-border">
-                              <video
-                                src={message.generatedVideo.url}
-                                controls
-                                loop
-                                muted
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="mt-2 flex gap-2">
-                              <button
-                                onClick={() => {
-                                  const link = document.createElement('a')
-                                  link.href = message.generatedVideo!.url
-                                  link.download = `video-${message.generatedVideo!.id}.mp4`
-                                  link.click()
-                                }}
-                                className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 cursor-pointer"
-                              >
-                                Download Video
-                              </button>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div className="flex items-center gap-3">
@@ -765,94 +565,6 @@ export function DefineActorStep({
             >
               Select Actor
             </GradientButton>
-          </div>
-        )}
-
-        {uploadedImage && !generatedVideoFromUpload && (
-          <div className="mt-8 px-8 pb-6">
-            <div className="border border-border rounded-lg p-4">
-              <h3 className="text-sm font-medium text-foreground mb-3">Generate Video from Uploaded Image</h3>
-              <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-lg overflow-hidden border border-border flex-shrink-0">
-                  <Image
-                    src={createImageUrl(uploadedImage)}
-                    alt="Uploaded image"
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={uploadVideoPrompt}
-                    onChange={(e) => setUploadVideoPrompt(e.target.value)}
-                    placeholder="Describe the video animation for this image..."
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 mb-3"
-                  />
-                  <GradientButton
-                    onClick={handleGenerateVideoFromUpload}
-                    disabled={!uploadVideoPrompt.trim() || isGeneratingVideoFromUpload}
-                    icon={<IconVideo />}
-                    fullWidth={false}
-                    size="md"
-                  >
-                    {isGeneratingVideoFromUpload ? "Generating Video..." : "Generate Video"}
-                  </GradientButton>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {isGeneratingVideoFromUpload && (
-          <div className="mt-8 px-8 pb-6">
-            <div className="border border-border rounded-lg p-4">
-              <p className="text-sm text-muted-foreground mb-3">Generating video from uploaded image...</p>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
-                <span className="text-sm text-muted-foreground">Video generation typically takes 2-3 minutes...</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {generatedVideoFromUpload && (
-          <div className="mt-8 px-8 pb-6">
-            <div className="border border-border rounded-lg p-4">
-              <h3 className="text-sm font-medium text-foreground mb-3">Generated Video</h3>
-              <div className="relative aspect-[9/16] max-w-xs rounded-lg overflow-hidden border border-border">
-                <video
-                  src={generatedVideoFromUpload.url}
-                  controls
-                  loop
-                  muted
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={() => {
-                    const link = document.createElement('a')
-                    link.href = generatedVideoFromUpload.url
-                    link.download = `video-${generatedVideoFromUpload.id}.mp4`
-                    link.click()
-                  }}
-                  className="px-3 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 cursor-pointer"
-                >
-                  Download Video
-                </button>
-                <button
-                  onClick={() => {
-                    setGeneratedVideoFromUpload(null)
-                    setUploadVideoPrompt("")
-                  }}
-                  className="px-3 py-2 text-sm bg-muted text-muted-foreground rounded-md hover:bg-accent cursor-pointer"
-                >
-                  Generate Another
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
