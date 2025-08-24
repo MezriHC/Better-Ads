@@ -1,7 +1,12 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
-# Installer les dépendances système
-RUN apk add --no-cache libc6-compat
+# Installer les dépendances système pour Debian
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copier package.json et package-lock.json
