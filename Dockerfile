@@ -1,41 +1,53 @@
-FROM node:20-slim AS base
-
-# Installer les dépendances système pour Debian
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Stage 1: Builder - Installation et build
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copier package.json et package-lock.json
+# Copier les fichiers de configuration
 COPY package*.json ./
-
-# Copier le schéma Prisma AVANT npm ci (pour éviter l'erreur postinstall)
 COPY prisma ./prisma/
 
-# Nettoyer le cache npm et forcer la reconstruction des modules natifs
-RUN npm cache clean --force
-
-# Installer les dépendances avec rebuild des modules natifs
-RUN npm ci --legacy-peer-deps --build-from-source
-
-# Forcer la reconstruction de lightningcss pour l'architecture correcte
-RUN npm rebuild lightningcss --build-from-source
+# Installer les dépendances (lightningcss fonctionne out-of-the-box)
+RUN npm ci
 
 # Copier le code source
 COPY . .
 
-# Build de l'application Next.js
+# Générer le client Prisma
+RUN npx prisma generate
+
+# Build Next.js en mode standalone
 RUN npm run build
+
+# Stage 2: Runner - Image de production légère
+FROM node:20-alpine AS runner
+
+# Créer utilisateur non-root pour sécurité
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+
+# Variables d'environnement de production
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+
+# Copier les fichiers nécessaires depuis le builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma/
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma/
+
+# Changer vers utilisateur non-root
+USER nextjs
 
 # Exposer le port 3000
 EXPOSE 3000
 
-# Variables d'environnement
-ENV NODE_ENV=production
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
 
 # Script de démarrage avec migration automatique
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
