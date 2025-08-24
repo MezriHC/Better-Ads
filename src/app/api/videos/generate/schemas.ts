@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const avatarGenerationSchema = z.object({
+export const videoGenerationSchema = z.object({
   prompt: z.string()
     .min(10, 'Prompt must be at least 10 characters')
     .max(500, 'Prompt must be less than 500 characters'),
@@ -25,4 +25,4 @@ export const avatarGenerationSchema = z.object({
     .default(true),
 });
 
-export type AvatarGenerationInput = z.infer<typeof avatarGenerationSchema>;
+export type VideoGenerationInput = z.infer<typeof videoGenerationSchema>;

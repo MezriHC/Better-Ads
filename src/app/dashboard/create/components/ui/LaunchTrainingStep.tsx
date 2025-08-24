@@ -55,8 +55,8 @@ export function LaunchTrainingStep({
       setIsGenerating(true)
       setError(null)
       
-      // Real avatar video generation with Seedance
-      const response = await fetch('/api/avatar/generate', {
+      // Real video generation with Seedance
+      const response = await fetch('/api/videos/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

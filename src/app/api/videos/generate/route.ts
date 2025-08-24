@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { videoGenerationService } from '../../../_shared/core/video-generation-global.service';
-import { avatarGenerationSchema } from './schemas';
+import { videoGenerationSchema } from './schemas';
 import { authOptions } from '../../../_shared/core/auth-global.service';
 
 export async function POST(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validationResult = avatarGenerationSchema.safeParse(body);
+    const validationResult = videoGenerationSchema.safeParse(body);
 
     if (!validationResult.success) {
       return NextResponse.json(
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     const { prompt, imageUrl, resolution, duration, cameraFixed, seed, enableSafetyChecker } = validationResult.data;
 
-    const avatar = await videoGenerationService.generateImageToVideo({
+    const video = await videoGenerationService.generateImageToVideo({
       prompt,
       imageUrl,
       resolution,
@@ -42,15 +42,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: avatar,
+      data: video,
     });
 
   } catch (error) {
-    console.error('Avatar generation error:', error);
+    console.error('Video generation error:', error);
     
     return NextResponse.json(
       { 
-        error: 'Avatar generation failed',
+        error: 'Video generation failed',
         message: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
