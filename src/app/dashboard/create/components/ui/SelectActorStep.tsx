@@ -22,17 +22,53 @@ export function SelectActorStep({
 }: SelectActorStepProps) {
   const [prompt, setPrompt] = useState("")
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null)
+  const [falaiImageUrl, setFalaiImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  const isUploading = false
-  const uploadError = null
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      // Create a temporary URL for display
-      const tempUrl = URL.createObjectURL(file)
-      onImageUpload?.(tempUrl)
+      // Afficher immédiatement la preview locale
+      const localUrl = URL.createObjectURL(file)
+      setLocalPreviewUrl(localUrl)
+      setFalaiImageUrl(null)
+      
+      setIsUploading(true)
+      setUploadError(null)
+      
+      try {
+        // Upload to fal.ai storage
+        const response = await fetch('/api/images/upload', {
+          method: 'POST',
+          body: (() => {
+            const formData = new FormData()
+            formData.append('file', file)
+            return formData
+          })(),
+        })
+
+        if (!response.ok) {
+          throw new Error('Upload failed')
+        }
+
+        const result = await response.json()
+        
+        // Stocker l'URL fal.ai et l'envoyer au parent
+        setFalaiImageUrl(result.data.url)
+        onImageUpload?.(result.data.url)
+        
+        // Nettoyer l'URL locale après succès
+        URL.revokeObjectURL(localUrl)
+      } catch (error) {
+        console.error('Upload error:', error)
+        setUploadError('Upload failed. Please try again.')
+        setFalaiImageUrl(null)
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
@@ -42,8 +78,44 @@ export function SelectActorStep({
     
     const file = e.dataTransfer.files[0]
     if (file && file.type.startsWith('image/')) {
-      const tempUrl = URL.createObjectURL(file)
-      onImageUpload?.(tempUrl)
+      // Afficher immédiatement la preview locale
+      const localUrl = URL.createObjectURL(file)
+      setLocalPreviewUrl(localUrl)
+      setFalaiImageUrl(null)
+      
+      setIsUploading(true)
+      setUploadError(null)
+      
+      try {
+        // Upload to fal.ai storage
+        const response = await fetch('/api/images/upload', {
+          method: 'POST',
+          body: (() => {
+            const formData = new FormData()
+            formData.append('file', file)
+            return formData
+          })(),
+        })
+
+        if (!response.ok) {
+          throw new Error('Upload failed')
+        }
+
+        const result = await response.json()
+        
+        // Stocker l'URL fal.ai et l'envoyer au parent
+        setFalaiImageUrl(result.data.url)
+        onImageUpload?.(result.data.url)
+        
+        // Nettoyer l'URL locale après succès
+        URL.revokeObjectURL(localUrl)
+      } catch (error) {
+        console.error('Upload error:', error)
+        setUploadError('Upload failed. Please try again.')
+        setFalaiImageUrl(null)
+      } finally {
+        setIsUploading(false)
+      }
     }
   }
 
@@ -61,8 +133,8 @@ export function SelectActorStep({
     fileInputRef.current?.click()
   }
 
-  // Validation: image ET prompt obligatoires
-  const canProceed = !!(selectedImageUrl && prompt.trim())
+  // Validation: image uploadée vers fal.ai ET prompt obligatoires ET pas en cours d'upload
+  const canProceed = !!(falaiImageUrl && prompt.trim() && !isUploading)
 
   return (
     <div className="relative h-full">
@@ -111,17 +183,27 @@ export function SelectActorStep({
                       : 'border-border'
                   }`}
                 >
-                  {selectedImageUrl ? (
+                  {(localPreviewUrl || selectedImageUrl) ? (
                     <>
                       <Image
-                        src={selectedImageUrl}
+                        src={localPreviewUrl || selectedImageUrl || ""}
                         alt="Selected image"
                         width={270}
                         height={480}
                         className="w-full h-full object-cover"
                       />
                       
-                      {method === "upload" && (
+                      {/* Loader pendant upload */}
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-xs font-medium">Uploading...</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {method === "upload" && !isUploading && (
                         <div 
                           onClick={triggerFileInput}
                           className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
@@ -130,12 +212,6 @@ export function SelectActorStep({
                             <IconPhoto className="w-6 h-6 mx-auto mb-1" />
                             <p className="text-xs font-medium">Upload another</p>
                           </div>
-                        </div>
-                      )}
-                      
-                      {isUploading && (
-                        <div className="absolute inset-0 bg-background/80 rounded-xl flex items-center justify-center">
-                          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
                       )}
                     </>
@@ -186,12 +262,20 @@ export function SelectActorStep({
           
           {!canProceed && (
             <p className="text-center text-sm text-muted-foreground mt-3">
-              {!selectedImageUrl && !prompt.trim() 
-                ? "Add an image and describe the behavior"
-                : !selectedImageUrl 
-                  ? "Add an image to continue"
-                  : "Describe how your avatar should behave"
+              {isUploading
+                ? "Uploading..."
+                : !falaiImageUrl && !prompt.trim() 
+                  ? "Add an image and describe the behavior"
+                  : !falaiImageUrl 
+                    ? "Add an image to continue"
+                    : "Describe how your avatar should behave"
               }
+            </p>
+          )}
+          
+          {uploadError && (
+            <p className="text-center text-sm text-red-500 mt-2">
+              {uploadError}
             </p>
           )}
         </div>

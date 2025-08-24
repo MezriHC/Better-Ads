@@ -55,21 +55,39 @@ export function LaunchTrainingStep({
       setIsGenerating(true)
       setError(null)
       
-      // Mock avatar generation
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // Real video generation with Seedance
+      const response = await fetch('/api/videos/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          imageUrl: selectedImageUrl,
+          resolution: '1080p',
+          duration: '5'
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Video generation failed')
+      }
+
+      const result = await response.json()
+      const generatedVideo = result.data
       
-      const avatarId = `avatar_${Date.now()}`
       const avatar: Avatar = {
-        id: avatarId,
+        id: generatedVideo.id,
         title: 'Generated Avatar',
-        videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        posterUrl: selectedImageUrl,
+        videoUrl: generatedVideo.url,
+        posterUrl: generatedVideo.posterUrl || selectedImageUrl,
         status: 'ready',
         userId: 'current-user',
         projectId: 'demo-project',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        metadata: {}
+        createdAt: generatedVideo.createdAt,
+        updatedAt: generatedVideo.createdAt,
+        metadata: generatedVideo.metadata || {}
       }
       
       setGeneratedAvatar(avatar)

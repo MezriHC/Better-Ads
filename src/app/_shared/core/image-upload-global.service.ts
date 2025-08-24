@@ -25,8 +25,17 @@ class ImageUploadService {
       // Import dynamique du client fal.ai pour éviter les erreurs de configuration
       const { fal } = await import('@fal-ai/client');
       
-      // Configuration de l'API key via variable d'environnement
-      process.env.FAL_KEY = process.env.FAL_AI_API_KEY;
+      // Configuration de l'API key - Méthode recommandée par fal.ai
+      const apiKey = process.env.FAL_AI_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('FAL_AI_API_KEY environment variable is not set');
+      }
+      
+      // Configuration manuelle du client fal.ai
+      fal.config({
+        credentials: apiKey
+      });
       
       // Upload du fichier
       const url = await fal.storage.upload(file);
@@ -37,6 +46,7 @@ class ImageUploadService {
         fileSize: file.size,
       };
     } catch (error) {
+      console.error('Upload to fal.ai error details:', error);
       throw new Error(`Upload to fal.ai failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
