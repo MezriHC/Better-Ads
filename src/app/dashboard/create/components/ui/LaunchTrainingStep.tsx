@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { IconMicrophone, IconDownload } from "@tabler/icons-react"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 
 interface Avatar {
   id: string
@@ -27,7 +27,6 @@ interface LaunchTrainingStepProps {
   actor?: GeneratedActor | null
   selectedImageUrl?: string
   prompt?: string
-  onVideoGenerated?: (video: any) => void
   onAvatarGenerationStarted?: (avatarData: any) => void
   onAvatarGenerationCompleted?: (avatar: any) => void
 }
@@ -36,7 +35,6 @@ export function LaunchTrainingStep({
   actor, 
   selectedImageUrl,
   prompt,
-  onVideoGenerated,
   onAvatarGenerationStarted,
   onAvatarGenerationCompleted
 }: LaunchTrainingStepProps) {
@@ -45,11 +43,26 @@ export function LaunchTrainingStep({
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // REF Pattern - Immunité complète contre les doublons
+  const generationInProgress = useRef(false)
+  const generationKey = useRef<string | null>(null)
 
   const handleGenerateAvatar = useCallback(async () => {
     if (!selectedImageUrl || !prompt || isGenerating) {
       return
     }
+    
+    // REF Pattern - Protection absolue contre doublons
+    const currentKey = `${selectedImageUrl}_${prompt}`
+    if (generationInProgress.current && generationKey.current === currentKey) {
+      console.log('[AVATAR-GEN] Génération déjà en cours, ignorée')
+      return
+    }
+    
+    generationInProgress.current = true
+    generationKey.current = currentKey
+    console.log(`[AVATAR-GEN] Démarrage génération unique: ${currentKey.substring(0, 20)}...`)
 
     try {
       setIsGenerating(true)
@@ -64,8 +77,8 @@ export function LaunchTrainingStep({
         body: JSON.stringify({
           prompt: prompt,
           imageUrl: selectedImageUrl,
-          resolution: '1080p',
-          duration: '5'
+          resolution: '480p',
+          duration: '3'
         })
       })
 
@@ -96,19 +109,30 @@ export function LaunchTrainingStep({
       setGeneratedAvatar(avatar)
       onAvatarGenerationCompleted?.(avatar)
       setIsGenerating(false)
+      
+      // REF Pattern - Libération après succès
+      generationInProgress.current = false
+      console.log('[AVATAR-GEN] Génération terminée avec succès')
     } catch (error) {
       setError('Generation failed')
       setIsGenerating(false)
+      
+      // REF Pattern - Libération après erreur
+      generationInProgress.current = false
+      console.log('[AVATAR-GEN] Génération échouée, libération du verrou')
     }
   }, [selectedImageUrl, prompt, isGenerating, onAvatarGenerationCompleted])
 
   useEffect(() => {
-    if (selectedImageUrl && prompt && !hasStartedGeneration && !isGenerating) {
+    if (selectedImageUrl && prompt && !hasStartedGeneration && !isGenerating && !generationInProgress.current) {
+      const generationKey = `${selectedImageUrl}_${prompt}`
+      console.log(`[AVATAR-GEN] useEffect déclenché: ${generationKey.substring(0, 20)}...`)
+      
       setHasStartedGeneration(true)
       onAvatarGenerationStarted?.({ prompt, imageUrl: selectedImageUrl })
       handleGenerateAvatar()
     }
-  }, [selectedImageUrl, prompt, hasStartedGeneration, handleGenerateAvatar, isGenerating, onAvatarGenerationStarted])
+  }, [selectedImageUrl, prompt, hasStartedGeneration, isGenerating])
 
   const handleDownloadVideo = async () => {
     if (!generatedAvatar?.videoUrl) return
@@ -231,6 +255,9 @@ export function LaunchTrainingStep({
             {(error || generatedAvatar?.status === 'failed') && (
               <button
                 onClick={() => {
+                  // REF Pattern - Reset complet pour retry
+                  generationInProgress.current = false
+                  generationKey.current = null
                   setHasStartedGeneration(false)
                   setGeneratedAvatar(null)
                   setError(null)
