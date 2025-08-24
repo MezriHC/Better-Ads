@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: null
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    command: ["sh", "-c", "npx prisma migrate deploy && npm start"]
