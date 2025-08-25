@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from 'react'
-import { VideoShowcase } from '@/_shared'
+import { useState, useRef, useImperativeHandle, forwardRef } from 'react'
+import { VideoShowcase, type VideoShowcaseRef } from '@/_shared'
 import { HeroSection as HeroComponent } from '../ui/HeroSection'
 import { VideoModal } from '../ui/VideoModal'
 import type { VideoData } from '../ui/VideoCard'
@@ -10,8 +10,25 @@ interface HeroSectionWrapperProps {
   currentProject: { id: string; name: string } | null
 }
 
-export function HeroSectionWrapper({ currentProject }: HeroSectionWrapperProps) {
+export interface HeroSectionWrapperRef {
+  refreshAvatars: () => Promise<void>
+}
+
+export const HeroSectionWrapper = forwardRef<HeroSectionWrapperRef, HeroSectionWrapperProps>(function HeroSectionWrapper({ currentProject }, ref) {
   const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null)
+  const videoShowcaseRef = useRef<VideoShowcaseRef>(null)
+
+  const handleVideoPlay = (video: VideoData) => {
+    setSelectedVideo(video)
+  }
+
+  useImperativeHandle(ref, () => ({
+    refreshAvatars: async () => {
+      if (videoShowcaseRef.current) {
+        await videoShowcaseRef.current.refreshAvatars()
+      }
+    }
+  }), [])
 
   return (
     <>
@@ -19,8 +36,9 @@ export function HeroSectionWrapper({ currentProject }: HeroSectionWrapperProps) 
         <div className="w-full py-8">
           <div className="max-w-6xl mx-auto px-4">
             <VideoShowcase 
+              ref={videoShowcaseRef}
               projectId={currentProject?.id} 
-              onVideoPlay={setSelectedVideo}
+              onVideoPlay={handleVideoPlay}
               heroSection={
                 <div className="flex items-center justify-center min-h-[50vh]">
                   <HeroComponent currentProject={currentProject} />
@@ -38,4 +56,4 @@ export function HeroSectionWrapper({ currentProject }: HeroSectionWrapperProps) 
       />
     </>
   )
-}
+})

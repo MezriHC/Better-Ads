@@ -28,6 +28,7 @@ interface LaunchTrainingStepProps {
   selectedImageUrl?: string
   prompt?: string
   projectId?: string
+  videoFormat?: string
   onAvatarGenerationStarted?: (avatarData: any) => void
   onAvatarGenerationCompleted?: (avatar: any) => void
 }
@@ -37,9 +38,11 @@ export function LaunchTrainingStep({
   selectedImageUrl,
   prompt,
   projectId,
+  videoFormat,
   onAvatarGenerationStarted,
   onAvatarGenerationCompleted
 }: LaunchTrainingStepProps) {
+  
   const [generatedAvatar, setGeneratedAvatar] = useState<Avatar | null>(null)
   const [downloadingVideo, setDownloadingVideo] = useState(false)
   const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
@@ -58,19 +61,18 @@ export function LaunchTrainingStep({
     // REF Pattern - Protection absolue contre doublons
     const currentKey = `${selectedImageUrl}_${prompt}`
     if (generationInProgress.current && generationKey.current === currentKey) {
-      console.log('[AVATAR-GEN] Génération déjà en cours, ignorée')
       return
     }
     
     generationInProgress.current = true
     generationKey.current = currentKey
-    console.log(`[AVATAR-GEN] Démarrage génération unique: ${currentKey.substring(0, 20)}...`)
 
     try {
       setIsGenerating(true)
       setError(null)
       
       // Real avatar video generation with Seedance
+      
       const response = await fetch('/api/avatar/generate', {
         method: 'POST',
         headers: {
@@ -81,7 +83,8 @@ export function LaunchTrainingStep({
           imageUrl: selectedImageUrl,
           projectId: projectId,
           resolution: '480p',
-          duration: '3'
+          duration: '3',
+          videoFormat: videoFormat
         })
       })
 
@@ -115,21 +118,18 @@ export function LaunchTrainingStep({
       
       // REF Pattern - Libération après succès
       generationInProgress.current = false
-      console.log('[AVATAR-GEN] Génération terminée avec succès')
     } catch (error) {
       setError('Generation failed')
       setIsGenerating(false)
       
       // REF Pattern - Libération après erreur
       generationInProgress.current = false
-      console.log('[AVATAR-GEN] Génération échouée, libération du verrou')
     }
   }, [selectedImageUrl, prompt, isGenerating, onAvatarGenerationCompleted])
 
   useEffect(() => {
     if (selectedImageUrl && prompt && !hasStartedGeneration && !isGenerating && !generationInProgress.current) {
       const generationKey = `${selectedImageUrl}_${prompt}`
-      console.log(`[AVATAR-GEN] useEffect déclenché: ${generationKey.substring(0, 20)}...`)
       
       setHasStartedGeneration(true)
       onAvatarGenerationStarted?.({ prompt, imageUrl: selectedImageUrl })

@@ -40,6 +40,7 @@ interface CreateAvatarModalProps {
   isOpen: boolean
   onClose: () => void
   projectId?: string
+  videoFormat?: string
   onAvatarCreated?: (avatar: CreatedAvatar) => void
   onVideoGenerated?: (video: any) => void
   onAvatarGenerationStarted?: (avatarData: any) => void
@@ -50,6 +51,7 @@ export function CreateAvatarModal({
   isOpen, 
   onClose, 
   projectId,
+  videoFormat,
   onAvatarCreated, 
   onVideoGenerated,
   onAvatarGenerationStarted,
@@ -196,6 +198,7 @@ export function CreateAvatarModal({
               selectedImageUrl={selectedImageUrl}
               prompt={actorPrompt}
               projectId={projectId}
+              videoFormat={videoFormat}
               onAvatarGenerationStarted={onAvatarGenerationStarted}
               onAvatarGenerationCompleted={onAvatarGenerationCompleted}
             />

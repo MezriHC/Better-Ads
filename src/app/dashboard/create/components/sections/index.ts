@@ -1,2 +1,2 @@
 export { MainCreationSection } from './MainCreationSection'
-export { HeroSectionWrapper } from './HeroSection'
+export { HeroSectionWrapper, type HeroSectionWrapperRef } from './HeroSection'

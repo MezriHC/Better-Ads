@@ -1,22 +1,44 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react"
 import { VideoData, VideoShowcaseProps } from '../config/video-types'
 import { VideoGrid } from './video-grid.component'
 
-export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShowcaseProps) {
+export interface VideoShowcaseRef {
+  refreshAvatars: () => Promise<void>
+}
+
+export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(function VideoShowcase({ projectId, heroSection, onVideoPlay }, ref) {
   const [videos, setVideos] = useState<VideoData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   const hasGeneratedVideos = videos.length > 0
 
-  // Charger les avatars du projet
+  // Charger les avatars du projet avec reset complet des états
   useEffect(() => {
     if (projectId) {
+      // 🔥 RESET IMMÉDIAT des anciens états pour éviter le clignotement
+      setVideos([])           // Clear videos from previous project
+      setError(null)          // Clear previous errors  
+      setHasLoaded(false)     // Reset loaded state
+      
+      // Puis charger nouveau projet
       loadProjectAvatars()
+    } else {
+      // Reset complet si pas de projet
+      setVideos([])
+      setError(null)
+      setHasLoaded(false)
+      setLoading(false)
     }
   }, [projectId])
+
+  // Exposer la fonction de refresh via useImperativeHandle
+  useImperativeHandle(ref, () => ({
+    refreshAvatars: loadProjectAvatars
+  }), [projectId])
 
   const loadProjectAvatars = async () => {
     if (!projectId) return
@@ -31,6 +53,8 @@ export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShow
       }
       
       const data = await response.json()
+      if (data.avatars && data.avatars.length > 0) {
+      }
       setVideos(data.avatars || [])
     } catch (err) {
       console.error('[VideoShowcase] Error loading avatars:', err)
@@ -38,6 +62,7 @@ export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShow
       setVideos([])
     } finally {
       setLoading(false)
+      setHasLoaded(true)
     }
   }
 
@@ -75,20 +100,34 @@ export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShow
     }
   }
 
-  // Si on a des avatars, afficher la section avatars
-  if (hasGeneratedVideos || loading || error) {
+  // Logique d'affichage améliorée
+  const shouldShowGeneratedContent = hasLoaded && (hasGeneratedVideos || error)
+
+  // Afficher loader pendant le chargement initial
+  if (!hasLoaded && loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-center py-12">
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  // Si on a des contenus OU une erreur, afficher la section contenu
+  if (shouldShowGeneratedContent) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold text-foreground">
-              Generated Avatars {hasGeneratedVideos && `(${videos.length})`}
+              Generated Content {hasGeneratedVideos && `(${videos.length})`}
             </h2>
             <p className="text-muted-foreground text-sm">
-              {loading ? 'Loading avatars...' : 
-               error ? 'Error loading avatars' :
-               hasGeneratedVideos ? 'Avatars ready to view and download' : 
-               'No avatars generated yet for this project'}
+              {loading ? 'Loading content...' : 
+               error ? 'Error loading content' :
+               hasGeneratedVideos ? 'Content ready to view and download' : 
+               'No content generated yet for this project'}
             </p>
           </div>
         </div>
@@ -114,7 +153,7 @@ export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShow
             onDownload={handleDownload}
             onDelete={handleDelete}
             onRename={handleRename}
-            emptyMessage="No avatars generated yet for this project. Start creating below!"
+            emptyMessage="No content generated yet for this project. Start creating below!"
           />
         )}
       </div>
@@ -127,4 +166,4 @@ export function VideoShowcase({ projectId, heroSection, onVideoPlay }: VideoShow
       {heroSection}
     </div>
   )
-}
+})

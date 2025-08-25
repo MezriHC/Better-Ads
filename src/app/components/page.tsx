@@ -258,7 +258,6 @@ export default function ComponentsPage() {
               <LaunchTrainingStep
                 selectedImageUrl="https://picsum.photos/270/480?random=1"
                 prompt="Create an avatar that speaks with excitement"
-                onVideoGenerated={(video) => {}}
               />
             </div>
           </div>

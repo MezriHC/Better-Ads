@@ -6,6 +6,7 @@ interface VideoGenerationRequest {
   cameraFixed?: boolean;
   seed?: number;
   enableSafetyChecker?: boolean;
+  videoFormat?: "16:9" | "9:16" | "1:1";
 }
 
 interface VideoGenerationResponse {

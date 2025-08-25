@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { IconX } from "@tabler/icons-react"
-import { VideoData } from "./VideoCard"
+import { VideoData } from '../../../../_shared/config/video-types'
 
 interface VideoModalProps {
   video: VideoData | null
@@ -12,6 +12,7 @@ interface VideoModalProps {
 
 export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+
 
   // Fermer avec Escape
   useEffect(() => {
@@ -36,15 +37,22 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
     }
   }, [isOpen, video])
 
-  const getModalSize = () => {
-    if (!video?.format) return "max-w-4xl" // Défaut
+  const getModalContainerClass = () => {
+    const format = video?.format || "16:9"
     
-    switch (video.format) {
-      case "9:16": return "max-w-md" // Vertical - plus étroit
-      case "1:1": return "max-w-2xl" // Carré - taille moyenne
-      case "16:9": 
-      default: return "max-w-4xl" // Horizontal - large
+    if (format === "9:16") {
+      return "w-[400px] h-[700px]" // Container vertical fixe
     }
+    
+    if (format === "1:1") {
+      return "w-[600px] h-[600px]" // Container carré fixe
+    }
+    
+    return "w-[800px] h-[450px]" // Container horizontal fixe (16:9)
+  }
+
+  const getVideoClasses = () => {
+    return "w-full h-full object-contain rounded-2xl" // Toujours object-contain pour respecter les proportions
   }
 
 
@@ -57,7 +65,7 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
       style={{ zIndex: 999999, position: 'fixed' }}
     >
       <div 
-        className={`relative ${getModalSize()} w-full max-h-[95vh] rounded-2xl overflow-hidden bg-black shadow-2xl`}
+        className={`relative rounded-2xl overflow-hidden bg-black shadow-2xl ${getModalContainerClass()}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Boutons en haut à droite */}
@@ -99,7 +107,7 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
             <video
               ref={videoRef}
               src={video.videoUrl}
-              className="w-full h-full object-contain rounded-2xl"
+              className={getVideoClasses()}
               controls
               poster={video.posterUrl}
             >

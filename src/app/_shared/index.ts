@@ -33,7 +33,7 @@ export * from './config/api-helpers'
 export * from './config/logger'
 export * from './config/video-types'
 
-export * from './business/video-showcase.component'
+export { VideoShowcase, type VideoShowcaseRef } from './business/video-showcase.component'
 export * from './business/video-grid.component'
 export * from './business/video-card.component'
 

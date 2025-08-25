@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    const userId = session?.user?.id || session?.user?.email
+    const userId = (session?.user as any)?.id || session?.user?.email
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -42,17 +42,19 @@ export async function GET(
     })
 
     // Transformer les données au format VideoData attendu par VideoShowcase  
-    const videoData = avatars.map((avatar: any) => ({
-      id: avatar.id,
-      title: avatar.name || 'Avatar',
-      posterUrl: avatar.imageUrl, // Image de preview
-      videoUrl: avatar.videoUrl,
-      status: avatar.status === 'ready' ? 'ready' : 
-              avatar.status === 'processing' ? 'processing' : 'failed',
-      createdAt: avatar.createdAt.toISOString(),
-      duration: avatar.duration || '0:03',
-      format: (avatar.format as "16:9" | "9:16" | "1:1") || "16:9"
-    }))
+    const videoData = avatars.map((avatar: any) => {
+      return {
+        id: avatar.id,
+        title: avatar.name || 'Avatar',
+        posterUrl: avatar.imageUrl, // Image de preview
+        videoUrl: avatar.videoUrl,
+        status: avatar.status === 'ready' ? 'ready' : 
+                avatar.status === 'processing' ? 'processing' : 'failed',
+        createdAt: avatar.createdAt.toISOString(),
+        duration: avatar.duration || '0:03',
+        format: (avatar.format as "16:9" | "9:16" | "1:1") || "16:9"
+      }
+    })
 
     return NextResponse.json({
       success: true,

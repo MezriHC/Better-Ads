@@ -26,6 +26,9 @@ export const avatarGenerationSchema = z.object({
   
   enableSafetyChecker: z.boolean()
     .default(true),
+  
+  videoFormat: z.enum(['16:9', '9:16', '1:1'])
+    .default('16:9'),
 });
 
 export type AvatarGenerationInput = z.infer<typeof avatarGenerationSchema>;

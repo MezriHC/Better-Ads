@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { prompt, imageUrl, projectId, resolution, duration, cameraFixed, seed, enableSafetyChecker } = validationResult.data;
+    const { prompt, imageUrl, projectId, resolution, duration, cameraFixed, seed, enableSafetyChecker, videoFormat } = validationResult.data;
+    
 
     const avatar = await videoGenerationService.generateImageToVideo({
       prompt,
@@ -42,10 +43,11 @@ export async function POST(request: NextRequest) {
       cameraFixed,
       seed,
       enableSafetyChecker,
+      videoFormat,
     });
 
     try {
-      const userId = session.user.id || session.user.email;
+      const userId = (session.user as any).id || session.user.email;
       const filename = avatarStorageService.generateAvatarId();
       
       const storedAvatar = await avatarStorageService.uploadAvatarFromUrl({
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Sauvegarder en base de données
+      
       const savedAvatar = await prisma.avatar.create({
         data: {
           id: filename,
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
           userId: userId,
           projectId: projectId || null,
           duration: `0:0${duration}`,
-          format: resolution === '480p' ? '16:9' : '16:9',
+          format: videoFormat,
           minioVideoPath: storedAvatar.path,
           prompt: prompt,
           resolution: resolution,

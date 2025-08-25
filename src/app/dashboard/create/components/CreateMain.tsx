@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { MainCreationSection, HeroSectionWrapper } from './sections'
+import { useState, useRef } from "react"
+import { MainCreationSection, HeroSectionWrapper, type HeroSectionWrapperRef } from './sections'
 import { ActorSelectorModal } from './ui/ActorSelectorModal'
 import { CreatePageGuard } from './ui/CreatePageGuard'
 import { VoiceSelectionModal } from './ui/VoiceSelectionModal'
@@ -23,6 +23,7 @@ export function CreateMain() {
   const [selectedVideoFormat, setSelectedVideoFormat] = useState("16:9")
   const [selectedBRollImage, setSelectedBRollImage] = useState<File | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const heroSectionRef = useRef<HeroSectionWrapperRef>(null)
   
   const [isActorModalOpen, setIsActorModalOpen] = useState(false)
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
@@ -86,7 +87,10 @@ export function CreateMain() {
         </div>
 
         {/* Hero Section */}
-        <HeroSectionWrapper currentProject={currentProject} />
+        <HeroSectionWrapper 
+          ref={heroSectionRef}
+          currentProject={currentProject} 
+        />
 
         {/* Creation Section */}
         <div className="flex-shrink-0 relative z-10 pb-8 pt-8">
@@ -196,8 +200,14 @@ export function CreateMain() {
         isOpen={isCreateAvatarModalOpen}
         onClose={() => setIsCreateAvatarModalOpen(false)}
         projectId={currentProject?.id}
+        videoFormat={selectedVideoFormat}
         onAvatarCreated={(avatar) => {
           setIsCreateAvatarModalOpen(false)
+        }}
+        onAvatarGenerationCompleted={async (avatar) => {
+          if (heroSectionRef.current) {
+            await heroSectionRef.current.refreshAvatars()
+          }
         }}
       />
     </CreatePageGuard>
