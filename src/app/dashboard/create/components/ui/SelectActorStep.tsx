@@ -133,8 +133,8 @@ export function SelectActorStep({
     fileInputRef.current?.click()
   }
 
-  // Validation: image uploadée vers fal.ai ET prompt obligatoires ET pas en cours d'upload
-  const canProceed = !!(falaiImageUrl && prompt.trim() && !isUploading)
+  // Validation: image disponible (uploadée OU sélectionnée) ET prompt obligatoires ET pas en cours d'upload
+  const canProceed = !!((falaiImageUrl || selectedImageUrl) && prompt.trim() && !isUploading)
 
   return (
     <div className="relative h-full">
@@ -264,9 +264,9 @@ export function SelectActorStep({
             <p className="text-center text-sm text-muted-foreground mt-3">
               {isUploading
                 ? "Uploading..."
-                : !falaiImageUrl && !prompt.trim() 
+                : !(falaiImageUrl || selectedImageUrl) && !prompt.trim() 
                   ? "Add an image and describe the behavior"
-                  : !falaiImageUrl 
+                  : !(falaiImageUrl || selectedImageUrl) 
                     ? "Add an image to continue"
                     : "Describe how your avatar should behave"
               }
