@@ -40,19 +40,19 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
   const getModalContainerClass = () => {
     const format = video?.format || "16:9"
     
-    if (format === "9:16") {
-      return "w-[400px] h-[700px]" // Container vertical fixe
+    switch (format) {
+      case "9:16":
+        return "w-[420px] h-[750px] max-w-[90vw] max-h-[90vh]" // Vertical
+      case "1:1":
+        return "w-[600px] h-[600px] max-w-[90vw] max-h-[90vh]" // Carré
+      case "16:9":
+      default:
+        return "w-[800px] h-[450px] max-w-[90vw] max-h-[90vh]" // Horizontal par défaut
     }
-    
-    if (format === "1:1") {
-      return "w-[600px] h-[600px]" // Container carré fixe
-    }
-    
-    return "w-[800px] h-[450px]" // Container horizontal fixe (16:9)
   }
 
   const getVideoClasses = () => {
-    return "w-full h-full object-contain rounded-2xl" // Toujours object-contain pour respecter les proportions
+    return "w-full h-full object-contain rounded-xl" // Légèrement moins arrondi pour éviter les problèmes de corners
   }
 
 
@@ -60,16 +60,16 @@ export function VideoModal({ video, isOpen, onClose }: VideoModalProps) {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/95 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
       style={{ zIndex: 999999, position: 'fixed' }}
     >
       <div 
-        className={`relative rounded-2xl overflow-hidden bg-black shadow-2xl ${getModalContainerClass()}`}
+        className={`relative rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 ${getModalContainerClass()}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Boutons en haut à droite */}
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
           {/* Bouton Download */}
           {video.status === 'ready' && video.videoUrl && (
             <button

@@ -23,7 +23,12 @@ export function CreateMain() {
   const [selectedVideoFormat, setSelectedVideoFormat] = useState("16:9")
   const [selectedBRollImage, setSelectedBRollImage] = useState<File | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [hasStartedGeneration, setHasStartedGeneration] = useState(false)
   const heroSectionRef = useRef<HeroSectionWrapperRef>(null)
+  
+  // REF Pattern - Protection absolue contre les doublons B-roll
+  const brollGenerationInProgress = useRef(false)
+  const brollGenerationKey = useRef<string | null>(null)
   
   const [isActorModalOpen, setIsActorModalOpen] = useState(false)
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false)
@@ -52,16 +57,119 @@ export function CreateMain() {
 
   const handleSubmit = async () => {
     const hasContent = speechMode === "text-to-speech" ? script.trim() : audioRecording.audioFile
-    if (!hasContent || !selectedActor || !currentProject) {
-      return
-    }
+    
+    if (selectedType === "b-rolls") {
+      if (!hasContent || !currentProject || isGenerating) {
+        return
+      }
 
-    setIsGenerating(true)
-    try {
-      alert(`Génération simulée: script="${script}", actor="${selectedActor.id}"`)
-    } finally {
-      setIsGenerating(false)
+      // REF Pattern - Protection absolue contre doublons B-roll
+      const imageKey = selectedBRollImage ? `${selectedBRollImage.name}_${selectedBRollImage.size}` : 'no-image'
+      const currentKey = `${script.trim()}_${imageKey}_${selectedVideoFormat}_${currentProject.id}`
+      
+      if (brollGenerationInProgress.current && brollGenerationKey.current === currentKey) {
+        return
+      }
+      
+      brollGenerationInProgress.current = true
+      brollGenerationKey.current = currentKey
+
+      setIsGenerating(true)
+      setHasStartedGeneration(true)
+      try {
+        const brollData = {
+          prompt: script.trim(),
+          name: `B-Roll ${new Date().toLocaleDateString('fr-FR')}`,
+          projectId: currentProject.id,
+          imageUrl: selectedBRollImage ? await uploadImageToFal(selectedBRollImage) : undefined,
+          aspectRatio: selectedVideoFormat as "21:9" | "16:9" | "4:3" | "1:1" | "3:4" | "9:16",
+          resolution: "480p" as const,
+          duration: "3" as const,
+          type: "seedance-video",
+          visibility: "private" as const
+        }
+
+        const response = await fetch('/api/broll/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(brollData)
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Erreur lors de la génération du B-roll')
+        }
+
+        const result = await response.json()
+        console.log('✅ B-roll créé en processing:', result)
+        
+        // Ajouter instantanément la vidéo "processing" à l'affichage
+        if (heroSectionRef.current && result.broll) {
+          const processingVideo = {
+            id: result.broll.id,
+            title: result.broll.name,
+            posterUrl: selectedBRollImage ? URL.createObjectURL(selectedBRollImage) : '/placeholder-video.jpg',
+            videoUrl: null,
+            status: 'processing' as const,
+            progress: 0,
+            createdAt: result.broll.createdAt,
+            duration: (result.broll.duration || '0:03').replace(/\n/g, ''),
+            format: result.broll.format || '16:9'
+          }
+          
+          heroSectionRef.current.addProcessingVideo(processingVideo)
+        }
+        
+        // Réinitialiser le formulaire
+        setScript("")
+        setSelectedBRollImage(null)
+        
+        // REF Pattern - Libération après succès
+        brollGenerationInProgress.current = false
+        brollGenerationKey.current = null
+        
+      } catch (error) {
+        console.error('Erreur génération B-roll:', error)
+        alert(`Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`)
+        
+        // REF Pattern - Libération après erreur
+        brollGenerationInProgress.current = false
+        brollGenerationKey.current = null
+      } finally {
+        setIsGenerating(false)
+        setHasStartedGeneration(false)
+      }
+    } else {
+      if (!hasContent || !selectedActor || !currentProject) {
+        return
+      }
+
+      setIsGenerating(true)
+      try {
+        alert(`Génération simulée: script="${script}", actor="${selectedActor.id}"`)
+      } finally {
+        setIsGenerating(false)
+      }
     }
+  }
+
+  const uploadImageToFal = async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    const response = await fetch('/api/images/upload', {
+      method: 'POST',
+      body: formData
+    })
+    
+    if (!response.ok) {
+      throw new Error('Échec upload image')
+    }
+    
+    const data = await response.json()
+    return data.url
   }
 
   const handleVoiceChange = (voice: Voice) => {
@@ -117,6 +225,7 @@ export function CreateMain() {
               isGeneratingVoice={voiceGeneration.isGeneratingVoice}
               isPlayingVoice={voiceGeneration.isPlayingVoice}
               isAudioSettingsOpen={isAudioSettingsOpen}
+              isGenerating={isGenerating}
               creationTypes={creationTypes}
               speechModes={speechModes}
               videoFormats={videoFormats}

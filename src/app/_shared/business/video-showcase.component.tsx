@@ -6,6 +6,7 @@ import { VideoGrid } from './video-grid.component'
 
 export interface VideoShowcaseRef {
   refreshAvatars: () => Promise<void>
+  addProcessingVideo: (video: VideoData) => void
 }
 
 export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(function VideoShowcase({ projectId, heroSection, onVideoPlay }, ref) {
@@ -13,8 +14,10 @@ export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(fu
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasLoaded, setHasLoaded] = useState(false)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const hasGeneratedVideos = videos.length > 0
+  const hasProcessingVideos = videos.some(v => v.status === 'processing')
 
   // Charger les avatars du projet avec reset complet des états
   useEffect(() => {
@@ -35,9 +38,77 @@ export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(fu
     }
   }, [projectId])
 
+  // Polling intelligent - Update uniquement les vidéos processing
+  const updateProcessingVideos = async () => {
+    if (!projectId) return
+    
+    try {
+      const processingVideos = videos.filter(v => v.status === 'processing')
+      if (processingVideos.length === 0) return
+
+      // Charger toutes les vidéos pour trouver les mises à jour
+      const [avatarsResponse, brollsResponse] = await Promise.all([
+        fetch(`/api/projects/${projectId}/avatars`),
+        fetch(`/api/projects/${projectId}/brolls`)
+      ])
+      
+      const allUpdatedVideos: VideoData[] = []
+      
+      if (avatarsResponse.ok) {
+        const avatarsData = await avatarsResponse.json()
+        if (avatarsData.avatars) {
+          allUpdatedVideos.push(...avatarsData.avatars)
+        }
+      }
+      
+      if (brollsResponse.ok) {
+        const brollsData = await brollsResponse.json()
+        if (Array.isArray(brollsData)) {
+          allUpdatedVideos.push(...brollsData)
+        }
+      }
+
+      // Mettre à jour seulement les vidéos qui ont changé de statut
+      setVideos(prevVideos => 
+        prevVideos.map(video => {
+          if (video.status !== 'processing') return video
+          
+          const updatedVideo = allUpdatedVideos.find(v => v.id === video.id)
+          return updatedVideo && updatedVideo.status !== 'processing' ? updatedVideo : video
+        })
+      )
+    } catch (error) {
+      console.error('Erreur mise à jour vidéos processing:', error)
+    }
+  }
+
+  // Polling automatique pour les vidéos en cours de génération
+  useEffect(() => {
+    if (hasProcessingVideos && projectId) {
+      pollingIntervalRef.current = setInterval(updateProcessingVideos, 5000)
+    } else {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+      }
+    }
+  }, [hasProcessingVideos, projectId, videos])
+
+  // Ajouter une vidéo en cours de génération instantanément
+  const addProcessingVideo = (newVideo: VideoData) => {
+    setVideos(prevVideos => [newVideo, ...prevVideos])
+  }
+
   // Exposer la fonction de refresh via useImperativeHandle
   useImperativeHandle(ref, () => ({
-    refreshAvatars: loadProjectAvatars
+    refreshAvatars: loadProjectAvatars,
+    addProcessingVideo
   }), [projectId])
 
   const loadProjectAvatars = async () => {
@@ -47,18 +118,37 @@ export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(fu
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/projects/${projectId}/avatars`)
-      if (!response.ok) {
-        throw new Error('Failed to load avatars')
+      // Charger les avatars et les B-rolls en parallèle
+      const [avatarsResponse, brollsResponse] = await Promise.all([
+        fetch(`/api/projects/${projectId}/avatars`),
+        fetch(`/api/projects/${projectId}/brolls`)
+      ])
+      
+      const allVideos: VideoData[] = []
+      
+      // Traiter les avatars
+      if (avatarsResponse.ok) {
+        const avatarsData = await avatarsResponse.json()
+        if (avatarsData.avatars) {
+          allVideos.push(...avatarsData.avatars)
+        }
       }
       
-      const data = await response.json()
-      if (data.avatars && data.avatars.length > 0) {
+      // Traiter les B-rolls
+      if (brollsResponse.ok) {
+        const brollsData = await brollsResponse.json()
+        if (Array.isArray(brollsData)) {
+          allVideos.push(...brollsData)
+        }
       }
-      setVideos(data.avatars || [])
+      
+      // Trier par date de création (plus récent en premier)
+      allVideos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      
+      setVideos(allVideos)
     } catch (err) {
-      console.error('[VideoShowcase] Error loading avatars:', err)
-      setError('Failed to load avatars')
+      console.error('[VideoShowcase] Error loading content:', err)
+      setError('Failed to load content')
       setVideos([])
     } finally {
       setLoading(false)
@@ -107,8 +197,8 @@ export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(fu
   if (!hasLoaded && loading) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-center py-12">
-          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center justify-center py-24">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     )
@@ -133,8 +223,8 @@ export const VideoShowcase = forwardRef<VideoShowcaseRef, VideoShowcaseProps>(fu
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center justify-center py-24">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : error ? (
           <div className="text-center py-12">

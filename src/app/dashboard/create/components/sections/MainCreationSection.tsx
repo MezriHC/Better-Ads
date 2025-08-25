@@ -24,6 +24,7 @@ interface MainCreationSectionProps {
   isGeneratingVoice: boolean
   isPlayingVoice: boolean
   isAudioSettingsOpen: boolean
+  isGenerating?: boolean
   onTypeChange: (type: CreationType) => void
   onScriptChange: (script: string) => void
   onSpeechModeChange: (mode: "text-to-speech" | "speech-to-speech") => void

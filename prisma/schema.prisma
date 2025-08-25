@@ -131,25 +131,35 @@ model AvatarGeneration {
 }
 
 model BRoll {
-  id           String   @id
-  name         String
-  prompt       String
-  imageUrl     String?
-  videoUrl     String?
-  thumbnailUrl String?
-  status       String
-  type         String
-  userId       String
-  projectId    String
-  falJobId     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime
-  Project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String   @id
+  name                String
+  prompt              String
+  imageUrl            String?
+  videoUrl            String?
+  thumbnailUrl        String?
+  status              String
+  type                String
+  userId              String
+  projectId           String
+  falJobId            String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  aspectRatio         String?
+  cameraFixed         Boolean? @default(false)
+  duration            String?
+  enableSafetyChecker Boolean? @default(true)
+  format              String?
+  minioVideoPath      String?
+  resolution          String?
+  seed                BigInt?
+  visibility          String   @default("private")
+  Project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  User                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([type, status])
   @@index([userId])
+  @@index([visibility, status])
 }
 
 model GeneratedImage {

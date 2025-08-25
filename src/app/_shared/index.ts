@@ -36,6 +36,8 @@ export * from './config/video-types'
 export { VideoShowcase, type VideoShowcaseRef } from './business/video-showcase.component'
 export * from './business/video-grid.component'
 export * from './business/video-card.component'
+export * from './hooks/use-video-thumbnail.hook'
+export * from './lib/video-thumbnail.util'
 
 export * from './mock/videos-mock.data'
 export * from './mock/actors-mock.data'

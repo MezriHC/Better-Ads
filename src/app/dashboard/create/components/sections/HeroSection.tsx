@@ -12,6 +12,8 @@ interface HeroSectionWrapperProps {
 
 export interface HeroSectionWrapperRef {
   refreshAvatars: () => Promise<void>
+  refreshVideos: () => Promise<void>
+  addProcessingVideo: (video: any) => void
 }
 
 export const HeroSectionWrapper = forwardRef<HeroSectionWrapperRef, HeroSectionWrapperProps>(function HeroSectionWrapper({ currentProject }, ref) {
@@ -27,6 +29,16 @@ export const HeroSectionWrapper = forwardRef<HeroSectionWrapperRef, HeroSectionW
       if (videoShowcaseRef.current) {
         await videoShowcaseRef.current.refreshAvatars()
       }
+    },
+    refreshVideos: async () => {
+      if (videoShowcaseRef.current) {
+        await videoShowcaseRef.current.refreshAvatars()
+      }
+    },
+    addProcessingVideo: (video: any) => {
+      if (videoShowcaseRef.current) {
+        videoShowcaseRef.current.addProcessingVideo(video)
+      }
     }
   }), [])
 
@@ -34,7 +46,7 @@ export const HeroSectionWrapper = forwardRef<HeroSectionWrapperRef, HeroSectionW
     <>
       <div className="flex-1 overflow-y-auto relative z-10">
         <div className="w-full py-8">
-          <div className="max-w-6xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-4">
             <VideoShowcase 
               ref={videoShowcaseRef}
               projectId={currentProject?.id} 

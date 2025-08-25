@@ -28,6 +28,7 @@ interface CreationPanelProps {
   isVoiceGenerated: boolean
   isGeneratingVoice: boolean
   isPlayingVoice: boolean
+  isGenerating?: boolean
   creationTypes: any[]
   speechModes: any[]
   videoFormats: any[]
@@ -79,6 +80,7 @@ export function CreationPanel({
   isVoiceGenerated,
   isGeneratingVoice,
   isPlayingVoice,
+  isGenerating = false,
   creationTypes,
   speechModes,
   videoFormats,
@@ -151,6 +153,7 @@ export function CreationPanel({
             onChange={onScriptChange}
             onKeyDown={onKeyDown}
             placeholder={getPlaceholder()}
+            disabled={isGenerating}
           />
         )}
       </div>
@@ -186,6 +189,7 @@ export function CreationPanel({
         videoFormats={videoFormats}
         isVideoFormatDropdownOpen={isVideoFormatDropdownOpen}
         isSpeechDropdownOpen={isSpeechDropdownOpen}
+        isGenerating={isGenerating}
         onVideoFormatChange={onVideoFormatChange}
         onBRollImageChange={onBRollImageChange}
         onSpeechModeChange={onSpeechModeChange}

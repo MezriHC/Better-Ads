@@ -37,6 +37,7 @@ interface BottomControlsProps {
   videoFormats: VideoFormat[]
   isVideoFormatDropdownOpen: boolean
   isSpeechDropdownOpen: boolean
+  isGenerating?: boolean
   onVideoFormatChange: (formatId: string) => void
   onBRollImageChange: (image: File | null) => void
   onSpeechModeChange: (mode: "text-to-speech" | "speech-to-speech") => void
@@ -58,6 +59,7 @@ export function BottomControls({
   videoFormats,
   isVideoFormatDropdownOpen,
   isSpeechDropdownOpen,
+  isGenerating = false,
   onVideoFormatChange,
   onBRollImageChange,
   onSpeechModeChange,
@@ -114,6 +116,7 @@ export function BottomControls({
         speechMode={speechMode}
         script={script}
         audioFile={audioFile}
+        isGenerating={isGenerating}
         onSubmit={onSubmit}
       />
     </div>

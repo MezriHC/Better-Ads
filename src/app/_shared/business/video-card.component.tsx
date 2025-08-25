@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { IconPlayerPlay, IconDownload, IconDots, IconTrash, IconEdit } from "@tabler/icons-react"
 import { VideoCardProps } from '../config/video-types'
+import { useVideoThumbnail } from '../hooks/use-video-thumbnail.hook'
 
 export function VideoCard({ video, onPlay, onDownload, onDelete, onRename }: VideoCardProps) {
   const [showMenu, setShowMenu] = useState(false)
@@ -10,16 +11,24 @@ export function VideoCard({ video, onPlay, onDownload, onDelete, onRename }: Vid
   const isProcessing = video.status === "processing"
   const isReady = video.status === "ready"
   const isFailed = video.status === "failed"
+  
+  // Générer miniature automatiquement si vidéo disponible
+  const { thumbnailUrl } = useVideoThumbnail({
+    videoUrl: video.videoUrl,
+    fallbackUrl: video.posterUrl || '/placeholder-video.jpg',
+    enabled: isReady && !!video.videoUrl
+  })
+
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden group">
       <div className="relative aspect-square bg-muted overflow-hidden">
         <img 
-          src={video.posterUrl} 
+          src={thumbnailUrl} 
           alt={video.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
-            e.currentTarget.src = 'https://picsum.photos/400/400?random=' + video.id
+            e.currentTarget.src = '/placeholder-video.jpg'
           }}
         />
         
@@ -114,7 +123,7 @@ export function VideoCard({ video, onPlay, onDownload, onDelete, onRename }: Vid
         </div>
 
         <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-2">
-          <h3 className="font-bold text-white text-sm drop-shadow-lg line-clamp-2">{video.title}</h3>
+          <h3 className="font-bold text-white text-sm drop-shadow-lg truncate">{video.title}</h3>
           
           {video.duration && (
             <div className="flex items-center gap-2">

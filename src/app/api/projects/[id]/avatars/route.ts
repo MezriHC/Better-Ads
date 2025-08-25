@@ -51,7 +51,7 @@ export async function GET(
         status: avatar.status === 'ready' ? 'ready' : 
                 avatar.status === 'processing' ? 'processing' : 'failed',
         createdAt: avatar.createdAt.toISOString(),
-        duration: avatar.duration || '0:03',
+        duration: (avatar.duration || '0:03').replace(/\n/g, ''),
         format: (avatar.format as "16:9" | "9:16" | "1:1") || "16:9"
       }
     })
